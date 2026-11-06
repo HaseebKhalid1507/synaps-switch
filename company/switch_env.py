@@ -154,8 +154,9 @@ def _agent_map(env, agent_names):
 
 
 def plan_env(env: Env, generation: int, *, agent_names=None, operator=None, room_prefix="",
-             board_room="board") -> dict:
-    """Everything apply will make, as data. No I/O."""
+             board_room="board", extra_members=None) -> dict:
+    """Everything apply will make, as data. No I/O. extra_members: {env room name: [Switch agent names]}
+    put in that room on top of the env's own (the quarter loop's dept agents in #board, its market)."""
     amap = _agent_map(env, agent_names)
     group = f"{room_prefix}{env.name}-g{generation}"
     room_names = [r["name"] for r in env.rooms]
@@ -175,6 +176,7 @@ def plan_env(env: Env, generation: int, *, agent_names=None, operator=None, room
         agents = [amap.get(a, a) for a in r.get("agents") or []]
         if operator and operator not in agents:
             agents.append(operator)
+        agents += [a for a in (extra_members or {}).get(name) or [] if a not in agents]
         brief = [f"#{switch_name[name]} is the {name} room of the acme-shop company, {env.name} generation {generation}.",
                  "Agents here: " + ", ".join(f"@{a}" for a in agents) + "."]
         if name in budgets:
@@ -346,17 +348,19 @@ def _resolve_users(users, creator):
 
 def apply_env(env: Env, bridge, *, generation: int = 1, agent_names=None, room_prefix="", board_room="board",
               mode="auto", state_dir="company/state", log=print, fixup=None, retries=5, retry_wait=10.0,
-              trace=None) -> dict:
+              trace=None, extra_members=None) -> dict:
     """Make (or complete) generation `generation` of env in Switch; returns {env room name: room id}.
 
     mode: "auto" (template, then per-room for whatever it left out), "template" (template only),
     "rooms" (per-room create_room only). fixup(room_plan, detail) is an optional hook run per room
     after the Switch-side checks (the devstack one adds Mattermost members Switch skipped).
-    trace(op, args, result) sees every Switch call (evidence)."""
+    trace(op, args, result) sees every Switch call (evidence). extra_members: {env room: [Switch agent
+    names]} invited on top of the env's agents (e.g. every dept agent into #board, so traffic through the
+    hub is delivered)."""
     ops = as_ops(bridge, log)
     operator = getattr(ops, "name", None)
     plan = plan_env(env, generation, agent_names=agent_names, operator=operator, room_prefix=room_prefix,
-                    board_room=board_room)
+                    board_room=board_room, extra_members=extra_members)
     tr = trace or (lambda *a: None)
 
     def call(name, args=None, room_id=None):

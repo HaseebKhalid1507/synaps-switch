@@ -190,7 +190,9 @@ class SwitchTransport    # one switch_client.Connection per agent identity, cred
 
 ```python
 def apply_env(env, bridge, *, generation=1, agent_names=None, room_prefix="", mode="auto",
-              state_dir="company/state", fixup=None) -> dict[str, str]     # {env room name: Switch room id}
+              state_dir="company/state", fixup=None, extra_members=None) -> dict[str, str]  # {env room: Switch room id}
+    # extra_members: {env room: [Switch agent names]} on top of the env's agents (the quarter loop: every dept
+    # agent in #board, the market everywhere)
 def teardown(env, bridge, *, generation=1, room_prefix="", state_dir="company/state") -> dict  # archives them
 def update_ledger(env, bridge, rows, *, generation=1, ...)   # rewrites the "Ledger" doc in #board, one row per quarter
 def check_ops(bridge) -> {missing_required, missing_optional, ...}   # GET /agents/{id}/ops, logs gaps
@@ -233,6 +235,52 @@ Demo/evidence: `python -m company.depts.demo --out evidence/m4/dept-agents [--st
 
 ## company/board/  (owner: C)
 
-The board's LangGraph graphs (inner quarter loop, outer evolution loop with interrupt() approval gates), the router
-(which paused run a message resumes, and who is allowed to resume it), and the department agents in `company/depts/`.
-Entry point: `python -m company.run --env company/envs/env1.yaml --generations 3 --transport fake|switch`.
+### quarter.py (#10): the inner loop, one quarter in LangGraph
+
+```python
+def run_quarter(env, *, seed, generation=1, **opts) -> tuple[Metrics, QuarterLog]   # the runner evolve (#11) injects
+def run_quarter_full(env, *, seed, generation=1, config: QuarterConfig | None = None, **opts) -> QuarterResult
+    # QuarterResult(metrics, log, fitness, report, thread_id, resumed: "new"|"resumed"|"cached", state)
+class QuarterConfig:   # every opts key; the defaults run offline: FakeTransport + stub LLM/synaps-dev/person
+    transport="fake"|"switch"; llm=None (stub offline, pass company.llm.complete_json for Haiku); weeks=None;
+    db="company/state/board.db"; thread_id=None ("<env>:<seed>"); fresh=False; issues=None (market default;
+    live: acme.load_issues()); humans; approvers; approver=None|"stub"|"mattermost"|callable(rt, thread, req);
+    dev_per_week / dev_per_quarter (else x-company.dev_capacity {per_week, per_quarter}, else unlimited);
+    dev_timeout=900; approve_timeout=180; week_wall_s=60; quiet_s=12; review/merge/verify/dev_cost/fallback
+    injectables; agent_prefix/room_prefix/acme_prefix; acme_remote (live: local file:// remote only);
+    ledger_rows (earlier quarters); quarter_label; weights; hook(node, week) (tests); log(line)
+def kpi_table(...) -> str; def ledger_row(label, seed, metrics, fitness) -> dict
+```
+
+Graph (thread "<env>:<seed>", SqliteSaver after every node, `durability="sync"`):
+`open_quarter → [operate(w) → work(w) → close_week(w)] × weeks → settle → report`.
+- open_quarter: live only: agents registered (board, dept agents, `market`; synaps-dev must exist), `apply_env`
+  generation k on the board's link with `extra_members` (dept agents into #board, market everywhere; synaps-dev only
+  in #dev), `pin_rooms`, acme-shop `<acme_prefix>gen-k` cut from `baseline` on the local remote.
+- operate(w): `deps.week = w`; the market identity posts each `events_for_week(w)` (`deps.event_message`); live, the
+  week ends when the rooms were quiet `quiet_s` or after `week_wall_s`. The market counts as a person for the hop guard.
+- work(w): `deps.routes` to synaps-dev → dev queue (incidents by severity, then features by demand, deduped, capped)
+  → `realwork.dispatch` in #dev → review (harness pytest + testing-reality-checker) posted in #dev → `MergeGate` in
+  #board → a person's approve → merge on the local remote → `QuarterLog.fixes/features` (week = the merge's week).
+- close_week(w): late decisions booked, synaps-dev's session cost booked, a week summary in #board.
+- settle: everything still pending (finance escalations, merge requests, undispatched routes) is not approved and
+  logged (`verdict status=not_approved by=quarter_end`, `merge_not_approved`, `route_not_dispatched`);
+  `Market.settle` → Metrics; fitness (company/fitness.yaml).
+- report: KPI table + fitness posted to #board, the Ledger doc rewritten (`update_ledger`; offline
+  `<state_dir>/ledger/<group>.md`).
+
+`llm_cost_usd` = dept agents + judge (Departments) + PR reviews + synaps-dev's room session (`live.SessionCost`).
+The board records its @-mail (`state["board_inbox"]`) and never approves: offline `stubs.StubApprover`, live
+`live.MattermostApprover` (a scripted person posting via `dev.py mm-post`). Killed: rerun with the same arguments
+resumes the node it died in; a finished thread returns its result; a changed env/config (fingerprint) or
+`fresh=True` starts over. Other modules: `wire.py` (CompanyTransport: env names ↔ prefixed Switch names, activity for
+`wait_quiet`; `company_rooms`, `extra_members`), `stubs.py`, `live.py` (approver, synaps-dev cost, local-only merge,
+evidence export + scrub).
+
+### company/run.py
+
+`python -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake` prints the Metrics and fitness
+(deterministic for a seed; `--report` adds the KPI table, `--json` one object per quarter). Live:
+`--transport switch --llm haiku --approver mattermost --agent-prefix P --room-prefix P --acme-prefix P
+--acme-remote file:///…git --issues acme --humans user --approvers user --weeks 3 --generation K`
+(see evidence/m4/quarter/live_quarter.py). `--generations N` is reserved for #11 (`evolve.evolve`).
