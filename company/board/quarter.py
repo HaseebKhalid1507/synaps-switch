@@ -206,6 +206,7 @@ class Runtime:
         if self.cfg.log:
             self.cfg.log(line)
         if self.cfg.out_dir:
+            Path(self.cfg.out_dir).mkdir(parents=True, exist_ok=True)
             with open(Path(self.cfg.out_dir) / "run.log", "a", encoding="utf-8") as f:
                 f.write(line + "\n")
 

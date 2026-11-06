@@ -131,6 +131,17 @@ def test_cli_generations_runs_the_outer_loop_on_this_quarter(tmp_path):
     assert {"env1:1", "env1:2", "env2:1", "env2:2", "env3:1", "env3:2"} <= threads
 
 
+def test_cli_generations_after_a_quarter_in_the_same_db(tmp_path):
+    """The quarter's thread is re-run by --generations (its config differs); the trial log goes to a new --out."""
+    base = [sys.executable, "-m", "company.run", "--env", ENV1, "--transport", "fake", "--weeks", "3",
+            "--db", str(tmp_path / "q.db"), "--state-dir", str(tmp_path / "st")]
+    assert subprocess.run(base + ["--out", str(tmp_path / "a")], cwd=ROOT, capture_output=True, timeout=300).returncode == 0
+    r = subprocess.run(base + ["--generations", "1", "--seeds", "42", "--evolve-db", str(tmp_path / "e.sqlite"),
+                               "--out", str(tmp_path / "b" / "new")], cwd=ROOT, capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, r.stderr
+    assert "| 1 | env2 |" in r.stdout and (tmp_path / "b/new/run.log").exists()
+
+
 def test_cli_quarters(tmp_path):
     from company.run import main
     assert main(["--env", ENV1, "--quarters", "2", "--json", "--db", str(tmp_path / "q.db"),

@@ -1,0 +1,50 @@
+[
+ {
+  "id": "d7ewiojc9tncxypdro9hgg8xmy",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957323989,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "riscgyuniini7dwg1tf8ijypbr",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957324015,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "qp7d9ftug3dmtxow9hgdu3x7sh",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-growth added to the channel by admin.",
+  "create_at": 1793957324070,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "irz694t9jtr83fsxpwoxkouzco",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957324080,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "h7fn7qzsg7bmjbu1j4bccicdhh",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "Hi! Mention @m13-s1-growth to get my attention.",
+  "create_at": 1793957324221,
+  "type": null
+ },
+ {
+  "id": "b8sh7mh5ptrh3jfmyiquhzimew",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi! I'm here to help — mention @m13-s1-board anytime.",
+  "create_at": 1793957324258,
+  "type": null
+ }
+]

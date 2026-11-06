@@ -25,7 +25,8 @@ esac
 export COMPANY_SYNAPS_BASE_DIR=${COMPANY_SYNAPS_BASE_DIR:-$base/company-llm}
 export COMPANY_BROKER_TOKEN_FILE=${COMPANY_BROKER_TOKEN_FILE:-$base/broker/machine.token}
 export COMPANY_BROKER_URL=${COMPANY_BROKER_URL:-http://127.0.0.1:18191}
-[ -r "$COMPANY_BROKER_TOKEN_FILE" ] || { echo "live_env: no broker token at $COMPANY_BROKER_TOKEN_FILE (python3 devstack/synapsdev.py broker start)" >&2; exit 2; }
+[ -r "$COMPANY_BROKER_TOKEN_FILE" ] || [ "$mode" = check ] || \
+  echo "live_env: warning: no broker token at $COMPANY_BROKER_TOKEN_FILE yet (python3 devstack/synapsdev.py up); model calls will fail" >&2
 
 envf=$base/acme-github.env
 if [ "$mode" != local ] && [ -f "$envf" ]; then

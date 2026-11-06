@@ -1,0 +1,82 @@
+[
+ {
+  "id": "hfo8opt9mpr88grhqpxb79zcoy",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793955917159,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "guzboydcdbr8u8kk9yqstukoce",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793955917175,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "57j8c4eq3bdmzns6ch17p6oy3a",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-finance added to the channel by admin.",
+  "create_at": 1793955917211,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "syrcc9xwrpy8dq1j7owtk53y8a",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793955917225,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "f3yfkuor6inn8fwxaeaa6mnbty",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793955917244,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5xescsw4u3bxf8i3nakemzk9sy",
+  "root_id": null,
+  "user": "m13-finance",
+  "message": "Hello! I'm ready — just tag @m13-finance when you need me.",
+  "create_at": 1793955917315,
+  "type": null
+ },
+ {
+  "id": "kyz4g37thjbamxjju37fg9m8se",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hi there! Just @m13-board me when you're ready.",
+  "create_at": 1793955917332,
+  "type": null
+ },
+ {
+  "id": "gn1y68eabp81iczkoixmmma9uo",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hey! Ping @m13-market and I'll jump in.",
+  "create_at": 1793955917361,
+  "type": null
+ },
+ {
+  "id": "kofzpmmcwfg8bd9pk7cyfygijo",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unusual, otherwise no action.",
+  "create_at": 1793956133163,
+  "type": null
+ },
+ {
+  "id": "16usgxhor7y89n8bykhkg5im6h",
+  "root_id": "kofzpmmcwfg8bd9pk7cyfygijo",
+  "user": "m13-finance",
+  "message": "Infrastructure invoice $5,000 received and noted. Amount aligns with fixed cost expectations—no unusual variance. Booking as scheduled.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793956134949,
+  "type": null
+ }
+]

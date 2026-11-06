@@ -1,0 +1,322 @@
+[
+ {
+  "id": "6i8nqx7y93dc9dhx493z138d8c",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957781795,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "c5wihsuiipyr9r5w486sbd8nyr",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957781852,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "fbwba39rotrg7qsptkn5ixcmzo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957781950,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "wb8anii3zib85q5ahfzf41o59a",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-ops-maint added to the channel by admin.",
+  "create_at": 1793957781960,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "15z1dujpkbbg58tefo1ehtcjhw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-growth added to the channel by admin.",
+  "create_at": 1793957781973,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "jraamqdrs3yi8j95cgiuk5hweo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-marketing added to the channel by admin.",
+  "create_at": 1793957781987,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "mttnxajnfjrwu87rg91i51qu3o",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-finance added to the channel by admin.",
+  "create_at": 1793957782024,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5gmiprh6jffo3kyb38d4hegzjo",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hey! Ping @m13-s1-board and I'll jump in.",
+  "create_at": 1793957782153,
+  "type": null
+ },
+ {
+  "id": "ib1pugoo33nabk6g4o6mw8okgc",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Hello! Tag @m13-s1-ops-maint to loop me in.",
+  "create_at": 1793957782178,
+  "type": null
+ },
+ {
+  "id": "c3t9fjnhu7bmikqw9jsu3ju61h",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "Hi! I'm here to help — mention @m13-s1-growth anytime.",
+  "create_at": 1793957782219,
+  "type": null
+ },
+ {
+  "id": "fbk58k8yh3yqtjhqrrifr53e4c",
+  "root_id": null,
+  "user": "m13-s1-marketing",
+  "message": "Hey! Ping @m13-s1-marketing and I'll jump in.",
+  "create_at": 1793957782252,
+  "type": null
+ },
+ {
+  "id": "7oqk9hcupp8npr1fpko8fyb7ua",
+  "root_id": null,
+  "user": "m13-s1-finance",
+  "message": "Hi there! Just @m13-s1-finance me when you're ready.",
+  "create_at": 1793957782274,
+  "type": null
+ },
+ {
+  "id": "gyfawbu44tgnmgq1apabj9cekw",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "📄 created room document “Handbook”.",
+  "create_at": 1793957784678,
+  "type": null
+ },
+ {
+  "id": "ysq85z1amtnez8bhzh9xbqgkqw",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "📄 created room document “Ledger”.",
+  "create_at": 1793957784695,
+  "type": null
+ },
+ {
+  "id": "odntd9r1mtgajrdpt33sr9eykr",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Quarter 1 opens: env2 generation 2, seed 1, 3 weeks. Engineering base branch m13-s1-gen-2. The Handbook and the Ledger are in this room.",
+  "create_at": 1793957787962,
+  "type": null
+ },
+ {
+  "id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "(re #maintenance) Triage #2 (sev2): Tax applied twice on discounted orders—customers overcharged. Immediate revenue/trust risk. Routing to @synaps-dev for fix. @m13-s1-finance: track refunds needed.\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957791942,
+  "type": null
+ },
+ {
+  "id": "34s5dmibtfbqmbje3g3temh8kw",
+  "root_id": null,
+  "user": "admin",
+  "message": "switch-admin added to the channel by admin.",
+  "create_at": 1793957791971,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ry4ji4xdibrt5ezobmnsnp4x4r",
+  "root_id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957791978,
+  "type": null
+ },
+ {
+  "id": "hjsj4pbajjgz3b7wmy18yza6xa",
+  "root_id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "user": "m13-s1-finance",
+  "message": "Tracking #2 refunds as revenue impact. Scope unknown—need customer count and avg overcharge from @m13-s1-ops-maint once triage completes. Will quantify trust/churn risk and flag if refunds exceed contingency budget.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793957794115,
+  "type": null
+ },
+ {
+  "id": "gojuphuzrbgu7figz1ntpyinrh",
+  "root_id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "user": "m13-s1-ops-maint",
+  "message": "@m13-s1-finance Issue #2 scope: 60 customers overcharged via double tax on discounted orders. Avg overcharge ~$2-5 per order (tax % varies). Total refund liability ~$120-300. Fix deploys this week via @synaps-dev Will confirm exact amounts post-deployment.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793957797759,
+  "type": null
+ },
+ {
+  "id": "niigftb4u7f13nwnd3u9b86poo",
+  "root_id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957797787,
+  "type": null
+ },
+ {
+  "id": "dm35ybch4ifebqruzc5ak1j1cy",
+  "root_id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "user": "m13-s1-finance",
+  "message": "Got it. $120–300 refund liability is manageable and below contingency threshold. I'll book refunds once @synaps-dev deploys and @m13-s1-ops-maint confirms exact amounts. No board escalation needed unless final tally exceeds $500.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793957799855,
+  "type": null
+ },
+ {
+  "id": "cxubgshifpg69bjabx3knw5f3a",
+  "root_id": "zq1zn17mm3b7pfqjf5qsijiuee",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-finance **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957799881,
+  "type": null
+ },
+ {
+  "id": "dzqxqurppbypxbju18cdzyz5xe",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "@user merge request: acme-shop#1 (incident).\nsynaps-dev: Empty/unknown coupon code now raises ValueError instead of crashing with KeyError\nReview (testing-reality-checker): PASS. PR fixes the root cause (unguarded dictionary lookup) by validating coupon code before access and raising ValueError instead of KeyError. Comprehensive regression test added that exercises empty/unknown codes and verifies valid coupons still work; full pytest suite passes.\nHarness pytest on the PR head: green (35 passed, 13 warnings in 0.04s).\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/18\nReply in this thread with `@m13-s1-board approve` to merge it, or `@m13-s1-board reject`.",
+  "create_at": 1793957932034,
+  "type": null
+ },
+ {
+  "id": "5akoawxqpby4pribs9btiir8wy",
+  "root_id": "dzqxqurppbypxbju18cdzyz5xe",
+  "user": "user",
+  "message": "@m13-s1-board approve",
+  "create_at": 1793957934491,
+  "type": null
+ },
+ {
+  "id": "7kyup51h478zieyxnayuw51eda",
+  "root_id": "dzqxqurppbypxbju18cdzyz5xe",
+  "user": "m13-s1-board",
+  "message": "Merged acme-shop#1 (approved by user) as c54abd539e. pytest on the merged base: green (35 passed, 13 warnings in 0.03s). Booked as fixed in week 1.",
+  "create_at": 1793957939269,
+  "type": null
+ },
+ {
+  "id": "nbagoptar3bzmjpxcief3kfidh",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Week 1 of 3 closed. Fixed: #1; shipped: none; campaigns: 0; price $29.00; dev queue: #2, #3, #4; LLM spend so far $0.4416.",
+  "create_at": 1793957939306,
+  "type": null
+ },
+ {
+  "id": "axrcnciqwtdwmgckkyw16xmsio",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "(re #growth) #5 demand is strong (0.9), but two sev2 checkout bugs (#2, #3) block us now. Week 2 of 3: fix incidents first. Route #5 for next sprint when incidents clear. @synaps-dev priority: #2, #3, #4.\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957946050,
+  "type": null
+ },
+ {
+  "id": "sr965oa79bnmdynyy97kufd9yo",
+  "root_id": "axrcnciqwtdwmgckkyw16xmsio",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-growth **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957946087,
+  "type": null
+ },
+ {
+  "id": "mky3wenjwpgqzjfz4fr5ofybuy",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "(re #growth) Hold #6 for Q2. Week 2 of 3—sev2 bugs (#2, #3) and sev3 sort (#4) are Must-Have. Bundle discounts drive AOV but lack runway for quality ship now. Route bugs to @synaps-dev\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957951149,
+  "type": null
+ },
+ {
+  "id": "x6bh737eafyhxbzbu5x1b8s76r",
+  "root_id": "mky3wenjwpgqzjfz4fr5ofybuy",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-growth **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957951175,
+  "type": null
+ },
+ {
+  "id": "nb8hkhqzefg3jx66knmqukrb9r",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "(re #growth) Issue #7 (save cart) is lower priority—demand 0.6 vs. sev2 incidents #2 #3 blocking customers. Fix overcharges & inventory drift first. Route #7 to backlog for Q2; ship incidents now to @synaps-dev .\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957958193,
+  "type": null
+ },
+ {
+  "id": "cw7jnk4at3f1tqqmgr5tah4kyr",
+  "root_id": "nb8hkhqzefg3jx66knmqukrb9r",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-growth **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957958262,
+  "type": null
+ },
+ {
+  "id": "z5arzfzpwbbxdf5myg7fb88pke",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "@user merge request: acme-shop#2 (incident).\nsynaps-dev: Tax now applied exactly once via a single code path; preview price matches charge on all amounts\nReview (testing-reality-checker): PASS. PR fixes the root cause of double-tax bug by making cart.total() delegate to the canonical price_after_discount_and_tax() function, eliminating dual tax computation paths. Comprehensive regression test added with 125 lines covering rounding precision, preview-vs-charge matching, and end-to-end checkout scenarios; full pytest suite (46 tests) passes.\nHarness pytest on the PR head: green (46 passed, 13 warnings in 0.04s).\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/19\nReply in this thread with `@m13-s1-board approve` to merge it, or `@m13-s1-board reject`.",
+  "create_at": 1793958357050,
+  "type": null
+ },
+ {
+  "id": "tm4jhuqmhp8otyp1tednjpcnmh",
+  "root_id": "z5arzfzpwbbxdf5myg7fb88pke",
+  "user": "user",
+  "message": "@m13-s1-board approve",
+  "create_at": 1793958359416,
+  "type": null
+ },
+ {
+  "id": "1npwjg363p8pjbsj5me4ioot7h",
+  "root_id": "z5arzfzpwbbxdf5myg7fb88pke",
+  "user": "m13-s1-board",
+  "message": "Merged acme-shop#2 (approved by user) as 6cb5cd4f38. pytest on the merged base: green (46 passed, 13 warnings in 0.03s). Booked as fixed in week 2.",
+  "create_at": 1793958364689,
+  "type": null
+ },
+ {
+  "id": "h6hbbrrfsigi3q7sgr73c7yukr",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Week 2 of 3 closed. Fixed: #2; shipped: none; campaigns: 0; price $29.00; dev queue: #3, #4; LLM spend so far $1.9746.",
+  "create_at": 1793958364747,
+  "type": null
+ },
+ {
+  "id": "g54krsxddp8k7nohm7mdr4ferc",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Week 3 of 3 closed. Fixed: none; shipped: none; campaigns: 0; price $29.00; dev queue: #3, #4; LLM spend so far $1.9780.",
+  "create_at": 1793958381698,
+  "type": null
+ },
+ {
+  "id": "gcwazmdcsjndxnorfbpk48bc9c",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "**Quarter 1 of env2, generation 2, seed 1, 3 weeks: KPI**\n\n| KPI | value |\n|---|---|\n| revenue | $27,215 |\n| costs | $5,002 |\n| profit | $22,213 |\n| customers | 1,368 |\n| churn (avg weekly) | 1.95% |\n| growth | -8.86% |\n| open incident severity | 3 |\n| mean fix weeks | 1.50 |\n| LLM cost | $1.9780 (depts + judge $0.0591, reviews $0.0254, synaps-dev $1.8935) |\n| incidents fixed | #1 (wk 1, tests green), #2 (wk 2, tests green) |\n| features shipped | none |\n| campaigns | 0 ($0, avg quality 0.00) |\n| price | unchanged |\n| spend approved / not | $0 / $0 |\n| not approved at quarter end | 2 |\n| **fitness** | **14.1908** |",
+  "create_at": 1793958384768,
+  "type": null
+ },
+ {
+  "id": "tdpm8r6hb3rbxekykxh6ymhajy",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "📄 updated room document “Ledger”.",
+  "create_at": 1793958384788,
+  "type": null
+ }
+]

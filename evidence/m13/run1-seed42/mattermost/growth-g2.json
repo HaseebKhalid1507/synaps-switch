@@ -1,0 +1,114 @@
+[
+ {
+  "id": "38yxzwypyfnebme3ggjtise7wh",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956379670,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "okfpdwdgbbdhtxohge1h3kh84r",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956379686,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ssrny6r5a3dgxci5hsyz5tbhmy",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-growth added to the channel by admin.",
+  "create_at": 1793956379732,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "tbtfqx4og3fwpprcka4yg6srrw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956379745,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "tsotxc75b3fwumkyj7gzycfjbw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956379758,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ysg9i4t3r3ni3e7ct3tdhx83ee",
+  "root_id": null,
+  "user": "m13-growth",
+  "message": "Hey there! Tag @m13-growth if you need me.",
+  "create_at": 1793956379831,
+  "type": null
+ },
+ {
+  "id": "x4mr9i4in38eueyzgba67rxzph",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hey! I'm on standby — @m13-board to get started.",
+  "create_at": 1793956379851,
+  "type": null
+ },
+ {
+  "id": "p4y5cgzzdpdrmpor57pncn16my",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hi there! Just @m13-market me when you're ready.",
+  "create_at": 1793956379869,
+  "type": null
+ },
+ {
+  "id": "9kzbk74z7fgxuczssggrppbu4a",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: free shipping on orders over 0' (issue #5, demand score 0.9) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793956543206,
+  "type": null
+ },
+ {
+  "id": "19e5pahosino5b1h8mwmgaysgw",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: 3-for-2 bundle discount (buy 3, pay for 2)' (issue #6, demand score 0.6) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793956543274,
+  "type": null
+ },
+ {
+  "id": "foqku4hys78rteanejofnha8oc",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: save cart for later and restore it' (issue #7, demand score 0.6) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793956543346,
+  "type": null
+ },
+ {
+  "id": "nqysfy8k9jb4z8qxnyn758rbao",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: order history endpoint (GET /orders/<session>)' (issue #8, demand score 0.6) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793956543398,
+  "type": null
+ },
+ {
+  "id": "61q9sr3irpdiic4j8j8a7pf64a",
+  "root_id": "foqku4hys78rteanejofnha8oc",
+  "user": "m13-growth",
+  "message": "Hold #7 until Q2. We have 1 week left with sev2 incidents (#2 tax double-charge, #3 inventory drift) actively harming customers. Fix those first; cart restore (demand 0.6) is lower priority.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793956564421,
+  "type": null
+ },
+ {
+  "id": "bebn5bnf3fgsbe1usbz9x954wh",
+  "root_id": "nqysfy8k9jb4z8qxnyn758rbao",
+  "user": "m13-growth",
+  "message": "Feature #8 has weak demand (0.6) and we have 3 sev2 incidents blocking revenue (#2 tax bug, #3 inventory leak) plus #4 sort bug. Prioritize incidents first. #8 routes to next quarter.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793956569506,
+  "type": null
+ }
+]

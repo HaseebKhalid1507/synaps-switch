@@ -1,0 +1,106 @@
+[
+ {
+  "id": "7mg7byt58pnmmr4oqh9fjzrfaw",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957782769,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "q5hph68f438ginbuudgtz84ohc",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957782785,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "a4bhaj7n4fb59dgzcj44eu9uoa",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-ops-maint added to the channel by admin.",
+  "create_at": 1793957782856,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "z1twyt4psfg67egcarxsuankuw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957782865,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5rhm9mikefbsfp4rgt4aw4e1fe",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Hi! Mention @m13-s1-ops-maint to get my attention.",
+  "create_at": 1793957782973,
+  "type": null
+ },
+ {
+  "id": "8fzsja5rc7r7dx4df9jyyfhxty",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi! I'm here to help — mention @m13-s1-board anytime.",
+  "create_at": 1793957782991,
+  "type": null
+ },
+ {
+  "id": "qh6tpywue7gd8yjjcbhcca73th",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Sev1 confirmed: empty coupon crashes checkout, blocking all transactions. Routing to @synaps-dev for immediate fix. Customer impact: checkout broken. Owner: synaps-dev.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957790302,
+  "type": null
+ },
+ {
+  "id": "e87h3716gbgb7gs57k6pa33muc",
+  "root_id": null,
+  "user": "admin",
+  "message": "switch-admin added to the channel by admin.",
+  "create_at": 1793957790358,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "x1iz1nunf7fpfba97xrq8bh8ee",
+  "root_id": null,
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957790361,
+  "type": null
+ },
+ {
+  "id": "cnxya6cqqbd3mgspga58htcd1c",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Sev2 confirmed: inventory drift on failed payments impacts customer trust and financial accuracy. Routing to @synaps-dev for immediate fix. Customer impact: 60 affected, revenue/stock reconciliation at risk.\n\n```json\n{\"type\": \"route\", \"issue\": 3, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957794079,
+  "type": null
+ },
+ {
+  "id": "1gpgex7kcin7xgg77eyzuob84h",
+  "root_id": null,
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957794153,
+  "type": null
+ },
+ {
+  "id": "z4imc6g4u38zjbp5jmkxjyakea",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "sev3 #4: Product sort-by-price string/numeric bug. Low customer impact, can batch with sev1/sev2 fixes. Routing to @synaps-dev for code fix.\n\n```json\n{\"type\": \"route\", \"issue\": 4, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793957795640,
+  "type": null
+ },
+ {
+  "id": "t9n7byxwwjdr3rka53cqcgoo8r",
+  "root_id": null,
+  "user": "switch-admin",
+  "message": "⚠️ @m13-s1-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793957795659,
+  "type": null
+ }
+]

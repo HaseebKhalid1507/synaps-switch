@@ -1,0 +1,58 @@
+[
+ {
+  "id": "jxy1br7r8pfbmcfybj3fu4zn9o",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957783591,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "9rdojngfxjde5dk6mof8bc165e",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957783619,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5j8shgqpppdz9p88h1mqk4ta5a",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-finance added to the channel by admin.",
+  "create_at": 1793957783674,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "q5mus39qzbyxiqeeeqgcwm8yue",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957783682,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "hy9578hfst8k7kyonibs3chdyr",
+  "root_id": null,
+  "user": "m13-s1-finance",
+  "message": "Hello! I'm ready — just tag @m13-s1-finance when you need me.",
+  "create_at": 1793957783778,
+  "type": null
+ },
+ {
+  "id": "bkxnkqzr8bf35xc1raspa4cx1e",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hey there! Tag @m13-s1-board if you need me.",
+  "create_at": 1793957783795,
+  "type": null
+ },
+ {
+  "id": "g1tnnfekbjd7xkfbr74indsdge",
+  "root_id": null,
+  "user": "m13-s1-finance",
+  "message": "Infrastructure invoice $5,000 received and booked as fixed cost. No unusual line items flagged. On track.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793958366472,
+  "type": null
+ }
+]

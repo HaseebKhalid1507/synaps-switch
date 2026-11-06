@@ -1,0 +1,114 @@
+[
+ {
+  "id": "7ceftytxqiyjid4r6hwafgt8pc",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957782374,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "jejarwh7sjbafnd676egag94uc",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957782396,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "hn3gwjn4p78x9cx4ppjoxfkdca",
+  "root_id": null,
+  "user": "admin",
+  "message": "synaps-dev added to the channel by admin.",
+  "create_at": 1793957782468,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "7s6uoqgdn7gpbknmka4n9mdmwy",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957782481,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "aw7xwx4ny3bpubcrfi6astnxne",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-ops-maint added to the channel by admin.",
+  "create_at": 1793957782493,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5aephg6mhjrmicsdda1ca883mc",
+  "root_id": null,
+  "user": "synaps-dev",
+  "message": "Hey there! Tag @synaps-dev if you need me.",
+  "create_at": 1793957782637,
+  "type": null
+ },
+ {
+  "id": "q8zcu94ixtrbznsde1zryxs5bw",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi there! Just @m13-s1-board me when you're ready.",
+  "create_at": 1793957782679,
+  "type": null
+ },
+ {
+  "id": "sdihkz9qebff7xdyh6rsy7ghrh",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Hi! I'm here to help — mention @m13-s1-ops-maint anytime.",
+  "create_at": 1793957782734,
+  "type": null
+ },
+ {
+  "id": "iyom639tyjrs9k8so5n65kf3hr",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "@synaps-dev fix acme-shop#1 (base m13-s1-gen-2) (Applying empty coupon code crashes checkout with unhandled exception). Branch off m13-s1-gen-2, push m13-s1-gen-2-fix-1, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793957815045,
+  "type": null
+ },
+ {
+  "id": "44yr8htgrjd3irpu1gwciedo7a",
+  "root_id": "iyom639tyjrs9k8so5n65kf3hr",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#1.",
+  "create_at": 1793957818372,
+  "type": null
+ },
+ {
+  "id": "srreuw35bffw8qzgfemthfasoc",
+  "root_id": "iyom639tyjrs9k8so5n65kf3hr",
+  "user": "synaps-dev",
+  "message": "Empty coupon code (`\"\"`) caused an unhandled `KeyError` in `apply_coupon`, propagating through `cart.total()` and crashing checkout. Fixed by adding a guard in `shop/pricing.py` that raises `ValueError` for any empty or unrecognised code. Added `tests/test_issue_1.py`; full suite green (35 passed).\n\n@m13-s1-ops-maint\n\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Empty/unknown coupon code now raises ValueError instead of crashing with KeyError\", \"evidence\": [\"tests/test_issue_1.py: 4 tests fail before fix, all pass after\", \"pytest -q: 35 passed\", \"commit 8b22532 on m13-s1-gen-2-fix-1\"], \"pr\": \"m13-s1-gen-2-fix-1\"}\n```",
+  "create_at": 1793957920418,
+  "type": null
+ },
+ {
+  "id": "on8t6x7q7i839e97haqwg6mrye",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "@synaps-dev fix acme-shop#2 (base m13-s1-gen-2) (Tax applied twice on orders with discount coupon — customers overcharged). Branch off m13-s1-gen-2, push m13-s1-gen-2-fix-2, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793957978519,
+  "type": null
+ },
+ {
+  "id": "znxj31harbbbmdga95qoeiu84a",
+  "root_id": "on8t6x7q7i839e97haqwg6mrye",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#2.",
+  "create_at": 1793957981282,
+  "type": null
+ },
+ {
+  "id": "1ixthgrjtingffgrcfpdbfi6mc",
+  "root_id": "on8t6x7q7i839e97haqwg6mrye",
+  "user": "synaps-dev",
+  "message": "The bug: `cart.total()` computed tax independently from `price_after_discount_and_tax()` using a slightly different rounding path — causing the preview price shown to customers to differ from the amount actually charged (e.g. $16.17 vs $16.18 on a $29.95 item with HALFOFF). The structural risk of double-tax also existed: calling both functions in sequence would apply tax twice. Fixed by making `cart.total()` delegate to `price_after_discount_and_tax()` as the single source of truth for the final total. Added `tests/test_issue_2.py` with 11 tests covering the rounding-mismatch cases; full suite green (46 passed).\n\n@m13-s1-ops-maint\n\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Tax now applied exactly once via a single code path; preview price matches charge on all amounts\", \"evidence\": [\"tests/test_issue_2.py: 7 parametrized rounding-mismatch tests fail before fix, all 11 pass after\", \"pytest -q: 46 passed\", \"commit 8d47124 on m13-s1-gen-2-fix-2\"], \"pr\": \"m13-s1-gen-2-fix-2\"}\n```",
+  "create_at": 1793958348707,
+  "type": null
+ }
+]

@@ -1,0 +1,98 @@
+[
+ {
+  "id": "4dhgc4wsfp8xdjsp7wxmhjwgsr",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793955916386,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "8xgerqrz7p8x5cerxpxfj4gkuw",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793955916400,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "zw6qqgbuaf8cixaxe9np6oguye",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-ops-maint added to the channel by admin.",
+  "create_at": 1793955916463,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "fqjwziymij8g5k61wxo8h4gh9o",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793955916471,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ukc3rmxi5prf9rqk4qmjorntho",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793955916480,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "7ip6n3564pnq88uw13rijiuc4c",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "Hi! Mention @m13-ops-maint to get my attention.",
+  "create_at": 1793955916584,
+  "type": null
+ },
+ {
+  "id": "bitjn5xyz78aufry459tzqru5a",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hey there! Tag @m13-board if you need me.",
+  "create_at": 1793955916624,
+  "type": null
+ },
+ {
+  "id": "p51mjws1npnfjqr96zfhebn75a",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hi! I'm here to help — mention @m13-market anytime.",
+  "create_at": 1793955916648,
+  "type": null
+ },
+ {
+  "id": "4ippskgwzibdugqrbn8i41icqw",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 90 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, issue #1) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793955921687,
+  "type": null
+ },
+ {
+  "id": "sey1gppys3ru8jqruxtjadtksh",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2, issue #2) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793955921762,
+  "type": null
+ },
+ {
+  "id": "rdcmqjfuepy37r4p1ehdfbyewh",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue #3) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793955921826,
+  "type": null
+ },
+ {
+  "id": "nd7gt3yto3n8zq1cgwrp9d4wsc",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 30 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results (sev3, issue #4) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793955921873,
+  "type": null
+ }
+]

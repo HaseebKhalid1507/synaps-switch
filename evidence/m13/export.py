@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Collect #13's live run into evidence/m13/ (everything through the repo's scrubber).
 
-    python evidence/m13/export.py [--raw company/state/m13-out] [--db company/state/m13.db]
+    python evidence/m13/export.py --raw company/state/m13-out --db company/state/m13.db --prefix m13- --out evidence/m13/run1-seed42
 
 Reads the run's own output (run.log, console.log, transcript.jsonl, lineage.jsonl/md, envs/, gate-person.jsonl),
 the final state of every quarter thread in the board's checkpoint db (Metrics, fitness, the KPI post, dev tasks,
@@ -51,12 +51,15 @@ def main():
     ap.add_argument("--db", default="company/state/m13.db")
     ap.add_argument("--state-dir", default="company/state")
     ap.add_argument("--prefix", default="m13-")
+    ap.add_argument("--out", default=str(OUT), help="evidence dir (default evidence/m13)")
     a = ap.parse_args()
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
     from company.board import live
 
     raw = ROOT / a.raw
     scrub = live.scrubber(ROOT / a.state_dir)
-    w = lambda name, text: (OUT / name).write_text(scrub(text), encoding="utf-8")   # noqa: E731
+    w = lambda name, text: (out / name).write_text(scrub(text), encoding="utf-8")   # noqa: E731
 
     start = int((raw / "start.epoch").read_text().strip())
     end_f = raw / "end.epoch"
@@ -66,7 +69,7 @@ def main():
         if (raw / f).exists():
             w(f, (raw / f).read_text(encoding="utf-8"))
     if (raw / "envs").is_dir():
-        (OUT / "envs").mkdir(exist_ok=True)
+        (out / "envs").mkdir(exist_ok=True)
         for f in sorted((raw / "envs").glob("*.yaml")):
             w(f"envs/{f.name}", f.read_text(encoding="utf-8"))
 
@@ -100,7 +103,7 @@ def main():
     since = start * 1000 - 60_000
     tmp = raw / "mm"
     counts = live.export_channels(dev, channels_done, since, tmp) if dev else {}
-    (OUT / "mattermost").mkdir(exist_ok=True)
+    (out / "mattermost").mkdir(exist_ok=True)
     for f in sorted(tmp.glob("mattermost-*.json")):
         w(f"mattermost/{f.name[len('mattermost-'):]}", f.read_text(encoding="utf-8"))
 
