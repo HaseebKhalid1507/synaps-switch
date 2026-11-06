@@ -1,0 +1,22 @@
+01:14:34 room e2e-011427: 73533478-d071-4396-9fc3-63f75850ec08, channel e2e-011427 (u8ug1k8auinndesiwu3kh9usyo), members ['admin', 'synaps', 'user']
+01:14:34 user posted ggxfsjfr4pn3mj6hfancouoxfe: "@synaps e2e step 1: please remember the word 'tangerine'. Reply with just: noted."
+01:14:40 reply in thread ggxfsjfr4pn3mj6hfancouoxfe after 6.1s: 'noted.'
+01:14:40 PASS 1 reply to the mention, threaded under it
+01:14:40 PASS 1 room session created: 20261106-061435-9cfc
+01:14:41 PASS 1 room session is live and pinned in the private daemon: 20261106-061435-9cfc  Live  idle 1s  pinned  clients=0  active=-  model=claude-sonnet-4-6  cwd=~/.synaps-switch-dev/synaps-switch/rooms/synaps-e2e-01
+01:14:41 user posted exdq7zi3dinn5peimdauuhmt8c: '@synaps e2e step 2: what word did I ask you to remember? One word.'
+01:14:45 reply in thread exdq7zi3dinn5peimdauuhmt8c after 4.0s: 'tangerine'
+01:14:45 PASS 2 reply threaded under the second message
+01:14:45 PASS 2 remembers the first message: tangerine
+01:14:45 PASS 2 same session
+01:14:46 3 pinned sessions will come back on next start: sw-synaps-mattermost-synaps-6b47, sw-synaps-e2e-010647-01cf, sw-synaps-e2e-011427-3adf
+01:14:46 user posted 6zn3u9suj7ny9fs87jmq5nzepa: '@synaps e2e step 3 (sent while your daemon was down): the word again? One word.'
+01:15:11 private daemon up (pid 3943057, socket ~/.synaps-switch-dev/run/daemon.sock); extension on base ~/.synaps-switch-dev
+01:15:15 reply in thread 6zn3u9suj7ny9fs87jmq5nzepa after 4.2s: 'tangerine'
+01:15:15 PASS 3 message sent while down is answered after restart
+01:15:15 PASS 3 remembers across the restart: tangerine
+01:15:15 PASS 3 same session after restart
+01:15:15 PASS 3 cursor resumed forward: 4294967302 -> 4294967303
+01:15:30 PASS no duplicate replies (exactly one per message): {"ggxfsjfr4pn3mj6hfancouoxfe": 1, "exdq7zi3dinn5peimdauuhmt8c": 1, "6zn3u9suj7ny9fs87jmq5nzepa": 1}
+01:15:30 PASS each message delivered to the session once: 3 deliveries
+01:15:31 ALL PASS: 12/12; evidence in evidence/m3-e2e-20261106-011427

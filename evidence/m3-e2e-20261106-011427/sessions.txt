@@ -1,0 +1,3 @@
+20261106-060730-443a  Live  idle  pinned  clients=0  active=-  model=claude-sonnet-4-6  cwd=~/.synaps-switch-dev/synaps-switch/rooms/synaps-e2e-010647-5b95a5ed  created=06:07:30  name=sw-synaps-e2e-010647-01cf
+20261106-061435-9cfc  Live  idle 15s  pinned  clients=0  active=-  model=claude-sonnet-4-6  cwd=~/.synaps-switch-dev/synaps-switch/rooms/synaps-e2e-011427-73533478  created=06:14:35  name=sw-synaps-e2e-011427-3adf  $0.05  11 msgs  "<event id="e1143f31-3110-4c4b-8bfe-7588abc38f2c" type="message" severity="medium"
+20261106-060052-b4a0  Live  idle  pinned  clients=0  active=-  model=claude-sonnet-4-6  cwd=~/.synaps-switch-dev/synaps-switch/rooms/synaps-mattermost-synaps-lab-e3995a36  created=06:00:52  name=sw-synaps-mattermost-synaps-6b47

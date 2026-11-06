@@ -1,0 +1,11 @@
+2026-11-06T01:00:52 [synaps-switch] [synaps] created session 20261106-060052-b4a0 (sw-synaps-mattermost-synaps-6b47) for room Mattermost: synaps-lab (e3995a36-443f-42bc-bcc0-b3d2f24df950), pinned
+2026-11-06T01:00:52 [synaps-switch] [synaps] delivered sw_2e32dfdc2f822343ef0da2b80944e92f (thread sw_2e32dfdc2f822343ef0da2b80944e92f) from user to session 20261106-060052-b4a0
+2026-11-06T01:00:52 [synaps-switch] [synaps] subscription_changed: {"rooms": ["e3995a36-443f-42bc-bcc0-b3d2f24df950"], "reason": "subscription updated"}
+2026-11-06T01:00:55 [synaps-switch] [synaps] posted in room e3995a36-443f-42bc-bcc0-b3d2f24df950 (thread sw_2e32dfdc2f822343ef0da2b80944e92f): {'event_id': 'sw_5875c71ebedc466295bba626e158b39e'}
+2026-11-06T01:02:19 [synaps-switch] [synaps] delivered sw_56f99abd9f647dc12ca3e15e0e60c284 (thread sw_2e32dfdc2f822343ef0da2b80944e92f) from user to session 20261106-060052-b4a0
+2026-11-06T01:02:26 [synaps-switch] [synaps] op create_room_document from room e3995a36-443f-42bc-bcc0-b3d2f24df950: ok
+2026-11-06T01:02:29 [synaps-switch] [synaps] posted in room e3995a36-443f-42bc-bcc0-b3d2f24df950 (thread sw_2e32dfdc2f822343ef0da2b80944e92f): {'event_id': 'sw_fccecf420db549cfb116ad5885abc981'}
+2026-11-06T01:03:53 [synaps-switch] [synaps] delivered sw_2774a1dc65717d32b4f292b5806c7dff (thread sw_2774a1dc65717d32b4f292b5806c7dff) from user to session 20261106-060052-b4a0
+2026-11-06T01:03:56 [synaps-switch] [synaps] posted in room e3995a36-443f-42bc-bcc0-b3d2f24df950 (thread sw_2774a1dc65717d32b4f292b5806c7dff): {'event_id': 'sw_5c76671392f24a6c8a280e7188f35dab'}
+2026-11-06T01:07:30 [synaps-switch] [synaps] subscription_changed: {"rooms": ["5b95a5ed-729d-442d-96e9-0437e85d3a0b", "e3995a36-443f-42bc-bcc0-b3d2f24df950"], "reason": "subscription updated"}
+2026-11-06T01:14:35 [synaps-switch] [synaps] subscription_changed: {"rooms": ["5b95a5ed-729d-442d-96e9-0437e85d3a0b", "73533478-d071-4396-9fc3-63f75850ec08", "e3995a36-443f-42bc-bcc0-b3d2f24df950"], "reason": "subscription updated"}
