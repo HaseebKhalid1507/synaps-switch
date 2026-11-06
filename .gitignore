@@ -11,3 +11,5 @@ state/
 secrets/
 .pytest_cache/
 vendor/
+company/.venv/
+company/state/
