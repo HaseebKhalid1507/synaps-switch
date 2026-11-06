@@ -465,7 +465,8 @@ class Watcher:
         parts = [SKILL.strip(),
                  f"# This session\n\nYou are **{who}** (Switch agent `{self.name}`), running in Synaps. "
                  f"This session is the agent's session for the Switch room **{ctx.get('name') or room_id}** "
-                 f"(room id `{room_id}`). People mention you as @{self.name}."]
+                 f"(room id `{room_id}`). People mention you as @{self.name}. Nobody is at a terminal: people reach you "
+                 f"only through the room, and only what you post with switch_post_message reaches them."]
         if self.cfg.get("instructions"):
             parts.append("# Operator instructions\n\n" + self.cfg["instructions"].strip())
         room = [f"Name: {ctx.get('name')}", f"Description: {ctx.get('description') or '(none)'}"]

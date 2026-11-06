@@ -27,27 +27,49 @@ a = p.parse_args()
 creds = json.loads((Path(a.state) / "agents" / a.agent / "credentials.json").read_text())
 e = dev.env()
 b = sc.Bridge(dev.api_url(e), creds["id"], creds["api_key"])
-rooms = b.op("list_rooms", {})
-rooms = rooms if isinstance(rooms, list) else rooms.get("rooms", [])
-room = next((r for r in rooms if r.get("name") == a.room and not r.get("archived")), None)
+
+
+def find_room():
+    rooms = b.op("list_rooms", {})
+    rooms = rooms if isinstance(rooms, list) else rooms.get("rooms", [])
+    return next((r for r in rooms if r.get("name") == a.room and not r.get("archived")), None)
+
+
+room = find_room()
 if room is None:
     bl = b.op("list_bridges", {})
     bl = bl if isinstance(bl, list) else bl.get("bridges", [])
     bridge_id = next(x["id"] for x in bl if x["type"] == "mattermost")
-    room = b.op("create_room", {"name": a.room, "description": a.description, "agent_names": [a.agent],
-                                "bridge_id": bridge_id, "channel_type": "channel_public"})
-    print(f"created room {a.room}: {room.get('id')}")
+    # Switch calls Mattermost with a 10 s timeout; on a loaded machine that can fail and drop its
+    # Mattermost client for a moment (HTTP 500). Retry a few times; the room may exist after all.
+    for attempt in range(1, 6):
+        try:
+            room = b.op("create_room", {"name": a.room, "description": a.description, "agent_names": [a.agent],
+                                        "bridge_id": bridge_id, "channel_type": "channel_public"})
+            print(f"created room {a.room}: {room.get('id') or room.get('room_id')}", file=sys.stderr)
+            break
+        except sc.SwitchError as ex:
+            transient = ex.status == 500 or "not running" in str(ex.detail)
+            if not transient or attempt == 5:
+                raise
+            print(f"create_room attempt {attempt}: HTTP {ex.status}, retrying", file=sys.stderr)
+            time.sleep(10 * attempt)
+            room = find_room()
+            if room is not None:
+                break
 rid = room.get("id") or room.get("room_id")
-for _ in range(30):
-    try:
-        cid = dev.channel_id(e, a.room, "admin")
-        break
-    except SystemExit:
-        time.sleep(1)
-me = dev.mm(e, "GET", f"/users/username/{e['MATTERMOST_USER']}", who="admin")
-dev.mm(e, "POST", f"/channels/{cid}/members", {"user_id": me["id"]}, who="admin")
+# The room's own channel, by id: a name lookup can find a channel left by an earlier failed create.
+cid = b.op("get_room_detail", {"room_id": rid}).get("external_channel_id")
+if not cid:
+    sys.exit(f"room {rid} has no Mattermost channel")
+# The seeded user, and the agent's bot: Switch adds the bot when it creates the channel, but
+# when its Mattermost adapter is restarting (slow DB under load) that add is skipped with a warning.
+for uname in (e["MATTERMOST_USER"], a.agent):
+    u = dev.mm(e, "GET", f"/users/username/{uname}", who="admin")
+    dev.mm(e, "POST", f"/channels/{cid}/members", {"user_id": u["id"]}, who="admin")
 members = sorted(dev.mm(e, "GET", f"/users/{m['user_id']}", who="admin")["username"]
                  for m in dev.mm(e, "GET", f"/channels/{cid}/members?per_page=100", who="admin"))
-print(json.dumps({"room_id": rid, "channel": a.room, "members": members}))
+ch = dev.mm(e, "GET", f"/channels/{cid}", who="admin")
+print(json.dumps({"room_id": rid, "channel": ch.get("name"), "channel_id": cid, "members": members}))
 if a.agent not in members:
     sys.exit(f"the agent's bot is not in ~{a.room}")
