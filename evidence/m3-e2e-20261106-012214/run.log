@@ -1,0 +1,22 @@
+01:22:19 room e2e-012214: 763bc508-43ac-427c-8812-769a7cc52666, channel e2e-012214 (jxizdyaj3j86jn9ifb6cjrnz3h), members ['admin', 'synaps', 'user']
+01:22:19 user posted 5u5z8wxmjfde7grpw5zs3ws4to: "@synaps e2e step 1: please remember the word 'tangerine'. Reply with just: noted."
+01:22:25 reply in thread 5u5z8wxmjfde7grpw5zs3ws4to after 6.2s: 'noted.'
+01:22:25 PASS 1 reply to the mention, threaded under it
+01:22:25 PASS 1 room session created: 20261106-062220-1b00
+01:22:28 PASS 1 room session is live and pinned in the private daemon: 20261106-062220-1b00  Live  idle 3s  pinned  clients=0  active=-  model=claude-sonnet-4-6  cwd=~/.synaps-switch-dev/synaps-switch/rooms/synaps-e2e-01
+01:22:28 user posted 1bmzgq65kidxmgd9xat4ix8x4r: '@synaps e2e step 2: what word did I ask you to remember? One word.'
+01:22:32 reply in thread 1bmzgq65kidxmgd9xat4ix8x4r after 4.1s: 'tangerine'
+01:22:32 PASS 2 reply threaded under the second message
+01:22:32 PASS 2 remembers the first message: tangerine
+01:22:32 PASS 2 same session
+01:22:33 4 pinned sessions will come back on next start: sw-synaps-mattermost-synaps-6b47, sw-synaps-e2e-010647-01cf, sw-synaps-e2e-011427-3adf, sw-synaps-e2e-012214-81c0
+01:22:33 user posted fpsrqa95nbnu7mz9tj7ozqddmr: '@synaps e2e step 3 (sent while your daemon was down): the word again? One word.'
+01:22:46 private daemon up (pid 4148031, socket ~/.synaps-switch-dev/run/daemon.sock); extension on base ~/.synaps-switch-dev
+01:22:50 reply in thread fpsrqa95nbnu7mz9tj7ozqddmr after 4.2s: 'tangerine'
+01:22:50 PASS 3 message sent while down is answered after restart
+01:22:50 PASS 3 remembers across the restart: tangerine
+01:22:50 PASS 3 same session after restart
+01:22:50 PASS 3 cursor resumed forward: 4294967305 -> 4294967306
+01:23:05 PASS no duplicate replies (exactly one per message): {"5u5z8wxmjfde7grpw5zs3ws4to": 1, "1bmzgq65kidxmgd9xat4ix8x4r": 1, "fpsrqa95nbnu7mz9tj7ozqddmr": 1}
+01:23:05 PASS each message delivered to the session once: 3 deliveries
+01:23:12 ALL PASS: 12/12; evidence in evidence/m3-e2e-20261106-012214

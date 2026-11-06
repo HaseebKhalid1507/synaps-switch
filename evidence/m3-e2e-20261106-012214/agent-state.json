@@ -1,0 +1,15 @@
+{
+ "cursor": 4294967306,
+ "connection_id": "84af7acc-57f6-4ded-813f-13399b9ac79d",
+ "room": {
+  "created_at": "2026-11-06T06:22:20.212707Z",
+  "deliveries": 3,
+  "last_delivered_at": "2026-11-06T06:22:47.152880Z",
+  "last_message_id": "sw_5b24f36b8fcb31f737433d6499d7fd69",
+  "resumed_at": "2026-11-06T06:22:47.152339Z",
+  "room_name": "e2e-012214",
+  "session_id": "20261106-062220-1b00",
+  "session_name": "sw-synaps-e2e-012214-81c0",
+  "work_dir": "~/.synaps-switch-dev/synaps-switch/rooms/synaps-e2e-012214-763bc508"
+ }
+}

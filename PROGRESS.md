@@ -10,7 +10,10 @@ Branch `feat/v0`. Updated at each milestone.
 | M0 raw loop | done: `tools/raw_loop.py prove` registers, streams, beats, replies in a Mattermost thread. Evidence: `evidence/m0-raw-loop.log` |
 | M1 client | done: `switch_client.py` (stdlib) + 21 unit tests against a fake bridge (`tests/`) |
 | M2 extension | done: loads in the private daemon, registers, holds the connection, creates + pins one session per room, delivers, serves the tools incl. `switch_op`. Evidence: `evidence/m2-tools-and-switch-op/` |
-| M3 e2e | done: `tools/e2e.py` 12/12 PASS on a fresh room. Evidence: `evidence/m3-e2e-20261106-011427/` |
+| M3 e2e | done: `tools/e2e.py` 12/12 PASS on a fresh room, twice (before and after the library refactor). Evidence: `evidence/m3-e2e-20261106-011427/`, `evidence/m3-e2e-20261106-012214/` |
+| DESIGN-company ask (1) | done: `switch_client.Agent`, a library with an `on_message` callback; the extension runs on it too. Live: `examples/echo_agent.py` |
+| DESIGN-company ask (3) | done: only addressed frames, never its own, each message id once (persisted), per-thread cap. Live: `tools/loopcheck.py`, evidence `evidence/loopcheck-20261106-012541/` |
+| agency plugin (PR #15) | built into the private base dir: `~/.synaps-switch-dev/plugins/agency`, real dir, 283 agents / 18 divisions; daemon loads `plugins=2 skills=19` |
 
 ## What works
 
@@ -26,6 +29,55 @@ Branch `feat/v0`. Updated at each milestone.
   over the daemon socket; addressed messages delivered to that session as events; tools `switch_post_message`,
   `switch_read_context`, `switch_list_participants`, `switch_room_info`, `switch_list_rooms`, `switch_list_ops`,
   generic `switch_op(name, args)`, `switch_status`.
+
+## Shared with the M4 workers (don't break)
+
+- The Switch stack (`docker compose -p synaps-switch-dev`) and the private broker on 127.0.0.1:18191 are used by the
+  M4 workers (#6, #7), who register `m4t-*` agents. Don't restart the broker or recreate the stack without a very
+  good reason; if you must, log it here with the time.
+- Restarts so far: 2026-11-06 01:12 EST, `devstack/up.sh` recreated only the postgres container to apply
+  the dev no-fsync settings (before the M4 workers started). Since then nothing has been restarted except the
+  private Synaps daemon (`synapsdev.py daemon stop|start`, used by `tools/e2e.py`; it does not affect Switch or the broker).
+- `switch_client.py` public API is stable: `register`, `Bridge` (`op`, `ops`, `beat`, `health`), `Connection`,
+  `SSEParser`, `SwitchError`, `Fatal`. New things are additive (`Agent`, `Message`, `Redeliver`).
+- Test agents I registered: `synaps` (the extension), `ss-echo`, `ss-ping`, `ss-pong`. Rooms: `synaps-lab`,
+  `e2e-*`, `ss-echo-room`, `loop-*`.
+
+## switch_client as a library (ask 1)
+
+```python
+from switch_client import Agent, Redeliver
+
+def handle(msg):                 # msg: room_id, message_id, thread, sender_name, body, attachments, gap
+    if msg.gap:                  # history was lost before this message: read before acting
+        ctx = msg.agent.read_context(msg.room_id)
+    return "on it"               # a returned string is posted as a reply in msg's thread
+    # or: msg.reply("...", targets=["synaps-dev"]); raise Redeliver() to get it again later
+
+agent = Agent("http://127.0.0.1:18400", "ops-maint", on_message=handle,
+              credentials_file="state/ops-maint.json",          # registers once; written 0600
+              registration_token_file="devstack/state/registration.token",
+              state_file="state/ops-maint.state.json",          # cursor + handled ids: resume, never twice
+              max_thread_deliveries=12, thread_window_s=600)    # the per-thread loop cap
+agent.start(); agent.wait_connected()
+agent.post(room_id, "hello", thread_id=None, targets=["board"])  # targets -> send_targeted_message
+agent.op("create_room", {...})                                   # any catalog op; room_id=... runs it in that room
+agent.run_forever()
+```
+
+`on_message` runs on the stream thread, one message at a time, in order; the cursor only moves after it returns
+(raise `Redeliver` to leave the message unconsumed). Other exceptions are logged and the message counts as handled,
+so a broken handler can't loop. Several rooms share the one connection; each room gets its own session selector
+(`connect_to_room` once, lazily, rebound if Switch drops the binding).
+
+No loops (ask 3), enforced in `Agent` before `on_message`:
+- only frames with `addressed: true` (the connection also opens with `filter=addressed`);
+- never the agent's own messages;
+- each `message_id` at most once, also across restarts (the last 500 ids are kept in `state_file`);
+- at most `max_thread_deliveries` messages per (room, thread) per `thread_window_s`; the rest are dropped and logged.
+Live finding: Switch delivers an agent's `send_targeted_message` to the target agent with `addressed: true`, so two
+agents that always answer each other *will* rally; in `tools/loopcheck.py` the cap stopped it at 4 each. The board's
+router should still keep its own resume rules (only the expected sender resumes a paused run).
 
 ## Extension API gaps (worked around, Synaps not patched)
 
@@ -43,16 +95,21 @@ devstack/up.sh                            # Switch + Mattermost on 127.0.0.1
 python3 devstack/dev.py mint-token        # registration token -> devstack/state/registration.token (0600)
 python3 tools/raw_loop.py prove           # M0 raw loop
 python3 -m unittest tests.test_switch_client
+python3 devstack/synapsdev.py setup       # base dir, config, plugin link, agency plugin (real dir)
 python3 devstack/synapsdev.py broker start
 python3 devstack/synapsdev.py daemon start
 python3 tools/mkroom.py synaps-lab        # create a Mattermost-bridged room with the agent
 python3 tools/e2e.py                      # M3: fresh room, 3 mentions, daemon restart in between (~2 min, ~$0.10)
 python3 tools/transcript.py synaps-lab evidence/<dir>   # scrubbed transcript + extension log for a channel
+python3 tools/loopcheck.py                # ask (3): two agents that always answer each other stop at the cap (no model, $0)
+python3 examples/echo_agent.py --name my-echo --url http://127.0.0.1:18400 \
+    --token-file devstack/state/registration.token --state /tmp/my-echo   # smallest library agent
+python3 tools/mkroom.py my-room --agent my-echo --creds /tmp/my-echo/credentials.json [--with other-agent]
 ```
 
 Mattermost UI: http://127.0.0.1:18465, user/password in `devstack/.env` (`MATTERMOST_USER*`).
 
-## M3 result (evidence/m3-e2e-20261106-011427)
+## M3 result (evidence/m3-e2e-20261106-011427, rerun after the refactor: evidence/m3-e2e-20261106-012214)
 
 - Mention in a fresh room → session created and pinned (Sonnet, $0.50 cap) → reply threaded under the mention in ~6 s.
 - Second, separate message → same session, remembers the first.

@@ -1,0 +1,18 @@
+01:25:41 [ss-ping] registered agent ss-ping: id 5c87cae5-8fc0-4541-9569-da681dca94d2
+01:25:42 [ss-pong] registered agent ss-pong: id 6468edd3-1505-442c-a45a-d2672dc54c3b
+01:25:42 room loop-012542 (8d57258b-f282-482b-8983-df7a50d2aed5), members ['admin', 'ss-ping', 'ss-pong', 'user']
+01:25:45 user posted qmu78fnu53ngxgbcitg4fzz5sh
+01:25:45 ss-ping got sw_38d032db5a9a55ad153543234c8f370e from user (#1), answering @ss-pong
+01:25:45 ss-pong got sw_38d032db5a9a55ad153543234c8f370e from user (#1), answering @ss-ping
+01:25:48 ss-pong got sw_76e5786656d1495f9d8412a060c61fe7 from ss-ping (#2), answering @ss-ping
+01:25:48 ss-ping got sw_9c2d0d1f479b4fc7860af772c7be6ecd from ss-pong (#2), answering @ss-pong
+01:25:48 ss-ping got sw_49a5fa0b178f4dcf83d8168a32cfdce1 from ss-pong (#3), answering @ss-pong
+01:25:48 ss-pong got sw_ba2c24b51c184c33ae360a13d50fe95b from ss-ping (#3), answering @ss-ping
+01:25:49 ss-pong got sw_04de035fccf54fc8afa01095db29c741 from ss-ping (#4), answering @ss-ping
+01:25:49 ss-ping got sw_4c2859af32f742b6bb78488c83ae8064 from ss-pong (#4), answering @ss-pong
+01:25:49 [ss-ping] loop guard: dropped sw_594655874a7141639b1ec68244fb8f2a from ss-pong: more than 4 messages in thread sw_38d032db5a9a55ad153543234c8f370e within 600s
+01:25:49 [ss-pong] loop guard: dropped sw_d58f029064a54e0a98b7c582b0b05ee4 from ss-ping: more than 4 messages in thread sw_38d032db5a9a55ad153543234c8f370e within 600s
+01:26:09 PASS exchange stopped by itself (thread quiet for 20 s before the deadline)
+01:26:09 PASS each agent handled at most 4 messages in the thread
+01:26:09 PASS the loop guard fired
+01:26:09 handled {'ss-ping': 4, 'ss-pong': 4}, 8 replies in the thread
