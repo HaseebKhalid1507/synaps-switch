@@ -375,7 +375,9 @@ def test_quarter_adapter_imports_lazily_and_binds_options(monkeypatch, tmp_path)
 
 
 def test_quarter_adapter_without_quarter_py(monkeypatch):
+    import company.board
     monkeypatch.setitem(sys.modules, "company.board.quarter", None)
+    monkeypatch.delattr(company.board, "quarter", raising=False)   # quarter.py (#10) exists and may be imported
     with pytest.raises(RuntimeError, match="not on this branch"):
         E.load_quarter_runner("quarter")
 

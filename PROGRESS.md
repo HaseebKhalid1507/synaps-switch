@@ -34,6 +34,26 @@ reviewed (harness pytest + testing-reality-checker on Haiku), approved by a huma
 - Test agents/rooms: `synaps-dev`, `m12-board`, `m12-reviewer`; rooms `m12-dev`, `m12-board`. The private plugin link
   `~/.synaps-switch-dev/plugins/synaps-switch` pointed at the #12 worktree for the run.
 
+## M4 #10: the board's inner loop (one quarter in LangGraph)
+
+`company/board/quarter.py`: `open_quarter → [operate → work → close_week] × weeks → settle → report`, SqliteSaver
+checkpoints in `company/state/board.db` (thread `<env>:<seed>`); a killed run resumes at the node it died in.
+`run_quarter(env, *, seed, generation, **opts) -> (Metrics, QuarterLog)` is the runner #11's evolve injects.
+`python -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake` (stub LLM, stub synaps-dev, stub
+#board person) prints Metrics + fitness, deterministic per seed; `--generations N` runs evolve with this quarter.
+KPI table + fitness go to #board and the Ledger doc.
+
+Live (`evidence/m4/quarter/`, README there): env1, 3 weeks, generation 1 (`m10-` agents/rooms, acme-shop
+`m10-gen-1` on the local remote), Haiku dept agents, the market as `m10-market`, synaps-dev fixed acme-shop#1
+(sev1 coupon crash) → review PASS → **scripted human approval** (`dev.py mm-post` as `user`) → merged. #2 was cut off
+by synaps-dev's $1.00 session cap. Profit $25,294, fitness 10.15, total LLM cost $1.08.
+
+- Membership on Switch: `apply_env(extra_members=)` puts every dept agent into #board and `m10-market` everywhere;
+  synaps-dev stays in #dev only (the board dispatches to it).
+- synaps-dev's cost is its room session's `session_cost` (`~/.synaps-switch-dev/sessions`), booked into
+  `llm_cost_usd`. Its room session is capped at $1.00 (private config): about one or two fixes per generation.
+- No changes to main.py or the extension: no private daemon restart needed.
+
 ## M4 #11: the board's outer loop (reflect → propose → human gate → trial → keep/revert)
 
 `company/board/evolve.py`: one LangGraph graph, SqliteSaver-checkpointed (`evolve:<env>:<seeds>`), resumable also

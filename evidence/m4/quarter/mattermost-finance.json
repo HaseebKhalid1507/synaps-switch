@@ -1,0 +1,82 @@
+[
+ {
+  "id": "8md6d3q1hin3zfhcx4rbon67ro",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793950624246,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "bpyiy15x8jb5imxdgatapedd4a",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793950624296,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "4i44qhbs478w98bk6upd1rgyjr",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-finance added to the channel by admin.",
+  "create_at": 1793950624365,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "95tub77cjpbt7eihd4bbrm4s9r",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-board added to the channel by admin.",
+  "create_at": 1793950624390,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5okhg7ok4ffxdf4y69bn9x9imo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-market added to the channel by admin.",
+  "create_at": 1793950624401,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "1j5t9sasfbbudyi94dikx7dudh",
+  "root_id": null,
+  "user": "m10-finance",
+  "message": "Hi there! Just @m10-finance me when you're ready.",
+  "create_at": 1793950624504,
+  "type": null
+ },
+ {
+  "id": "qt71knkxf7fq5pfju6fndc6ime",
+  "root_id": null,
+  "user": "m10-board",
+  "message": "Hi! Mention @m10-board to get my attention.",
+  "create_at": 1793950624542,
+  "type": null
+ },
+ {
+  "id": "yuh61of3siry3dw8b86d8b7hjw",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "Hi! Mention @m10-market to get my attention.",
+  "create_at": 1793950624572,
+  "type": null
+ },
+ {
+  "id": "i8m1miu9yid65naa16n1cq7qsr",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "@m10-finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unusual, otherwise no action.",
+  "create_at": 1793951705232,
+  "type": null
+ },
+ {
+  "id": "cki4t4c9xbbfxkujzh3ttzyjoa",
+  "root_id": "i8m1miu9yid65naa16n1cq7qsr",
+  "user": "m10-finance",
+  "message": "Q3 infrastructure invoice $5K received and booked as fixed cost. No unusual line items—hosting and CDN in line with forecast. ✓\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793951707060,
+  "type": null
+ }
+]

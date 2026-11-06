@@ -1,0 +1,319 @@
+{
+ "thread_id": "env1:42",
+ "run": "new",
+ "env": "env1",
+ "seed": 42,
+ "generation": 1,
+ "weeks": 3,
+ "metrics": {
+  "revenue": 30295.05,
+  "costs": 5001.08,
+  "profit": 25293.97,
+  "customers": 1322,
+  "churn_rate": 0.0325,
+  "growth": -0.1427,
+  "open_incident_severity": 7.0,
+  "mean_fix_weeks": 1.0,
+  "llm_cost_usd": 1.0766
+ },
+ "fitness": 10.146020000000004,
+ "setup": {
+  "rooms": {
+   "board": "e8f7547a-5b64-4821-a1af-68d04435d5b9",
+   "dev": "f51bba9c-38fa-447c-b549-5329e1d27570",
+   "maintenance": "206322da-b6e7-438b-9a53-95c3f9d1660a",
+   "growth": "d56f3a72-cd61-450f-986d-d24911e9b8c2",
+   "marketing": "e10cba0a-db43-403b-864e-9047f89b6dc5",
+   "finance": "b6996849-362a-40fe-867a-52ef5ea4cdd6"
+  },
+  "channels": {
+   "board": "m10-board-g1",
+   "dev": "m10-dev-g1",
+   "finance": "m10-finance-g1",
+   "growth": "m10-growth-g1",
+   "maintenance": "m10-maintenance-g1",
+   "marketing": "m10-marketing-g1"
+  },
+  "base": "m10-gen-1",
+  "remote": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git",
+  "dev_room_name": "m10-dev-g1",
+  "agents": {
+   "board": "m10-board",
+   "ops-maint": "m10-ops-maint",
+   "growth": "m10-growth",
+   "marketing": "m10-marketing",
+   "finance": "m10-finance",
+   "reviewer": "m10-reviewer",
+   "market": "m10-market"
+  },
+  "group": "m10-env1-g1"
+ },
+ "dev_tasks": [
+  {
+   "issue": 1,
+   "kind": "incident",
+   "week": 1,
+   "by": "ops-maint",
+   "status": "proposed",
+   "via": "synaps-dev",
+   "pr": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=m10-gen-1-fix-1&base=m10-gen-1",
+   "summary": "Empty/unknown coupon code now raises ValueError instead of crashing with KeyError",
+   "thread": "sw_69471b4467c540f2adc9f11a11953422",
+   "seconds": 101.3,
+   "review": {
+    "verdict": "PASS",
+    "tests": "36 passed, 13 warnings in 0.04s",
+    "files": [
+     "shop/pricing.py",
+     "tests/test_issue_1.py"
+    ],
+    "concerns": []
+   },
+   "gate_thread": "sw_782869a5a1ed4a629faacbf2101aee05",
+   "outcome": "merged",
+   "approver": "user",
+   "merged_week": 1,
+   "tests_passed": true
+  },
+  {
+   "issue": 2,
+   "kind": "incident",
+   "week": 2,
+   "by": "ops-maint",
+   "status": "blocked",
+   "via": "devworker",
+   "pr": null,
+   "summary": "synaps-dev did not answer in time (no fallback in the quarter loop)",
+   "thread": "sw_6f119519740342ee8761acf41c214343",
+   "seconds": 900.3,
+   "outcome": "no_pr"
+  }
+ ],
+ "approvals": [
+  {
+   "issue": 1,
+   "decision": "approve",
+   "as": "user",
+   "channel": "m10-board-g1",
+   "mm_root": "nrtizx7axfbaz8rzhscuonwica",
+   "mm_post": "h189inrndtrotj5fwr3kuzgsoh",
+   "text": "@m10-board approve",
+   "scripted": true,
+   "rule": "approve iff review PASS and harness pytest green"
+  }
+ ],
+ "skipped_routes": [],
+ "pending_at_end": [
+  {
+   "what": "route",
+   "issue": 3,
+   "kind": "incident",
+   "was": "queued"
+  },
+  {
+   "what": "route",
+   "issue": 4,
+   "kind": "incident",
+   "was": "queued"
+  }
+ ],
+ "weeks_done": [
+  {
+   "week": 1,
+   "events": 4,
+   "dispatched": 1,
+   "fixed": [
+    "#1"
+   ],
+   "shipped": [],
+   "campaigns": 0,
+   "price": 29.0,
+   "queue": [
+    2,
+    3,
+    4
+   ],
+   "llm_cost_usd": 0.391032
+  },
+  {
+   "week": 2,
+   "events": 4,
+   "dispatched": 1,
+   "fixed": [],
+   "shipped": [],
+   "campaigns": 0,
+   "price": 29.0,
+   "queue": [
+    3,
+    4
+   ],
+   "llm_cost_usd": 1.073213
+  },
+  {
+   "week": 3,
+   "events": 1,
+   "dispatched": 0,
+   "fixed": [],
+   "shipped": [],
+   "campaigns": 0,
+   "price": 29.0,
+   "queue": [
+    3,
+    4
+   ],
+   "llm_cost_usd": 1.076613
+  }
+ ],
+ "quarter_log": {
+  "fixes": [
+   {
+    "issue": 1,
+    "week_fixed": 1,
+    "pr_url": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=m10-gen-1-fix-1&base=m10-gen-1",
+    "tests_passed": true
+   }
+  ],
+  "features": [],
+  "campaigns": [],
+  "price_changes": [],
+  "spend": [],
+  "llm_cost_usd": 1.076613,
+  "decisions": [
+   {
+    "week": 1,
+    "type": "route",
+    "issue": 1,
+    "to": "synaps-dev",
+    "by": "ops-maint",
+    "msg": "sw_cd04b1bf83c447168c8075bf16881bf5"
+   },
+   {
+    "week": 1,
+    "type": "route",
+    "issue": 2,
+    "to": "synaps-dev",
+    "by": "ops-maint",
+    "msg": "sw_8f0714246c5147f8920aea9c7866746b"
+   },
+   {
+    "week": 1,
+    "type": "route",
+    "issue": 3,
+    "to": "synaps-dev",
+    "by": "ops-maint",
+    "msg": "sw_0c47b70139f64c8094aabec7de915390"
+   },
+   {
+    "week": 1,
+    "type": "route",
+    "issue": 4,
+    "to": "synaps-dev",
+    "by": "ops-maint",
+    "msg": "sw_416b24da13a74f11be2c858c4bc79a49"
+   },
+   {
+    "week": 1,
+    "type": "merge",
+    "issue": 1,
+    "kind": "incident",
+    "decision": "approve",
+    "approver": "user",
+    "merged": true,
+    "tests_passed": true,
+    "pr": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=m10-gen-1-fix-1&base=m10-gen-1"
+   },
+   {
+    "week": 2,
+    "type": "route",
+    "issue": 2,
+    "to": "synaps-dev",
+    "by": "growth",
+    "msg": "sw_fb527acc815c45ef905b025fae2d1f7d"
+   },
+   {
+    "week": 2,
+    "type": "route",
+    "issue": 2,
+    "to": "synaps-dev",
+    "by": "growth",
+    "msg": "sw_691817d21cb64c17b974c7dbbc707b3f"
+   },
+   {
+    "week": 2,
+    "type": "dev_task",
+    "issue": 2,
+    "kind": "incident",
+    "status": "blocked",
+    "outcome": "no_pr"
+   },
+   {
+    "week": 3,
+    "type": "route_not_dispatched",
+    "issue": 3,
+    "kind": "incident",
+    "by": "ops-maint",
+    "why": "the dev queue did not reach it this quarter"
+   },
+   {
+    "week": 3,
+    "type": "route_not_dispatched",
+    "issue": 4,
+    "kind": "incident",
+    "by": "ops-maint",
+    "why": "the dev queue did not reach it this quarter"
+   }
+  ]
+ },
+ "board_inbox": [
+  {
+   "week": 1,
+   "id": "sw_cd04b1bf83c447168c8075bf16881bf5",
+   "room": "board",
+   "thread": null,
+   "sender": "ops-maint",
+   "agent": true,
+   "text": "(re #maintenance) Sev1 confirmed: checkout crash from empty coupon code. Customer impact: checkout blocked. Routing to @synaps-dev for immediate fix. @board notified for tracking.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```"
+  },
+  {
+   "week": 1,
+   "id": "sw_79426d67afc44f6e957aa6616693d6c1",
+   "room": "dev",
+   "thread": "sw_69471b4467c540f2adc9f11a11953422",
+   "sender": "synaps-dev",
+   "agent": true,
+   "text": "Empty coupon code in `apply_coupon` did a bare `COUPONS[code]` dict lookup, raising an unhandled `KeyError` on `\"\"` or any unknown code; it now validates the code up-front and raises `ValueError` with a clear message. Added `tests/test_issue_1.py`; full suite green (36 passed).\n@board\nRESULT\n```json"
+  },
+  {
+   "week": 1,
+   "id": "sw_4a21425d38e5aa61df0e890cc967c340",
+   "room": "board",
+   "thread": "sw_782869a5a1ed4a629faacbf2101aee05",
+   "sender": "user",
+   "agent": false,
+   "text": "@board approve"
+  }
+ ],
+ "mattermost_posts": {
+  "board": 42,
+  "dev": 16,
+  "finance": 10,
+  "growth": 14,
+  "maintenance": 12,
+  "marketing": 8
+ },
+ "cost": {
+  "total_usd": 1.076613,
+  "synaps_dev_usd": 1.013913,
+  "reviews_usd": 0.0114,
+  "dept_agents_and_judge_usd": 0.0513,
+  "synaps_dev_sessions": [
+   {
+    "name": "sw-synaps-dev-m10-dev-g1-6eb5",
+    "cost": 1.0139127000000001,
+    "messages": 96
+   }
+  ],
+  "wall_seconds": 1112
+ },
+ "approval_note": "SCRIPTED human approval: live.MattermostApprover posted as the devstack's Mattermost user via dev.py mm-post; rule: approve iff review PASS and harness pytest green"
+}
