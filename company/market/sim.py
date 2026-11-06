@@ -11,7 +11,9 @@ Customers
 Incidents (why fix speed matters)
 ---------------------------------
 - Base weekly churn: 1.2% of active customers (~5% a month).
-- Each open incident of severity s adds s × 0.5% weekly churn until the week it is fixed.
+- Severity follows the on-call convention: sev1 is the worst. An open incident weighs
+  4 − s severity points (sev1 = 3, sev2 = 2, sev3 = 1).
+- Each open severity point adds 0.5% weekly churn until the week the incident is fixed.
 - Each open severity point also loses 3% of that week's sales (a broken checkout doesn't sell),
   at most 50%. env1's four incidents (sev 1+2+2+3 = 8) cost ~4% churn and ~24% of sales per week open.
 - A fix in week w closes the incident from week w on: one week sooner is one week less of both.
@@ -49,8 +51,8 @@ Calibration (seed 42, tests/test_market.py GOOD / OK / BAD)
 -----------------------------------------------------------
 GOOD (all incidents fixed wk1, 4 features by wk2, four $2k feature-citing campaigns):
   growth ≈ +17%, profit ≈ $26k
-OK   (fixes wk2-3, one feature wk3, two $2k generic campaigns): growth ≈ −7%, profit ≈ $21k
-BAD  (sev1 fixed wk4, the rest open, nothing shipped, one $1k weak campaign): growth ≈ −18%, profit ≈ $18k
+OK   (fixes wk2-3, one feature wk3, two $2k generic campaigns): growth ≈ −7%, profit ≈ $22k
+BAD  (sev1 fixed wk4, the rest open, nothing shipped, one $1k weak campaign): growth ≈ −18%, profit ≈ $19k
 GOOD > OK > BAD on profit, growth and fitness, on every seed (test_market).
 """
 from __future__ import annotations
@@ -118,7 +120,7 @@ def default_issues() -> dict:
     """
     return {
         "incidents": [
-            {"issue": 3,  "title": "Checkout 500s on empty coupon code",    "severity": 1},
+            {"issue": 3,  "title": "Checkout 500s on empty coupon code",    "severity": 1},   # sev1 = worst
             {"issue": 7,  "title": "Order confirmation email not sent",      "severity": 2},
             {"issue": 11, "title": "Search returns stale results after edit","severity": 2},
             {"issue": 15, "title": "Profile image upload fails > 2MB",       "severity": 3},
@@ -144,7 +146,7 @@ class Market:
     BASE_CUSTOMERS_SPREAD = 300
     BASE_WEEKLY_PURCHASE_RATE = 0.25  # 25% of active customers generate revenue each week
     BASE_CHURN_RATE = 0.012           # 1.2% weekly base churn (~5% a month)
-    INCIDENT_CHURN_PER_SEV = 0.005    # +0.5% weekly churn per open severity point
+    INCIDENT_CHURN_PER_SEV = 0.005    # +0.5% weekly churn per open severity point (sev1 = 3 points)
     LEAD_BASE_RATE = 0.10             # leads per dollar of campaign spend ($10 a lead)
     CONVERSION_BASE = 0.10            # 10% of leads convert to customers
     CONVERSION_PER_FEATURE = 0.05     # +5% conversion per shipped feature (demand-weighted), from its week on
@@ -153,6 +155,11 @@ class Market:
     OUTAGE_REVENUE_CAP = 0.5          # at most half a week's sales
     FIXED_COSTS_QUARTER = 5_000.0    # hosting + tooling
     COMPETITOR_DEMAND_HIT = 0.20     # competitor price cut reduces purchase rate by 20%
+
+    @staticmethod
+    def severity_points(severity) -> int:
+        """sev1 (the worst) = 3 points, sev2 = 2, sev3 and below = 1."""
+        return max(1, 4 - int(severity))
 
     def __init__(self, seed: int, company: dict, issues: dict | None = None):
         self._seed = seed
@@ -178,7 +185,7 @@ class Market:
                     room="maintenance",
                     kind="incident",
                     text=(
-                        f"{30 * inc['severity']} customers report: {inc['title']} "
+                        f"{30 * self.severity_points(inc['severity'])} customers report: {inc['title']} "
                         f"(sev{inc['severity']}, issue #{inc['issue']})"
                     ),
                     payload={"issue": inc["issue"], "severity": inc["severity"]},
@@ -248,7 +255,7 @@ class Market:
 
         # Severity map for incidents
         sev_map: dict[int, int] = {
-            inc["issue"]: inc["severity"] for inc in self._issues["incidents"]
+            inc["issue"]: self.severity_points(inc["severity"]) for inc in self._issues["incidents"]
         }
 
         # Did a competitor price cut happen? (deterministic from seed+week)

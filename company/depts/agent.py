@@ -237,6 +237,9 @@ def _llm_error():
     return LLMError
 
 
+_RESULT = re.compile(r"^\s*RESULT\b", re.M)
+
+
 def load_personas(root=None) -> dict:
     """The Agency roster, loaded once per dir (company.core.roster.get_roster): $COMPANY_ROSTER_DIR, else
     company/vendor/agency-agents (company/fetch_roster.sh). Empty dict when it is missing."""
@@ -635,6 +638,8 @@ class DeptAgent:
         d = self.deps
         if msg.sender == self.name or not addresses(msg.mentions, self.name):
             return                                     # loop guard 1: only what addresses me
+        if msg.sender == "synaps-dev" and _RESULT.search(msg.text or ""):
+            return                                     # synaps-dev's RESULT: the board's work loop books it
         with d.lock:
             if (self.name, msg.id) in d.seen:
                 return

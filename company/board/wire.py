@@ -32,7 +32,8 @@ def extra_members(env, rooms, reg, *, dev=DEV) -> dict[str, list[str]]:
     """What apply_env must add on top of the env's own room agents (Switch names), so Switch's membership
     matches company_rooms: every dept agent in #board, the market everywhere, linked rooms' agents.
     Except synaps-dev: it acts on whatever addresses it in a room it's in, so it stays where the env
-    puts it (#dev) and gets work only through the board's dispatch."""
+    puts it (#dev) and gets work in #dev only: from the board's dispatch, or (#25) from a department
+    agent whose room is linked to #dev, e.g. ops-maint with `links: [[maintenance, dev]]`."""
     names = {a["name"] for a in env.agents} | {MARKET}
     own = {r["name"]: set(r.get("agents") or []) for r in env.rooms}
     return {room: [reg(a) for a in members if a in names and a != dev and a not in own.get(room, set())]

@@ -64,9 +64,13 @@ def test_offline_quarter_runs_the_company_and_is_deterministic(env, tmp_path):
     assert a.resumed == b.resumed == "new"
     assert asdict(a.metrics) == asdict(b.metrics) and a.fitness == b.fitness and a.report == b.report
     assert asdict(a.log) == asdict(b.log)
-    # incidents routed by ops-maint, fixed by (stub) synaps-dev, merged after a person's approve
-    assert sorted(f["issue"] for f in a.log.fixes) == [3, 7, 11, 15]
-    assert all(f["week_fixed"] == 1 and f["tests_passed"] for f in a.log.fixes)
+    # incidents routed by ops-maint, relayed by the board (env1 has no #maintenance ↔ #dev link: a week late),
+    # fixed by (stub) synaps-dev, merged after a person's approve. On seed 42 #15's fix regresses (#25 mechanics).
+    assert sorted(f["issue"] for f in a.log.fixes) == [3, 7, 11]
+    assert all(f["week_fixed"] == 2 and f["tests_passed"] for f in a.log.fixes)
+    whats = [d.get("what", "") for d in a.log.decisions]
+    assert "#3 (sev1) waited for board relay: raised wk1 by ops-maint in #maintenance, dispatched wk2" in whats
+    assert any(w.startswith("#15: fix regressed after the wk3 merge") for w in whats)
     assert sorted(f["issue"] for f in a.log.features) == [20, 23]          # demand >= 0.8 got built
     merges = [d for d in a.log.decisions if d["type"] == "merge"]
     assert merges and all(d["approver"] == "Haseeb" and d["decision"] == "approve" for d in merges)
@@ -221,9 +225,10 @@ def test_only_a_person_can_approve_a_merge(env, tmp_path):
 def test_dev_capacity_limits_the_queue_and_leftovers_are_logged(env, tmp_path):
     r = run(env, tmp_path, dev_per_week=1, dev_per_quarter=3)
     assert [t["issue"] for t in r.state["work"]["tasks"]] == [3, 7, 11]     # sev1 first, then sev2s
-    assert [f["week_fixed"] for f in r.log.fixes] == [1, 2, 3]
+    assert [f["week_fixed"] for f in r.log.fixes] == [2, 3, 4]              # relayed a week late, then 1/week
     left = [d["issue"] for d in r.log.decisions if d["type"] == "route_not_dispatched"]
     assert sorted(left) == [15, 20, 23]
+    assert any("never reached synaps-dev" in d.get("what", "") for d in r.log.decisions)
 
 
 def test_the_board_records_its_mail(env, tmp_path):

@@ -66,6 +66,18 @@ Evidence: `evidence/m4/evolve/` (offline 3 generations: kept, reverted, rejected
 approve ignored, killed + resumed at the gate, a person's Mattermost reply decides).
 Test agents/rooms: `m4v-board`, `m4v-peer`, room `m4v-board`; private state `~/.synaps-switch-dev/m4v/`.
 
+## M4 #25: org changes matter (+ #16 roster path, market calibration)
+
+`company/board/mechanics.py`: the real quarter's work flow depends on the env, the same on FakeTransport and Switch.
+No #maintenance ↔ #dev link: ops-maint's incidents wait for the board's weekly relay (dispatched a week later).
+With the link: ops-maint hands sev1/sev2 to synaps-dev in #dev the same week (a real post on Switch; synaps-dev
+answers ops-maint). Dev capacity from `x-company.dev_capacity`; `testing/*` reviewers in #dev catch regressions but
+add review rounds. Each effect is a decision with a readable reason; evolve's reason quotes them.
+Offline, `python -m company.run --env company/envs/env1.yaml --generations 3 --transport fake --seeds 1,2`:
+link kept (Δ +3.59: fix time 2.50 → 1.50 wk), hire qa reverted (Δ −0.70: 6 merges slipped), finance veto
+$2k rejected by a person. Market recalibrated (#16): a good quarter grows (+17% on seed 42), GOOD > OK > BAD on
+profit and growth. Roster: `company/fetch_roster.sh` → `company/vendor/agency-agents` (or `$COMPANY_ROSTER_DIR`).
+
 ## What works
 
 - `devstack/up.sh` / `down.sh`: compose file fetched at the pinned tag and sha256-checked; refuses to start with < 4 GB available.
