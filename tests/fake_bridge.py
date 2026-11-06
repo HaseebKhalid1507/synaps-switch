@@ -7,6 +7,7 @@ stream, the heartbeat, POST /ops/{name}, POST /message. Tests drive it:
     fb.push("message", room, {...})       # buffered + written to the open stream
     fb.drop_stream()                      # cut the socket (connection survives)
     fb.evict("taken_over")                # evicted frame, then close
+    fb.state_gate = threading.Event()     # hold connection_state until the test sets it
     fb.ops_handlers["read_context"] = lambda args, conn: {...}
 """
 import json
@@ -18,6 +19,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
 REG_TOKEN = "reg-token-for-tests"
+
+# How long a test waits for something that should happen. Generous on purpose: a wait returns as
+# soon as its condition holds, so this only costs time on a loaded machine or a failing test.
+WAIT = 10.0
 
 
 class FakeBridge:
@@ -40,7 +45,7 @@ class FakeBridge:
         self.connection_rooms = {}  # connection id -> current room (connect_to_room)
         self.keepalive_s = 15
         self.covered_rooms = []
-        self.state_delay = 0.0      # seconds between creating the connection and sending connection_state
+        self.state_gate = None      # threading.Event: create the connection, send connection_state once set
         self.server = None
 
     # ── control ──
@@ -103,15 +108,18 @@ class FakeBridge:
             q.put(None)
 
     def evict(self, code, reason=None):
+        # The stream handler writes the frame, then closes and retires the stream. Retiring it here,
+        # before the frame was on the wire, let a beat see "no stream" first; the client then
+        # reopened without ever reading the frame (issue #34: lost that race under load).
         q = self.stream_q
         if q is not None:
             data = {"type": "evicted", "reason": reason or code}
             if code:
                 data["code"] = code
             q.put(self.frame(data))
-        self.drop_stream()
+            q.put(None)
 
-    def wait(self, pred, timeout=5.0):
+    def wait(self, pred, timeout=WAIT):
         t0 = time.monotonic()
         while time.monotonic() - t0 < timeout:
             if pred():
@@ -192,8 +200,8 @@ class Handler(BaseHTTPRequestHandler):
                  "heartbeat_interval_seconds": 0.2}
         try:
             self.wfile.flush()
-            if fb.state_delay:
-                time.sleep(fb.state_delay)
+            if fb.state_gate is not None:
+                fb.state_gate.wait(WAIT)
             self.wfile.write(fb.frame(state))
             for e in backlog:
                 self.wfile.write(fb.frame(e, e["type"], e["sequence"]))
