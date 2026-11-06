@@ -1,0 +1,7 @@
+00:45:27 mattermost channel ~raw-loop ready, members ['admin', 'synaps-raw', 'user']
+00:45:27 control {"type": "connection_state", "rooms": [], "cursor": 4294967296, "generation": 8589934593, "heartbeat_interval_seconds": 2.0, "protocol": 9}
+00:45:31 event message seq=4294967297 room=94b867e9-c685-4055-987d-822f01a0b90e from=user addressed=True thread=None body='@synaps-raw ping from the raw loop proof'
+00:45:31 posted as user: uzffqapoxbfpte1oiiryyyoz6r
+00:45:31 replied in thread sw_f26d2537cef1884382a46f307ef87d58: {'event_id': 'sw_bd58b6e3435f46058e5479868313d9e4'}
+00:45:31 control {"type": "subscription_changed", "rooms": ["94b867e9-c685-4055-987d-822f01a0b90e"], "reason": "subscription updated"}
+00:45:32 REPLY in thread uzffqapoxbfpte1oiiryyyoz6r by @synaps-raw: 'raw loop heard user: @synaps-raw ping from the raw loop proof'
