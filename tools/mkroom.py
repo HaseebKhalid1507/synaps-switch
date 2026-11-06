@@ -2,7 +2,7 @@
 """Create a Mattermost-bridged Switch room for a synaps-switch agent and add the seeded
 Mattermost user to its channel. Uses the agent's own credentials from the state dir.
 
-  python3 tools/mkroom.py ROOM_NAME [--agent synaps] [--state ~/.synaps-switch-dev/synaps-switch]
+  python3 tools/mkroom.py ROOM_NAME [--agent synaps] [--state ~/.synaps-switch-dev/synaps-switch] [--creds FILE]
 """
 import argparse
 import json
@@ -20,11 +20,14 @@ import dev  # noqa: E402
 p = argparse.ArgumentParser()
 p.add_argument("room")
 p.add_argument("--agent", default="synaps")
+p.add_argument("--with", dest="also", action="append", default=[], metavar="AGENT",
+               help="another registered agent to put in the room (repeatable)")
+p.add_argument("--creds", help="the agent's credentials.json, when it is not an extension agent (e.g. a library agent)")
 p.add_argument("--state", default=os.path.expanduser("~/.synaps-switch-dev/synaps-switch"))
 p.add_argument("--description", default="synaps-switch dev room")
 a = p.parse_args()
 
-creds = json.loads((Path(a.state) / "agents" / a.agent / "credentials.json").read_text())
+creds = json.loads(Path(a.creds or Path(a.state) / "agents" / a.agent / "credentials.json").read_text())
 e = dev.env()
 b = sc.Bridge(dev.api_url(e), creds["id"], creds["api_key"])
 
@@ -44,7 +47,7 @@ if room is None:
     # Mattermost client for a moment (HTTP 500). Retry a few times; the room may exist after all.
     for attempt in range(1, 6):
         try:
-            room = b.op("create_room", {"name": a.room, "description": a.description, "agent_names": [a.agent],
+            room = b.op("create_room", {"name": a.room, "description": a.description, "agent_names": [a.agent, *a.also],
                                         "bridge_id": bridge_id, "channel_type": "channel_public"})
             print(f"created room {a.room}: {room.get('id') or room.get('room_id')}", file=sys.stderr)
             break
@@ -64,7 +67,7 @@ if not cid:
     sys.exit(f"room {rid} has no Mattermost channel")
 # The seeded user, and the agent's bot: Switch adds the bot when it creates the channel, but
 # when its Mattermost adapter is restarting (slow DB under load) that add is skipped with a warning.
-for uname in (e["MATTERMOST_USER"], a.agent):
+for uname in (e["MATTERMOST_USER"], a.agent, *a.also):
     u = dev.mm(e, "GET", f"/users/username/{uname}", who="admin")
     dev.mm(e, "POST", f"/channels/{cid}/members", {"user_id": u["id"]}, who="admin")
 members = sorted(dev.mm(e, "GET", f"/users/{m['user_id']}", who="admin")["username"]
