@@ -99,9 +99,9 @@ on Mattermost, so record on Mattermost unless a full dry run on Discord passes f
 | 5b | (3 s) | The merged PR | Browser: the PR on GitHub, the link at the end of the merge request (`https://github.com/HaseebKhalid1507/acme-shop/pull/<n>`): *Merged*, `${P}gen-1-fix-1` → `${P}gen-1`, the diff with `tests/test_issue_1.py`. In #13 that was [acme-shop#10](https://github.com/HaseebKhalid1507/acme-shop/pull/10) | Open the link | "A real pull request on a real repo, merged because a person said so." |
 | 6 | 1:45–2:00 | Quarter KPIs | `${P}board-g1`: *"Quarter 1 of env1 … KPI"* table (revenue, profit, fix weeks, LLM cost, **fitness**) and *"📄 updated room document “Ledger”"* | Scroll the table | "Each quarter the board posts KPIs and writes the Ledger. The revenue is simulated, but the LLM bill is real." |
 | 7 | 2:00–2:20 | Board proposes a change | Gate room: *"Generation 1: the board proposes env1 → env2. Change: …"* with the Diagnosis, the Rationale and the `diff` | Zoom into the diff | "The board reads the quarter and proposes one change to the org: here, a direct line between #maintenance and #dev, so incidents stop waiting a week for the board." (In #13 it proposed exactly that. If yours proposes something else, say what it proposed.) |
-| 8 | 2:20–2:35 | Approve | Same thread | Type **`@${P}board approve`** in that thread, press Enter. Later, cut to *"Kept env2: fitness X > Y (env1) on seeds [42]."* (#13: *"Kept env2: fitness 15.96 > 13.62 (env1) on seeds [42]."*) | "Approved changes run the same market seeds. A change is kept only if fitness beats the parent." |
+| 8 | 2:20–2:35 | Approve | Same thread | Type **`@${P}board approve`** in that thread, press Enter. Later, cut to *"Kept env2: fitness X > Y (env1) on seeds [42], Δ +Z > min-gain 0.5."* (#13, before #31 added the margin: *"Kept env2: fitness 15.96 > 13.62 (env1) on seeds [42]."*) | "Approved changes run the same market seeds. A change is kept only if it beats the parent by more than the noise in the LLM bill." |
 | 9 | 2:35–2:50 | env2 is real Switch structure | The sidebar shows the `-g2` channels. env2's Handbook shows the change (a new direct line, or the new hire in #dev) | Click the env2 board channel | "env2 is a new set of Switch rooms, and the change is real Switch structure." |
-| 10 | 2:50–3:00 | Lineage | Terminal: `$PY -m company.lineage_report /tmp/${P}video/lineage.jsonl` (yours), or #13's `$PY -m company.lineage_report evidence/m13/run1-seed42/lineage.jsonl` (3 generations: kept, kept, rejected by a person), or the README's Results table. End card: repo URL | — | "env_n is the best org found so far, and every step that produced it is a decision in chat." |
+| 10 | 2:50–3:00 | Lineage | Terminal: `$PY -m company.lineage_report /tmp/${P}video/lineage.jsonl` (yours), or #13's `$PY -m company.lineage_report evidence/m13/run1-seed42/lineage.jsonl` (3 generations: kept, kept, rejected by a person; its gen 2 is a no-op that #31's rules refuse, so prefer yours), or the README's Results table. End card: repo URL | — | "env_n is the best org found so far, and every step that produced it is a decision in chat." |
 
 Things you may see:
 
@@ -110,6 +110,13 @@ Things you may see:
 - Switch also posts that notice under the board's proposal when its text mentions @synaps-dev. Same thing.
 - If the trial's merge request waits on you and you miss it, the trial books the fix as not approved and scores
   lower, so the change looks worse than it is. Approve it.
+- The board can only propose a lever the quarter reads (#31). If it proposes anything else, the run log shows
+  *"gen 1: … refused before #board, no lever: …; asking once more"*. You only see the second proposal. If that
+  one misses too, the generation is skipped and nothing reaches the gate: re-run with a new prefix.
+- If the trial's fitness beats the parent's by less than 0.5 (`--min-gain`), the gate thread says *"No effect: …
+  env1 stays."* and the lineage row reads *"↔ no effect"*. With one fix a quarter the direct line is worth about
+  +1.4 (offline, seed 42, `--dev-per-quarter 1`), so you'd only see this if env2's fix cost synaps-dev about $0.90
+  more than env1's.
 - If you miss the 900 s approval window, the quarter books the fix as not approved and carries on. Re-run with
   `--fresh` and a new prefix if you want the take.
 

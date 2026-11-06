@@ -9,8 +9,9 @@ rooms, links and room documents. A seeded market files incidents against a real 
 ([acme-shop](https://github.com/HaseebKhalid1507/acme-shop)). A [Synaps](https://github.com/HaseebKhalid1507/SynapsCLI)
 agent that lives in `#dev` fixes the real code, a reality-checker reviews the fix, and a **human approves the
 merge in `#board`**. At the end of each quarter the board posts its KPIs and proposes **one** change to the
-org. A human approves or rejects it, and the change is kept only if the company does better on the same
-market. The org redesigns itself one approved chat message at a time, and `env_n` is the best org found.
+org. A human approves or rejects it, and the change is kept only if the company does clearly better on the same
+market, by more than the noise in the LLM bill. The org redesigns itself one approved chat message at a time,
+and `env_n` is the best org found.
 
 Built for Switch's *Flip the Switch* hackathon (Best Business Workflow) by **Haseeb Khalid** and
 **Aditya Patwardhan**. Synaps and The Agency existed before the hackathon. Everything in this repo was
@@ -171,7 +172,7 @@ bash company/fetch_roster.sh                                    # the staff: age
 **Dry run: no accounts, no Docker, $0, under two minutes:**
 
 ```bash
-$PY -m pytest company/tests -q                                                 # 332 passed, 1 skipped
+$PY -m pytest company/tests -q                                                 # 362 passed, 1 skipped
 python3 -m unittest discover -s tests                                          # 39 tests OK (the extension)
 $PY -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake    # fitness: 20.6363
 $PY -m company.board.evolve --offline --generations 3 --out /tmp/evolve-offline  # kept / reverted / rejected
@@ -258,6 +259,20 @@ Run 1, seed 42 (`$PY -m company.lineage_report evidence/m13/run1-seed42/lineage.
 | 2 | env3 | env2 | hire incident-commander (engineering/engineering-incident-response-commander) into #dev | user | $23.0k | -8.8% | 1.50 wk | $0.90 | 16.02 | +0.06 | ✅ kept |
 | 3 | env4 | env3 | policy dev_capacity: — → 3 | user | — | — | — | — | — | — | ❌ rejected (human) |
 
+**Under the rules as of #31, gen 2's +0.06 would be "↔ no effect" (Δ +0.06 < min-gain 0.5) and env2 would stay
+the parent.** In fact it wouldn't reach #board at all. What changed in
+[PR #33](https://github.com/HaseebKhalid1507/synaps-switch/pull/33):
+- The board may only propose a lever the quarter reads (`company/board/levers.py`: the #maintenance ↔ #dev direct
+  line, dev capacity, testing/* reviewers in #dev, the finance veto, budgets, price). Anything else, like an
+  incident commander or a policy key nothing reads, is refused before the human gate: re-asked once, then the
+  generation is skipped.
+- A change is kept only if it beats its parent by more than `--min-gain` (0.5). Otherwise it's "↔ no effect" and
+  the parent stays.
+- A `set_dev_capacity` mutation now takes effect in its trial: `--dev-per-*` only set env1's baseline.
+
+Run 2's gen 2 (`policy dev_capacity_per_quarter`) is refused by the first rule. Its +0.93, from a cheaper synaps-dev
+session, is above min-gain, so the lever registry is what catches it.
+
 Run 2, seed 1: env1 12.85 → env2 (`link #maintenance ↔ #dev`) 14.19, kept (+1.35) → env3 (`policy
 dev_capacity_per_quarter → 4`) 15.12, kept (+0.93) ([table](evidence/m13/README.md#lineage)).
 
@@ -302,7 +317,7 @@ dev_capacity_per_quarter → 4`) 15.12, kept (+0.93) ([table](evidence/m13/READM
 | Offline evolution (stub quarter, seeds 1, 2) | gen 1 kept (+4.00), gen 2 *hire QA* reverted on fitness (−0.35), gen 3 rejected by a person | `evidence/m4/evolve/offline/` |
 | **Live evolution, real PRs (#13)** | Two runs (seeds 42, 1), 6 quarters, 12 PRs merged on the fork after a person approved; `link #maintenance ↔ #dev` kept both times (fix time 2.50 → 1.50 wk, +2.33 / +1.35); a human reject; no revert; $7.21, 48 min | `evidence/m13/` |
 | Offline evolution on the **real** quarter runner (stub LLM and synaps-dev, seeds 1, 2) | gen 1 *link #maintenance ↔ #dev* **kept, +3.59** (fix time 2.50 → 1.50 wk: 6 incidents went straight to synaps-dev instead of waiting for the board's relay); gen 2 *hire QA* reverted (−0.70: caught a regression but 6 merges slipped a week); gen 3 *finance veto $5k → $2k* rejected by a person | PR #28, `company/board/mechanics.py` |
-| Tests | `company/`: 332 passed, 1 skipped; `tests/`: 39 OK | `company/tests/`, `tests/` |
+| Tests | `company/`: 362 passed, 1 skipped; `tests/`: 39 OK | `company/tests/`, `tests/` |
 
 ## Security model
 

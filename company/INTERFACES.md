@@ -32,6 +32,7 @@ def apply_mutation(env, m: dict) -> Env   # returns a NEW env, name/parent set b
 #     | {"op": "set_policy", "key": "finance_veto_usd", "value": 2000}
 #     | {"op": "set_budget", "dept": "marketing", "value": 8000}
 #     | {"op": "set_price", "value": 29.0}
+#     | {"op": "set_dev_capacity", "per_week": 2, "per_quarter": 4}   # either key; x-company.dev_capacity
 def env_diff(a: Env, b: Env) -> str      # human-readable unified diff of the YAML
 def to_switch_template(env) -> str       # YAML Switch's create_room_from_yaml accepts (agents/room(s)/kickoff), drops x-company
 ```
@@ -302,7 +303,8 @@ face the same luck on a seed. Every effect is a `QuarterLog.decisions` entry wit
   same week by that dept agent in #dev (it must be a #dev member: `company_rooms` / `extra_members` put it there);
   synaps-dev answers it. Otherwise (no link, sev3, features) the board relays it a week later (`RELAY_WEEKS`).
 - capacity: `QuarterConfig.dev_per_week/dev_per_quarter`, else `x-company.dev_capacity {per_week, per_quarter}`
-  (env1: 3/week), else unlimited. Waits and never-dispatched routes are logged.
+  (env1: 3/week), else unlimited. Waits and never-dispatched routes are logged. `company.run` writes its
+  `--dev-per-*` flags into the env instead of the QuarterConfig (#31), so a `set_dev_capacity` mutation counts.
 - testers: agents in #dev with a `testing/*` persona. An incident fix has a latent regression with p 0.25; one
   tester catches it with p 0.45, two or more 0.9; uncaught, the incident reopens and its re-fix lands 2 weeks later.
   Each tester beyond the first is another (paid) review round; with p 0.5 the merge slips a week.
@@ -318,31 +320,52 @@ Roster (#16): `company/fetch_roster.sh` clones agency-agents at the pinned commi
 (deterministic for a seed; `--report` adds the KPI table, `--json` one object per quarter). Live:
 `--transport switch --llm haiku --approver mattermost --agent-prefix P --room-prefix P --acme-prefix P
 --acme-remote file:///…git --issues acme --humans user --approvers user --weeks 3 --generation K`
-(see evidence/m4/quarter/live_quarter.py). `--generations N` is reserved for #11 (`evolve.evolve`).
+(see evidence/m4/quarter/live_quarter.py). `--generations N` runs #11's `evolve.evolve` on this quarter.
 
 ### company/board/evolve.py: the outer loop (#11)
 
 ```python
 evolve(env, *, generations=3, seeds=(1, 2), run_quarter, propose, gate, lineage_path, envs_dir,
        budget_usd=25.0, approvers=None, gate_timeout_s=3600, checkpoint="company/state/evolve.sqlite",
-       thread_id=None, read_rooms=None, roster=None, fresh=False, log=None) -> dict
+       thread_id=None, read_rooms=None, roster=None, fresh=False, log=None, min_gain=0.5) -> dict
        # {run, best, best_fitness, records, stop_reason, spent_usd, generations}; resumes the thread if it exists
 run_quarter(env, *, seed, generation) -> (Metrics, QuarterLog)
        # injected: stub_quarter.run_quarter offline; load_quarter_runner("quarter", **QuarterConfig fields)
        # wraps #10's company.board.quarter.run_quarter, imported lazily
 propose(summary, env, *, history, error) -> ({"diagnosis", "mutation", "rationale"}, cost_usd)
        # LLMProposer (board persona on Haiku via company.llm) | StubProposer; re-asked once with the error
+       # (invalid, or valid but moving no lever: levers.refusal)
 gate: ask(payload) -> thread; wait(thread, deadline) -> msg dict | None; announce(thread, text); [release()]
        # TransportGate(transport= | factory=, board, room, approvers) | ScriptedGate(script)
 ```
 
 Graph (thread `evolve:<env>:<seeds>`, SqliteSaver): baseline → reflect → propose → post_gate → await_gate
-(`interrupt()`) → trial → select → record → reflect …; reject / timeout / invalid → record without a trial.
+(`interrupt()`) → trial → select → record → reflect …; reject / timeout / invalid / skipped → record without a trial.
 Only a message with `sender_is_agent=False` from an approver saying approve/reject (`realwork.parse_decision`)
 decides; anything else is logged in the record's `gate.ignored` and the gate waits again; no decision by the
-deadline = `timeout` (auto-reject). Kept iff mean fitness over the seeds > the parent's (same seeds).
+deadline = `timeout` (auto-reject).
+
+Levers (#31, `company/board/levers.py`): the registry of what the quarter reads, `LEVERS` (name, op, effect),
+listed one line each in the LLM proposer's prompt and nothing else. `read(env)` projects an env onto them:
+#maintenance ↔ #dev link, `dev_capacity` (`mechanics.capacity`), testing/* agents in #dev (`mechanics.testers`),
+`policies.finance_veto_usd`, `budgets`, `price`. `validate_mutation` refuses a mutation whose `read` is unchanged
+(`refusal()`, prefix `no lever:`): a link between other rooms, a non-testing hire or one outside #dev, firing a
+non-reviewer, `set_instructions`, any other policy key. Like an invalid one it is re-asked once with the reason; a
+second miss records `skipped` and never reaches the gate.
+
+Select: kept iff mean fitness over the seeds (same seeds as the parent) beats the parent's by more than `min_gain`
+(`--min-gain`, default 0.5, `DEFAULT_MIN_GAIN`); 0 ≤ Δ ≤ min_gain is `no_effect` ("↔ no effect (Δ +0.06 <
+min-gain 0.5)"), Δ < 0 `reverted`; both keep the parent. 0.5 because on a fixed seed the quarter is deterministic
+except the real LLM bill (fitness subtracts it at weight 1): #13's mechanically identical pairs differed by $0.06
+and $0.93, one fix costs synaps-dev $0.40 to $0.60 (outlier $1.50), and the levers move fitness by 0.7 (hire QA)
+to 3.6 (the direct line) on the real runner.
 Lineage record: `{run, runner, gen, env, parent, mutation, change, diagnosis, rationale, approver, decision,
-outcome: seed|kept|reverted|rejected|timeout|invalid, reason, fitness, parent_fitness, delta, kept, seeds, metrics,
-eval, gate, cost_usd: {quarters, proposal}, diff, ts}`; kept envs → `<envs_dir>/env<k>.yaml`.
+outcome: seed|kept|no_effect|reverted|rejected|timeout|skipped|invalid, reason, fitness, parent_fitness, delta,
+kept, seeds, min_gain, metrics, eval, gate, cost_usd: {quarters, proposal}, diff, ts}`; kept envs →
+`<envs_dir>/env<k>.yaml`. `lineage_report` renders no_effect as "↔ no effect (Δ … < min-gain …)", distinct from
+"↩️ reverted (fitness)", and skipped as "⏭️ skipped (no lever)".
 Budget: stops when spent (sum of QuarterLog.llm_cost_usd + proposals) ≥ budget or the next generation would pass it.
-CLI: `python -m company.board.evolve --env … --generations N [--offline]`; table: `python -m company.lineage_report`.
+CLI: `python -m company.board.evolve --env … --generations N [--offline] [--min-gain G]`; table:
+`python -m company.lineage_report`. `company.run --generations N` takes the same `--min-gain`; its `--dev-per-week /
+--dev-per-quarter` are written into the seed env's `x-company.dev_capacity` (key by key), not passed to the quarter
+as overrides, so evolved envs inherit them and a `set_dev_capacity` mutation takes effect in its trial.

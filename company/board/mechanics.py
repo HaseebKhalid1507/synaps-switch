@@ -13,8 +13,10 @@ the board reads back when it reflects and what the demo shows.
             which relays it from #board at its next weekly sync: RELAY_WEEKS (1) later. On Switch the direct line is real: apply_env puts ops-maint into #dev (extra_members),
             ops-maint posts `@synaps-dev fix acme-shop#N` there and synaps-dev answers ops-maint.
   capacity  synaps-dev takes at most `x-company.dev_capacity.per_week` items a week (and `per_quarter` a
-            quarter; QuarterConfig.dev_per_week / dev_per_quarter override): incidents first by severity,
-            then features by demand. The rest wait in the queue, and the wait is logged.
+            quarter; QuarterConfig.dev_per_week / dev_per_quarter override, for a single quarter): incidents
+            first by severity, then features by demand. The rest wait in the queue, and the wait is logged.
+            company/run.py writes its --dev-per-* flags into the seed env's dev_capacity instead, so a
+            `set_dev_capacity` mutation takes effect in its trial (#31).
   testers   Agents in #dev with an Agency `testing/*` persona review every PR. Each incident fix carries a
             latent regression with p REGRESSION_P (seeded per issue: the market decides whether customers
             hit it). One tester catches it before the merge with p 0.45, two or more with 0.9. Uncaught,
