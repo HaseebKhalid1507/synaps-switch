@@ -1,0 +1,13 @@
+# file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git
+05e9e6bd2e refs/heads/gen-1
+5c60a2746e refs/heads/gen-1-fix-1
+31a4df9b97 refs/heads/gen-2
+c019f895c2 refs/heads/gen-2-fix-1
+05e9e6bd2e refs/heads/gen-3
+05e9e6bd2e refs/heads/main
+05e9e6bd2e refs/tags/baseline
+
+* 31a4df9 Haseeb Khalid <HaseebKhalid1507@users.noreply.github.com> Merge gen-2-fix-1 into gen-2 (squash)
+| * c019f89 Haseeb Khalid <HaseebKhalid1507@users.noreply.github.com> fix: guard apply_coupon against empty/unknown codes (acme-shop#1)
+|/  
+* 05e9e6b adityapat958 <adityapat958@users.noreply.github.com> feat: initial acme-shop — catalog, cart, pricing, checkout, CLI, HTTP API, tests

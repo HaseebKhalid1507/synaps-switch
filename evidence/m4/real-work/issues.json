@@ -1,0 +1,47 @@
+{
+ "incidents": [
+  {
+   "issue": 1,
+   "title": "Applying empty coupon code crashes checkout with unhandled exception",
+   "severity": 1
+  },
+  {
+   "issue": 2,
+   "title": "Tax applied twice on orders with discount coupon \u2014 customers overcharged",
+   "severity": 2
+  },
+  {
+   "issue": 3,
+   "title": "Inventory not released when payment fails \u2014 stock drifts negative",
+   "severity": 2
+  },
+  {
+   "issue": 4,
+   "title": "Product sort-by-price uses string ordering instead of numeric \u2014 wrong results",
+   "severity": 3
+  }
+ ],
+ "features": [
+  {
+   "issue": 5,
+   "title": "Feature: free shipping on orders over 0",
+   "demand": 0.9
+  },
+  {
+   "issue": 6,
+   "title": "Feature: 3-for-2 bundle discount (buy 3, pay for 2)",
+   "demand": 0.6
+  },
+  {
+   "issue": 7,
+   "title": "Feature: save cart for later and restore it",
+   "demand": 0.6
+  },
+  {
+   "issue": 8,
+   "title": "Feature: order history endpoint (GET /orders/<session>)",
+   "demand": 0.6
+  }
+ ],
+ "repo": "adityapat958/acme-shop"
+}

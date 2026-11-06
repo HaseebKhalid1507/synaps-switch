@@ -230,7 +230,8 @@ def scrub(text):
             if re.search(r"PASS|SECRET|TOKEN|KEY", k):
                 vals.add(v.strip().strip("'\""))
     files = list((HERE / "state").glob("*")) + list((DEV_BASE / "synaps-switch" / "agents").glob("*/credentials.json")) \
-        + list((DEV_BASE / "broker").glob("*token*"))
+        + list((DEV_BASE / "broker").glob("*token*")) + list(DEV_BASE.glob("m*/agents/*/credentials.json")) \
+        + list(DEV_BASE.glob("m*/transport/agents/*.json")) + list((HERE.parent / "company" / "state" / "agents").glob("*.json"))
     for f in files:
         try:
             s = f.read_text().strip()

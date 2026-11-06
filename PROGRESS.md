@@ -15,6 +15,25 @@ Branch `feat/v0`. Updated at each milestone.
 | DESIGN-company ask (3) | done: only addressed frames, never its own, each message id once (persisted), per-thread cap. Live: `tools/loopcheck.py`, evidence `evidence/loopcheck-20261106-012541/` |
 | agency plugin (PR #15) | built into the private base dir: `~/.synaps-switch-dev/plugins/agency`, real dir, 283 agents / 18 divisions; daemon loads `plugins=2 skills=19` |
 
+## M4 #12: real work (synaps-dev → review → #board → merge)
+
+Live, 13/13 PASS: `evidence/m4/real-work/` (README there). acme-shop#1 fixed by synaps-dev in its own clone,
+reviewed (harness pytest + testing-reality-checker on Haiku), approved by a human in #board, squash-merged, booked as
+`week_fixed`. Against a **local bare clone standing in for origin**: the account has no push access to acme-shop yet.
+
+- `company/acme.py`: issues → `Market(issues=...)` (read-only gh), `baseline` tag + `gen-k` branches (reset between
+  trials), local PR refs, diff/tests/merge on the local remote, `ACME_REMOTE` / `ACME_ALLOW_GITHUB_WRITES` config.
+- `company/realwork.py`: dispatch + RESULT parsing, review, `MergeGate` / `apply_decision` (the board's approval gate).
+- `company/devworker.py`: the prompt is one stdin line (headless chat made every line a turn); plain push, force only
+  with a lease on a branch this run created; GitHub writes refused without the flag; local mode.
+- Extension: agent keys `skill_file`, `workdir_repo`, `session_env`, `session_path`; `skill/synaps-dev.md`;
+  `tools/synaps_dev.py setup` writes the synaps-dev entry; `tools/session_trace.py` dumps a session's tool calls.
+- Once push access is granted: `tools/synaps_dev.py setup --github`, `ACME_REMOTE=git@github.com:adityapat958/acme-shop.git`,
+  `ACME_ALLOW_GITHUB_WRITES=1`, push `baseline` + `gen-k` to the real repo, PR refs become GitHub URLs (`gh pr create`
+  in the skill's instructions), `merge_pr` uses `gh pr merge --squash`.
+- Test agents/rooms: `synaps-dev`, `m12-board`, `m12-reviewer`; rooms `m12-dev`, `m12-board`. The private plugin link
+  `~/.synaps-switch-dev/plugins/synaps-switch` pointed at the #12 worktree for the run.
+
 ## What works
 
 - `devstack/up.sh` / `down.sh`: compose file fetched at the pinned tag and sha256-checked; refuses to start with < 4 GB available.
@@ -42,6 +61,9 @@ Branch `feat/v0`. Updated at each milestone.
   `SSEParser`, `SwitchError`, `Fatal`. New things are additive (`Agent`, `Message`, `Redeliver`).
 - Test agents I registered: `synaps` (the extension), `ss-echo`, `ss-ping`, `ss-pong`. Rooms: `synaps-lab`,
   `e2e-*`, `ss-echo-room`, `loop-*`.
+- #8 (`company/switch_env.py`) registered `m4e-*` agents and made rooms `m4e-<room>-g90…g97` in room groups
+  `m4e-env{1,2}-g9x`. All of those rooms are archived; 0.31.0 has no op to remove the groups. Evidence:
+  `evidence/m4/apply-env/`.
 
 ## switch_client as a library (ask 1)
 

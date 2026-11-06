@@ -7,7 +7,18 @@ from unittest.mock import MagicMock, call, patch, mock_open
 
 import pytest
 
+import company.acme as acme
 import company.devworker as dw
+
+
+@pytest.fixture(autouse=True)
+def _github_mode(monkeypatch):
+    """These tests mock every subprocess, so the GitHub path is safe: allow its writes, real repo remote."""
+    monkeypatch.setenv("ACME_ALLOW_GITHUB_WRITES", "1")
+    monkeypatch.delenv("ACME_REMOTE", raising=False)
+    acme.CREATED_THIS_RUN.clear()
+    yield
+    acme.CREATED_THIS_RUN.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -413,3 +424,155 @@ class TestWorkIssue:
             result = dw.work_issue(4, "incident")
         assert set(result.keys()) == {"issue", "pr_url", "tests_passed",
                                        "summary", "cost_usd"}
+
+
+# ---------------------------------------------------------------------------
+# #12 fixes: one-line prompt, push policy, GitHub write guard, local mode
+# ---------------------------------------------------------------------------
+
+class TestOneLinePrompt:
+    def test_prompt_is_one_stdin_line(self):
+        """Headless `synaps chat` takes every stdin line as a turn: the prompt must be one line."""
+        captured = {}
+
+        def fake_run(cmd, **kwargs):
+            captured["input"] = kwargs.get("input", "")
+            return _cp(stdout="done\nsession saved: s ($0.001)")
+
+        with patch("company.devworker._clone_or_update", return_value="/tmp/acme-shop"), \
+             patch("company.devworker._make_branch", return_value="issue-4"), \
+             patch("company.devworker._fetch_issue", return_value=("t", "line one\nline two\n\nline four")), \
+             patch("company.devworker._read_token", return_value="tok"), \
+             patch("company.devworker._run_pytest", return_value=(True, "5 passed")), \
+             patch("company.devworker._commit_and_push"), \
+             patch("company.devworker._open_pr", return_value="https://github.com/o/r/pull/1"), \
+             patch("company.devworker.subprocess.run", side_effect=fake_run):
+            dw.work_issue(4, "incident")
+        text = captured["input"]
+        assert text.endswith("\n") and text.count("\n") == 1
+        assert "line one\\nline two" in text and "test_issue_4.py" in text
+
+    def test_profile_from_env(self, monkeypatch):
+        monkeypatch.setenv("COMPANY_DEV_PROFILE", "dev-x")
+        captured = {}
+
+        def fake_run(cmd, **kwargs):
+            captured["cmd"] = cmd
+            return _cp(stdout="done")
+
+        with patch("company.devworker._clone_or_update", return_value="/tmp/acme-shop"), \
+             patch("company.devworker._make_branch", return_value="issue-4"), \
+             patch("company.devworker._fetch_issue", return_value=("t", "b")), \
+             patch("company.devworker._read_token", return_value="tok"), \
+             patch("company.devworker._run_pytest", return_value=(True, "ok")), \
+             patch("company.devworker._commit_and_push"), \
+             patch("company.devworker._open_pr", return_value="u"), \
+             patch("company.devworker.subprocess.run", side_effect=fake_run):
+            dw.work_issue(4, "incident")
+        assert captured["cmd"][captured["cmd"].index("--profile") + 1] == "dev-x"
+
+
+class TestPushPolicy:
+    def _cmds(self, mock_run):
+        return [tuple(c.args[0]) for c in mock_run.call_args_list]
+
+    def test_plain_push_never_force(self):
+        with patch("company.devworker._run", return_value=_cp()) as mock_run:
+            dw._push("issue-4", "/checkout")
+        pushes = [c for c in self._cmds(mock_run) if c[:2] == ("git", "push")]
+        assert pushes == [("git", "push", "-u", "origin", "issue-4")]
+        assert not any("--force" in a for c in self._cmds(mock_run) for a in c)
+
+    def test_new_branch_is_recorded_as_created(self):
+        with patch("company.devworker._run", return_value=_cp(stdout="")):
+            assert dw._push("issue-4", "/checkout") == "created"
+        assert (acme.config().remote_url, "issue-4") in acme.CREATED_THIS_RUN
+
+    def test_rejected_push_of_foreign_branch_raises_without_force(self):
+        def fake(cmd, **kw):
+            if cmd[:2] == ["git", "ls-remote"]:
+                return _cp(stdout="abc\trefs/heads/issue-4\n")
+            if cmd[:2] == ["git", "push"]:
+                return _cp(stderr="! [rejected] (non-fast-forward)", returncode=1)
+            return _cp()
+        with patch("company.devworker._run", side_effect=fake) as mock_run:
+            with pytest.raises(RuntimeError, match="not forcing"):
+                dw._push("issue-4", "/checkout")
+        assert not any("--force" in a for c in self._cmds(mock_run) for a in c)
+
+    def test_branch_created_this_run_may_force_with_lease(self):
+        acme.CREATED_THIS_RUN.add((acme.config().remote_url, "issue-4"))
+        calls = []
+
+        def fake(cmd, **kw):
+            calls.append(tuple(cmd))
+            if cmd[:2] == ["git", "ls-remote"]:
+                return _cp(stdout="abc\trefs/heads/issue-4\n")
+            if cmd[:2] == ["git", "push"] and "--force-with-lease" not in cmd:
+                return _cp(returncode=1, stderr="rejected")
+            return _cp()
+        with patch("company.devworker._run", side_effect=fake):
+            assert dw._push("issue-4", "/checkout") == "forced"
+        assert ("git", "push", "--force-with-lease", "-u", "origin", "issue-4") in calls
+        assert not any(a == "--force" for c in calls for a in c)
+
+
+class TestGitHubWriteGuard:
+    def test_push_refused_without_flag(self, monkeypatch):
+        monkeypatch.delenv("ACME_ALLOW_GITHUB_WRITES")
+        with patch("company.devworker._run", return_value=_cp()) as mock_run:
+            with pytest.raises(acme.GitHubWriteRefused):
+                dw._push("issue-4", "/checkout")
+        assert mock_run.call_count == 0
+
+    def test_pr_create_refused_without_flag(self, monkeypatch):
+        monkeypatch.delenv("ACME_ALLOW_GITHUB_WRITES")
+        with patch("company.devworker._run", return_value=_cp()) as mock_run:
+            with pytest.raises(acme.GitHubWriteRefused):
+                dw._open_pr(4, "issue-4", "/c", "o/r", "s", "t")
+        assert mock_run.call_count == 0
+
+    def test_merge_refused_without_flag(self, monkeypatch):
+        monkeypatch.delenv("ACME_ALLOW_GITHUB_WRITES")
+        with patch("company.devworker._run", return_value=_cp()) as mock_run:
+            assert dw.merge_pr("https://github.com/o/r/pull/1") is False
+        assert mock_run.call_count == 0
+
+    def test_merge_has_no_unknown_yes_flag(self):
+        with patch("company.devworker._run", return_value=_cp()) as mock_run:
+            dw.merge_pr("https://github.com/o/r/pull/1")
+        assert "--yes" not in mock_run.call_args.args[0]
+
+
+class TestLocalMode:
+    def test_open_pr_returns_local_ref_without_gh(self, monkeypatch):
+        monkeypatch.setenv("ACME_REMOTE", "file:///tmp/x/origin.git")
+        with patch("company.devworker._run", return_value=_cp()) as mock_run:
+            ref = dw._open_pr(1, "gen-1-fix-1", "/c", "o/r", "s", "t", base="gen-1")
+        assert ref == "file:///tmp/x/origin.git?head=gen-1-fix-1&base=gen-1"
+        assert mock_run.call_count == 0
+
+    def test_merge_pr_local_ref_uses_local_merge(self):
+        with patch("company.acme.merge_local", return_value={"merged": True}) as ml, \
+             patch("company.devworker._run") as mock_run:
+            assert dw.merge_pr("file:///tmp/x/origin.git?head=gen-1-fix-1&base=gen-1") is True
+        ml.assert_called_once()
+        assert mock_run.call_count == 0
+
+    def test_make_branch_on_generation_base(self):
+        with patch("company.devworker._run", return_value=_cp()):
+            assert dw._make_branch(3, "/c", base="gen-2") == "gen-2-fix-3"
+
+    def test_clone_uses_remote_and_base(self, tmp_path):
+        with patch("company.devworker._run", return_value=_cp()) as mock_run, \
+             patch("company.devworker.Path.exists", return_value=False):
+            dw._clone_or_update("o/acme-shop", str(tmp_path), "file:///tmp/x/origin.git", "gen-1")
+        cmd = mock_run.call_args_list[0].args[0]
+        assert cmd[:4] == ["git", "clone", "--branch", "gen-1"] and "file:///tmp/x/origin.git" in cmd
+
+
+def test_ensure_dev_profile(tmp_path):
+    d = dw.ensure_dev_profile(tmp_path / "base", "company-dev", "http://127.0.0.1:18191")
+    cfg = (d / "config").read_text()
+    assert "claude-sonnet" in cfg and "max_session_cost" in cfg and "127.0.0.1:18191" in cfg
+    assert "token" not in cfg.lower()

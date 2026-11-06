@@ -1,0 +1,55 @@
+{
+ "fixes": [
+  {
+   "issue": 1,
+   "week_fixed": 2,
+   "pr_url": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=gen-2-fix-1&base=gen-2",
+   "tests_passed": true
+  }
+ ],
+ "features": [],
+ "decision": {
+  "issue": 1,
+  "kind": "incident",
+  "pr_url": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=gen-2-fix-1&base=gen-2",
+  "decision": "approve",
+  "approver": "user",
+  "week": 2,
+  "merged": true,
+  "tests_passed": true,
+  "tests": "36 passed, 13 warnings in 0.03s",
+  "merged_sha": "31a4df9b97f35c614e48f935827ef17661777fa4",
+  "week_fixed": 2
+ },
+ "review": {
+  "verdict": "PASS",
+  "summary": "PR fixes the root cause (missing input validation) with explicit guards for empty/unknown coupon codes, raising ValueError instead of KeyError. Comprehensive regression tests added covering the reported scenario and edge cases; full pytest suite passes.",
+  "concerns": [],
+  "tests": {
+   "passed": true,
+   "summary": "36 passed, 13 warnings in 0.05s",
+   "sha": "c019f895c2d4ecb57d232c1a82d3367157e085bd"
+  },
+  "files": [
+   "shop/pricing.py",
+   "tests/test_issue_1.py"
+  ],
+  "diff_lines": 95,
+  "cost_usd": 0.012
+ },
+ "result": {
+  "status": "proposed",
+  "summary": "Empty/unknown coupon code now raises ValueError instead of crashing with KeyError",
+  "evidence": [
+   "tests/test_issue_1.py: 5 tests fail before fix, all 6 pass after",
+   "pytest -q: 36 passed",
+   "commit c019f89 on gen-2-fix-1"
+  ],
+  "pr": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=gen-2-fix-1&base=gen-2",
+  "valid": true,
+  "via": "synaps-dev",
+  "message_id": "sw_bd1ddc1a16984727a2299956a50c4c65",
+  "thread": "sw_d156f5603c4c4401b9d707d10094f307",
+  "seconds": 39.3
+ }
+}
