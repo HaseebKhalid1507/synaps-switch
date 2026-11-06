@@ -1,0 +1,21 @@
+# #13 run policy (written before the run)
+
+Written 2026-11-06 ~04:20 EST, before the live run started, and committed before it (see this file's git history).
+
+**Approvals in this recorded run are scripted; in the demo video they're typed live.** The scripted person posts
+as the devstack's Mattermost user `user` (`devstack/dev.py mm-post --as user`), a real human account. The gates
+accept it because Switch reports the sender as a person and `user` is the only name on `--approvers`.
+
+| Gate | Policy (fixed) | Who posts |
+|---|---|---|
+| Merge requests in #board (every PR) | approve iff the reality-checker review is PASS **and** the harness pytest on the PR head is green; else reject | `company.board.live.MattermostApprover` (`company.run --approver mattermost`) |
+| Org change, generation 1 | approve | `evidence/m13/gate_person.py` |
+| Org change, generation 2 | approve | `evidence/m13/gate_person.py` |
+| Org change, generation 3 | reject: "change freeze: no more org changes before the demo; propose it next quarter" | `evidence/m13/gate_person.py` |
+
+The policy does not look at what the board proposes. Whether an approved change is kept or reverted is decided
+by fitness on the same seed (42), not by the person. If no approved change is reverted, that is reported as is;
+no revert is staged.
+
+Settings: env1, seed 42, 3 weeks per quarter, synaps-dev capacity 1/week and 2/quarter, 3 generations,
+prefix `m13-` (agents, rooms, acme-shop branches `m13-gen-<k>` on HaseebKhalid1507/acme-shop), budget stop $9.

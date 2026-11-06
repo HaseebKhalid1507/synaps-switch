@@ -280,6 +280,27 @@ def test_live_merge_is_local_remote_only():
         local_merge("https://github.com/adityapat958/acme-shop/pull/1")
 
 
+def test_live_acme_is_a_local_clone_or_the_fork_in_github_mode(monkeypatch, tmp_path):
+    import company.acme as acme
+    for k in ("ACME_REPO", "ACME_REMOTE", "ACME_ALLOW_GITHUB_WRITES", "ACME_DEPLOY_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    local = "file://" + str(tmp_path / "origin.git")
+    assert qm.live_acme_config(local).local
+    fork = "git@github.com:HaseebKhalid1507/acme-shop.git"
+    with pytest.raises(acme.GitHubWriteRefused, match="GitHub mode"):
+        qm.live_acme_config(fork)                                  # no ACME_ALLOW_GITHUB_WRITES
+    monkeypatch.setenv("ACME_ALLOW_GITHUB_WRITES", "1")
+    monkeypatch.setenv("ACME_REPO", "HaseebKhalid1507/acme-shop")
+    cfg = qm.live_acme_config(fork)
+    assert not cfg.local and cfg.allow_github_writes and cfg.remote_url == fork
+    monkeypatch.setenv("ACME_REMOTE", fork)
+    assert qm.live_acme_config().remote_url == fork                # from ACME_REMOTE (tools/live_env.sh)
+    with pytest.raises(acme.GitHubWriteRefused, match="upstream"):
+        qm.live_acme_config("git@github.com:adityapat958/acme-shop.git")
+    with pytest.raises(acme.GitHubWriteRefused, match="not ACME_REPO"):
+        qm.live_acme_config("git@github.com:someone/else.git")
+
+
 def test_synaps_dev_cost_is_its_room_sessions(tmp_path):
     s = tmp_path / "sessions"
     s.mkdir()
