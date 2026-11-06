@@ -46,7 +46,6 @@ CONFIG = {"config_file": "", "state_dir": "", "base_dir": ""}
 BASE = None
 SKILL = (HERE / "skill" / "SKILL.md").read_text(encoding="utf-8") if (HERE / "skill" / "SKILL.md").exists() else ""
 SESSION_ENV_KEYS = ("HOME", "PATH", "LANG", "LC_ALL", "USER", "LOGNAME", "SHELL", "TZ")
-DELIVERED_KEEP = 500
 
 _log_lock = threading.Lock()
 _log_file = None
@@ -265,7 +264,8 @@ def wake(sid, event, wait_s=8.0):
 
 
 class Watcher:
-    """One Switch agent: its credentials, connection, rooms and their sessions."""
+    """One Switch agent: a switch_client.Agent (credentials, connection, cursor, the no-loop
+    filtering) plus the room → pinned Synaps session routing."""
 
     def __init__(self, cfg):
         self.cfg = cfg
@@ -273,27 +273,36 @@ class Watcher:
         self.dir = state_dir() / "agents" / slug(self.name, 40)
         self.dir.mkdir(parents=True, exist_ok=True)
         os.chmod(self.dir, 0o700)
-        self.state_path = self.dir / "state.json"
-        self.creds_path = self.dir / "credentials.json"
-        self.state = read_json(self.state_path, {})
+        tf = cfg.get("registration_token_file")
+        self.agent = sc.Agent(
+            cfg["bridge_url"], self.name, on_message=self.on_message, on_control=self.on_control,
+            credentials_file=str(self.dir / "credentials.json"),
+            registration_token_file=os.path.expanduser(tf) if tf else None,
+            registration_token=None if tf else os.environ.get(cfg.get("registration_token_env") or "SWITCH_REGISTRATION_TOKEN"),
+            description=cfg.get("description") or "A Synaps agent.", display_name=cfg.get("display_name"),
+            overwrite=bool(cfg.get("overwrite")), state_file=str(self.dir / "state.json"),
+            room_allowlist=cfg.get("rooms") or None, session_prefix="synaps",
+            max_thread_deliveries=int(cfg.get("max_thread_deliveries") or 12),
+            thread_window_s=float(cfg.get("thread_window_s") or 600),
+            log=lambda *a: log(f"[{self.name}]", *a))
+        self.state = self.agent.state  # one dict, saved by the agent: connection, cursor, delivered, rooms
         self.state.setdefault("rooms", {})
-        self.state.setdefault("delivered", [])
-        self.lock = threading.RLock()
+        self.lock = self.agent.lock
         self.room_locks = {}
-        self.bridge = None
-        self.conn = None
-        self.pending_gap = None
+        self.attempts = {}
         self.status = "starting"
         self.last_error = None
 
-    # persistence
-    def save(self):
-        with self.lock:
-            write_private(self.state_path, self.state)
+    @property
+    def conn(self):
+        return self.agent.conn
 
-    def selector(self, room_id):
-        """The Switch-side session id for a room's session: stable across Synaps session restarts."""
-        return f"synaps-{room_id}"[:64]
+    @property
+    def bridge(self):
+        return self.agent.bridge
+
+    def save(self):
+        self.agent.save()
 
     def room_of_session(self, sid):
         for rid, r in self.state["rooms"].items():
@@ -307,59 +316,19 @@ class Watcher:
 
     def _run(self):
         try:
-            self._connect()
+            self.agent.declared_rooms = sorted(self.state["rooms"])
+            self.agent.start()
+            self.status = "connecting"
+            log(f"[{self.name}] connecting: connection {self.agent.conn.connection_id}, cursor {self.state.get('cursor')}, "
+                f"{len(self.agent.declared_rooms)} known room(s)")
         except Exception as e:  # noqa: BLE001
             self.status, self.last_error = "failed", f"{type(e).__name__}: {e}"
             log(f"[{self.name}] could not start: {self.last_error}")
 
-    def _credentials(self):
-        creds = read_json(self.creds_path, {})
-        if creds.get("id") and creds.get("api_key"):
-            return creds
-        tf = self.cfg.get("registration_token_file")
-        token = Path(os.path.expanduser(tf)).read_text().strip() if tf else os.environ.get(
-            self.cfg.get("registration_token_env") or "SWITCH_REGISTRATION_TOKEN", "")
-        if not token:
-            raise RuntimeError("no credentials and no registration token (registration_token_file)")
-        reg = sc.register(self.cfg["bridge_url"], token, self.name,
-                          self.cfg.get("description") or "A Synaps agent.",
-                          display_name=self.cfg.get("display_name"),
-                          overwrite=bool(self.cfg.get("overwrite")))
-        creds = {"id": reg["id"], "api_key": reg["api_key"], "registered_at": now_iso()}
-        write_private(self.creds_path, creds)
-        log(f"[{self.name}] registered with Switch: agent id {reg['id']}")
-        return creds
-
-    def _connect(self):
-        creds = self._credentials()
-        self.bridge = sc.Bridge(self.cfg["bridge_url"], creds["id"], creds["api_key"])
-        with self.lock:
-            if not self.state.get("connection_id"):
-                self.state["connection_id"] = str(uuid.uuid4())
-            self.state["agent_id"] = creds["id"]
-            self.save()
-        rooms = sorted(self.state["rooms"])
-        self.conn = sc.Connection(
-            self.bridge, self.state["connection_id"], scope="all", filter="addressed", rooms=rooms,
-            cursor=self.state.get("cursor"), on_event=self.on_event, on_control=self.on_control,
-            on_cursor=self.on_cursor, on_fatal=self.on_fatal,
-            log=lambda *a: log(f"[{self.name}]", *a))
-        self.conn.start()
-        self.status = "connecting"
-        log(f"[{self.name}] connecting: connection {self.conn.connection_id}, cursor {self.state.get('cursor')}, "
-            f"{len(rooms)} known room(s)")
-
     def stop(self):
-        if self.conn:
-            self.conn.stop()
-        self.save()
+        self.agent.stop()
 
     # connection callbacks (stream thread)
-    def on_cursor(self, cursor, generation):
-        with self.lock:
-            self.state["cursor"], self.state["generation"] = cursor, generation
-            self.save()
-
     def on_control(self, f):
         t = f.get("type")
         if t == "connection_state":
@@ -367,73 +336,58 @@ class Watcher:
             log(f"[{self.name}] connected: rooms={len(f.get('rooms') or [])} cursor={f.get('cursor')} "
                 f"protocol={f.get('protocol')} beat={f.get('heartbeat_interval_seconds')}s")
         elif t == "gap":
-            self.pending_gap = f
             log(f"[{self.name}] gap: from {f.get('from_sequence')} resumed at {f.get('resumed_at')} ({f.get('reason')})")
         elif t == "evicted":
             log(f"[{self.name}] evicted: {f.get('code')} {f.get('reason')}")
         elif t in ("subscription_changed", "room_released"):
             log(f"[{self.name}] {t}: {json.dumps({k: v for k, v in f.items() if k != 'type'})[:300]}")
 
-    def on_fatal(self, exc):
-        self.status, self.last_error = "stopped", str(exc)
-
-    def on_event(self, ev):
-        if ev.get("type") != "message":
-            return
-        p = ev.get("payload") or {}
-        mid, room_id = p.get("message_id"), ev.get("room_id")
-        if not p.get("addressed") or not mid or not room_id:
-            return
-        if p.get("sender_name") == self.name:
-            return
-        allow = self.cfg.get("rooms")
-        if allow and room_id not in allow:
-            log(f"[{self.name}] ignoring room {room_id}: not in the allowlist")
-            return
+    def on_message(self, msg):
+        """An addressed message (the Agent already dropped our own, repeats and thread floods)."""
+        try:
+            sid = self.ensure_session(msg.room_id)
+            event = {
+                "id": str(uuid.uuid4()),
+                "timestamp": now_iso(),
+                "source": {"source_type": "switch", "name": PLUGIN_ID, "callback": None},
+                "channel": {"id": msg.room_id, "name": self.state["rooms"][msg.room_id].get("room_name") or msg.room_id},
+                "sender": {"id": str(msg.sender or ""), "name": str(msg.sender_name or "someone"), "sender_type": "agent" if msg.sender_kind == "agent" else "user"},
+                "content": {"text": self.render(msg), "content_type": "message", "severity": "Medium", "data": None},
+                "expects_response": True,
+                "reply_to": None,
+            }
+            if not wake(sid, event):
+                raise RuntimeError(f"session {sid} did not take the event")
+        except Exception as e:  # noqa: BLE001
+            n = self.attempts[msg.message_id] = self.attempts.get(msg.message_id, 0) + 1
+            if n < 5:
+                log(f"[{self.name}] delivery of {msg.message_id} failed ({type(e).__name__}: {e}); retry {n}")
+                raise sc.Redeliver() from e  # the cursor stays put: the stream reopens and it comes again
+            log(f"[{self.name}] giving up on {msg.message_id} after {n} attempts: {type(e).__name__}: {e}")
+            return None
+        self.attempts.pop(msg.message_id, None)
         with self.lock:
-            if mid in self.state["delivered"]:
-                log(f"[{self.name}] already delivered {mid}; skipping")
-                return
-        sid = self.ensure_session(room_id)
-        thread = p.get("thread_id") or mid
-        text = self.render(ev, p, thread)
-        event = {
-            "id": str(uuid.uuid4()),
-            "timestamp": now_iso(),
-            "source": {"source_type": "switch", "name": PLUGIN_ID, "callback": None},
-            "channel": {"id": room_id, "name": self.state["rooms"][room_id].get("room_name") or room_id},
-            "sender": {"id": str(p.get("sender") or ""), "name": str(p.get("sender_name") or "someone"),
-                       "sender_type": "agent" if p.get("sender_kind") == "agent" else "user"},
-            "content": {"text": text, "content_type": "message", "severity": "Medium", "data": None},
-            "expects_response": True,
-            "reply_to": None,
-        }
-        if not wake(sid, event):
-            # Leave the cursor where it is: the stream reopens and the event comes again.
-            raise RuntimeError(f"could not deliver {mid} to session {sid}")
-        with self.lock:
-            self.state["delivered"] = (self.state["delivered"] + [mid])[-DELIVERED_KEEP:]
-            r = self.state["rooms"][room_id]
-            r["last_message_id"], r["last_delivered_at"], r["deliveries"] = mid, now_iso(), r.get("deliveries", 0) + 1
+            r = self.state["rooms"][msg.room_id]
+            r["last_message_id"], r["last_delivered_at"] = msg.message_id, now_iso()
+            r["deliveries"] = r.get("deliveries", 0) + 1
             self.save()
-        self.pending_gap = None
-        log(f"[{self.name}] delivered {mid} (thread {thread}) from {p.get('sender_name')} to session {sid}")
+        log(f"[{self.name}] delivered {msg.message_id} (thread {msg.thread}) from {msg.sender_name} to session {sid}")
+        return None
 
-    def render(self, ev, p, thread):
-        room = self.state["rooms"][ev["room_id"]]
+    def render(self, msg):
+        room = self.state["rooms"][msg.room_id]
         nonce = secrets.token_hex(6)
-        head = (f"[Switch] {p.get('sender_name') or 'someone'} addressed you in room "
-                f"{room.get('room_name') or ev['room_id']} (message_id {p.get('message_id')}, thread_id {thread}):")
+        head = (f"[Switch] {msg.sender_name or 'someone'} addressed you in room "
+                f"{room.get('room_name') or msg.room_id} (message_id {msg.message_id}, thread_id {msg.thread}):")
         lines = []
-        if self.pending_gap:
+        if msg.gap:
             lines.append("[Switch] History was lost since you last heard from this room "
-                         f"({self.pending_gap.get('reason') or 'gap'}): call switch_read_context before answering.")
-        lines += [head, f"BEGIN SWITCH MESSAGE {nonce}", str(p.get("body") or ""), f"END SWITCH MESSAGE {nonce}"]
-        att = p.get("attachments") or []
-        if att:
-            names = ", ".join(str(a.get("filename") or a.get("mxc")) for a in att[:10])
+                         f"({msg.gap.get('reason') or 'gap'}): call switch_read_context before answering.")
+        lines += [head, f"BEGIN SWITCH MESSAGE {nonce}", msg.body, f"END SWITCH MESSAGE {nonce}"]
+        if msg.attachments:
+            names = ", ".join(str(a.get("filename") or a.get("mxc")) for a in msg.attachments[:10])
             lines.append(f"(attachments, not downloaded: {names})")
-        lines.append(f'(Reply with switch_post_message, thread_id="{thread}". Your final text is not shown in the room.)')
+        lines.append(f'(Reply with switch_post_message, thread_id="{msg.thread}". Your final text is not shown in the room.)')
         return "\n".join(lines)
 
     # sessions
@@ -454,11 +408,7 @@ class Watcher:
 
     def connect_room(self, room_id):
         """connect_to_room as the room's session selector: binds that selector to the room."""
-        ctx = self.bridge.op("connect_to_room", {"room_id": room_id, "include_general_instructions": False},
-                             self.conn.connection_id, session_id=self.selector(room_id))
-        if ctx.get("warning"):
-            log(f"[{self.name}] connect_to_room {room_id}: {ctx['warning']}")
-        return ctx
+        return self.agent.connect_room(room_id)
 
     def system_prompt(self, room_id, ctx):
         who = self.cfg.get("display_name") or self.name
@@ -525,16 +475,9 @@ class Watcher:
 
     # ops for tools
     def op(self, name, args, room_id=None):
-        if self.bridge is None or self.conn is None:
+        if self.agent.conn is None:
             raise ToolError(f"agent {self.name} is not connected to Switch ({self.status}: {self.last_error})")
-        sel = self.selector(room_id) if room_id else None
-        try:
-            return self.bridge.op(name, args, self.conn.connection_id, session_id=sel)
-        except sc.SwitchError as e:
-            if room_id and e.status in (400, 409) and "connect" in str(e.detail).lower():
-                self.connect_room(room_id)  # the binding went with an old connection: rebind, retry once
-                return self.bridge.op(name, args, self.conn.connection_id, session_id=sel)
-            raise
+        return self.agent.op(name, args, room_id)
 
 
 # ───────────────────────── tools ─────────────────────────
