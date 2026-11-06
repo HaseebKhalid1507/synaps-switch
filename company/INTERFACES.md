@@ -130,6 +130,23 @@ class FakeTransport      # in-memory, for tests and offline runs; records a tran
 class SwitchTransport    # one switch_client.Connection per agent identity, credentials from company/state/agents/<name>.json
 ```
 
+## company/switch_env.py  (owner: C)
+
+```python
+def apply_env(env, bridge, *, generation=1, agent_names=None, room_prefix="", mode="auto",
+              state_dir="company/state", fixup=None) -> dict[str, str]     # {env room name: Switch room id}
+def teardown(env, bridge, *, generation=1, room_prefix="", state_dir="company/state") -> dict  # archives them
+def update_ledger(env, bridge, rows, *, generation=1, ...)   # rewrites the "Ledger" doc in #board, one row per quarter
+def check_ops(bridge) -> {missing_required, missing_optional, ...}   # GET /agents/{id}/ops, logs gaps
+# bridge: op(name, args, room_id=None) + connect(room_id) + .name, i.e. transport._link("board"), or Ops(sc.Bridge)
+```
+
+Generation k = Switch rooms `<room>-g<k>` in room group `<env>-g<k>`, made by one `create_room_from_yaml` (v2 template,
+existing agents by name) with a per-room `create_room` fallback. The operator (`bridge`'s agent, the board) joins every
+room. Links: every room → #board ("reports to"), each `x-company.links` pair both ways ("direct line"). Docs in
+#board: Handbook + Ledger, owned by the operator. State: `<state_dir>/switch_env/<group>.json`.
+CLI: `python -m company.switch_env apply|teardown ENV.yaml [--gen K] [--agent-prefix P] [--room-prefix P]`, `ops`.
+
 ## company/board/  (owner: C)
 
 The board's LangGraph graphs (inner quarter loop, outer evolution loop with interrupt() approval gates), the router

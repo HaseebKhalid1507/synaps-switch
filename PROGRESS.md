@@ -42,6 +42,9 @@ Branch `feat/v0`. Updated at each milestone.
   `SSEParser`, `SwitchError`, `Fatal`. New things are additive (`Agent`, `Message`, `Redeliver`).
 - Test agents I registered: `synaps` (the extension), `ss-echo`, `ss-ping`, `ss-pong`. Rooms: `synaps-lab`,
   `e2e-*`, `ss-echo-room`, `loop-*`.
+- #8 (`company/switch_env.py`) registered `m4e-*` agents and made rooms `m4e-<room>-g90…g97` in room groups
+  `m4e-env{1,2}-g9x`. All of those rooms are archived; 0.31.0 has no op to remove the groups. Evidence:
+  `evidence/m4/apply-env/`.
 
 ## switch_client as a library (ask 1)
 
