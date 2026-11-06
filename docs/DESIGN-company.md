@@ -3,6 +3,20 @@
 Author: Aditya. Status: proposal for M4 (the workflow). Builds on M0–M3 (#1, #2, #3) and changes nothing in them.
 Track: **Best Business Workflow**.
 
+## Update: staffed by The Agency
+
+Employees are hired from [The Agency](https://github.com/msitarzewski/agency-agents) (MIT, 167k stars):
+about 270 agent personas in divisions (engineering, marketing, finance, support, testing, product, project management),
+plus written runbooks (`strategy/runbooks/`) that say which persona leads which kind of work.
+The Agency has no runtime: personas are copied into one coding tool at a time, never work together, and have no humans in the loop.
+
+- **env1 = The Agency's own published runbooks, staffed as written** (incident response, marketing campaign).
+- Mutations gain `hire` (a persona from the roster), `swap_persona`, and `fire`.
+- The headline result: **an evolved org that beats The Agency's published runbook** on the same seeded quarter.
+- `acme-shop` (github.com/adityapat958/acme-shop) is the agency's client: real code, real incidents, real PRs.
+
+Module contracts: `company/INTERFACES.md`. Roster loader: `company/core/roster.py`.
+
 ## One paragraph
 
 We run a small mock company inside Switch. Every department is a chat room
