@@ -235,6 +235,10 @@ Demo/evidence: `python -m company.depts.demo --out evidence/m4/dept-agents [--st
 
 ## company/board/  (owner: C)
 
+The board's LangGraph graphs (inner quarter loop, outer evolution loop with interrupt() approval gates), the router
+(which paused run a message resumes, and who is allowed to resume it), and the department agents in `company/depts/`.
+Entry point: `python -m company.run --env company/envs/env1.yaml [--quarters N | --generations N] --transport fake|switch`.
+
 ### quarter.py (#10): the inner loop, one quarter in LangGraph
 
 ```python
@@ -284,3 +288,30 @@ evidence export + scrub).
 `--transport switch --llm haiku --approver mattermost --agent-prefix P --room-prefix P --acme-prefix P
 --acme-remote file:///…git --issues acme --humans user --approvers user --weeks 3 --generation K`
 (see evidence/m4/quarter/live_quarter.py). `--generations N` is reserved for #11 (`evolve.evolve`).
+
+### company/board/evolve.py: the outer loop (#11)
+
+```python
+evolve(env, *, generations=3, seeds=(1, 2), run_quarter, propose, gate, lineage_path, envs_dir,
+       budget_usd=25.0, approvers=None, gate_timeout_s=3600, checkpoint="company/state/evolve.sqlite",
+       thread_id=None, read_rooms=None, roster=None, fresh=False, log=None) -> dict
+       # {run, best, best_fitness, records, stop_reason, spent_usd, generations}; resumes the thread if it exists
+run_quarter(env, *, seed, generation) -> (Metrics, QuarterLog)
+       # injected: stub_quarter.run_quarter offline; load_quarter_runner("quarter", **QuarterConfig fields)
+       # wraps #10's company.board.quarter.run_quarter, imported lazily
+propose(summary, env, *, history, error) -> ({"diagnosis", "mutation", "rationale"}, cost_usd)
+       # LLMProposer (board persona on Haiku via company.llm) | StubProposer; re-asked once with the error
+gate: ask(payload) -> thread; wait(thread, deadline) -> msg dict | None; announce(thread, text); [release()]
+       # TransportGate(transport= | factory=, board, room, approvers) | ScriptedGate(script)
+```
+
+Graph (thread `evolve:<env>:<seeds>`, SqliteSaver): baseline → reflect → propose → post_gate → await_gate
+(`interrupt()`) → trial → select → record → reflect …; reject / timeout / invalid → record without a trial.
+Only a message with `sender_is_agent=False` from an approver saying approve/reject (`realwork.parse_decision`)
+decides; anything else is logged in the record's `gate.ignored` and the gate waits again; no decision by the
+deadline = `timeout` (auto-reject). Kept iff mean fitness over the seeds > the parent's (same seeds).
+Lineage record: `{run, runner, gen, env, parent, mutation, change, diagnosis, rationale, approver, decision,
+outcome: seed|kept|reverted|rejected|timeout|invalid, reason, fitness, parent_fitness, delta, kept, seeds, metrics,
+eval, gate, cost_usd: {quarters, proposal}, diff, ts}`; kept envs → `<envs_dir>/env<k>.yaml`.
+Budget: stops when spent (sum of QuarterLog.llm_cost_usd + proposals) ≥ budget or the next generation would pass it.
+CLI: `python -m company.board.evolve --env … --generations N [--offline]`; table: `python -m company.lineage_report`.
