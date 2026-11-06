@@ -1,6 +1,7 @@
 # #13 run policy (written before the run)
 
-Written 2026-11-06 ~04:20 EST, before the live run started, and committed before it (see this file's git history).
+Written 2026-11-06 before the live run started, and committed before it: commit `450cd92` at 04:04:34 EST; run 1
+started at 04:05:02. (Corrected after the run: this line first said "~04:20", a typo; the commit time is the record.)
 
 **Approvals in this recorded run are scripted; in the demo video they're typed live.** The scripted person posts
 as the devstack's Mattermost user `user` (`devstack/dev.py mm-post --as user`), a real human account. The gates
@@ -22,7 +23,8 @@ prefix `m13-` (agents, rooms, acme-shop branches `m13-gen-<k>` on HaseebKhalid15
 
 ## Run 2 (seed 1), written before it started
 
-Written 2026-11-06 ~04:35 EST, after run 1 (seed 42) finished with gen 1 kept, gen 2 kept, gen 3 rejected, so
+Written 2026-11-06 after run 1 (seed 42) finished and before run 2 started: commit `1e4f47b` at 04:28:23 EST; run 2
+started at 04:28:34. (Corrected after the run: this line first said "~04:35", a typo.) Run 1 finished with gen 1 kept, gen 2 kept, gen 3 rejected, so
 **no fitness revert**. The issue allows a second short run on seed 1. Same command, same policy, same settings;
 only the seed (`--seeds 1`) and the prefix (`m13-s1-`: agents, rooms, acme-shop branches `m13-s1-gen-<k>`) change.
 
