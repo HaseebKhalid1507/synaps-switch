@@ -4,6 +4,16 @@ The contract is Switch's agent protocol (docs/official/internals/agent-protocol.
 switch-v0.31.0): one SSE stream down, HTTP up, a heartbeat every
 `heartbeat_interval_seconds`, operations at POST /agents/{id}/ops/{name}.
 
+As a library (one agent, messages in, replies out):
+
+    from switch_client import Agent
+    agent = Agent(url, "ops-maint", on_message=lambda m: f"on it, {m.sender_name}",
+                  credentials_file="ops-maint.json", registration_token_file="registration.token",
+                  state_file="ops-maint.state.json").start()
+    agent.run_forever()
+
+Lower level:
+
     bridge = Bridge(base_url, agent_id, api_key)
     conn = Connection(bridge, connection_id, on_event=..., scope="all", filter="addressed")
     conn.start()            # stream + beat threads; reconnects with the cursor
@@ -556,3 +566,309 @@ class Connection:
             elif status:
                 self.log(f"beat -> {status} {short_detail(out, 120)}")
             self.stopped.wait(max(0.05, self.interval() - (time.monotonic() - t0)))
+
+
+# ───────────────────────── library layer: one agent, messages in, replies out ─────────────────────────
+
+
+class Redeliver(Exception):
+    """Raise from on_message to leave the message unconsumed: the stream reopens at the
+    cursor before it and it is delivered again. Anything else a handler raises is logged
+    and the message counts as handled (a handler that always fails must not loop)."""
+
+
+class Message:
+    """An addressed room message, as on_message receives it."""
+
+    __slots__ = ("agent", "room_id", "message_id", "thread_id", "sender", "sender_name", "sender_kind",
+                 "on_behalf_of", "body", "timestamp", "attachments", "addressed", "sequence", "gap", "event")
+
+    def __init__(self, agent, event, gap=None):
+        p = event.get("payload") or {}
+        self.agent = agent
+        self.event = event
+        self.room_id = event.get("room_id")
+        self.sequence = event.get("sequence")
+        self.message_id = p.get("message_id")
+        self.thread_id = p.get("thread_id")
+        self.sender = p.get("sender")
+        self.sender_name = p.get("sender_name")
+        self.sender_kind = p.get("sender_kind")
+        self.on_behalf_of = p.get("on_behalf_of")
+        self.body = p.get("body") or ""
+        self.timestamp = p.get("timestamp")
+        self.attachments = p.get("attachments") or []
+        self.addressed = bool(p.get("addressed"))
+        self.gap = gap  # the gap frame that preceded this message, if history was lost
+
+    @property
+    def thread(self):
+        """Where a reply goes: the message's thread, or a new thread under it."""
+        return self.thread_id or self.message_id
+
+    def reply(self, body, targets=None):
+        return self.agent.post(self.room_id, body, thread_id=self.thread, targets=targets)
+
+    def __repr__(self):
+        return (f"Message(room={self.room_id!r}, id={self.message_id!r}, thread={self.thread!r}, "
+                f"from={self.sender_name!r}, body={self.body[:60]!r})")
+
+
+def _read_json(path, default):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def _write_private(path, obj):
+    import os
+    tmp = f"{path}.tmp{os.getpid()}.{threading.get_ident()}"
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=1, sort_keys=True)
+    os.replace(tmp, path)
+
+
+class Agent:
+    """One Switch agent as a library: credentials, one connection, messages in, replies out.
+
+        def handle(msg):                      # called for messages that address this agent
+            return f"heard {msg.sender_name}" # a returned string is posted as a reply in the thread
+
+        agent = Agent("http://127.0.0.1:18400", "ops-maint", on_message=handle,
+                      credentials_file="state/ops-maint.json",          # written 0600 on first registration
+                      registration_token_file="state/registration.token",
+                      state_file="state/ops-maint.state.json").start()
+        agent.post(room_id, "hello")          # or agent.op("create_room", {...}), agent.read_context(room_id)
+
+    No loops: on_message only sees messages that address this agent (`addressed`), never the
+    agent's own, each message id at most once (also across restarts, with state_file), and at
+    most `max_thread_deliveries` per thread in `thread_window_s` (an agent ping-pong is cut
+    off and logged). on_message runs on the stream thread, one message at a time, in order.
+
+    Several rooms share the one connection: an operation for a room travels with a session
+    selector bound to that room (connect_to_room once, lazily; rebound when Switch says the
+    binding is gone).
+    """
+
+    def __init__(self, bridge_url, name, *, on_message=None, on_event=None, on_control=None,
+                 agent_id=None, api_key=None, credentials_file=None,
+                 registration_token=None, registration_token_file=None, description="", display_name=None,
+                 overwrite=False, state_file=None, rooms=(), room_allowlist=None, scope="all",
+                 filter="addressed", session_prefix="room", max_thread_deliveries=12, thread_window_s=600.0,
+                 delivered_keep=500, log=None):
+        self.bridge_url = bridge_url.rstrip("/")
+        self.name = name
+        self.on_message = on_message
+        self.on_event = on_event or (lambda ev: None)
+        self.on_control = on_control or (lambda f: None)
+        self.credentials_file = credentials_file
+        self.registration_token = registration_token
+        self.registration_token_file = registration_token_file
+        self.description = description or f"{name}, a Switch agent."
+        self.display_name = display_name
+        self.overwrite = overwrite
+        self.state_file = state_file
+        self.room_allowlist = set(room_allowlist) if room_allowlist else None
+        self.scope, self.filter = scope, filter
+        self.session_prefix = session_prefix
+        self.max_thread_deliveries = max_thread_deliveries
+        self.thread_window_s = thread_window_s
+        self.delivered_keep = delivered_keep
+        self.log = log or (lambda *a: None)
+        self.lock = threading.RLock()
+        self.state = _read_json(state_file, {}) if state_file else {}
+        self.state.setdefault("delivered", [])
+        self.declared_rooms = list(rooms)
+        self.agent_id, self._api_key = agent_id, api_key
+        self.bridge = None
+        self.conn = None
+        self.pending_gap = None
+        self.connected = threading.Event()
+        self._bound = set()
+        self._thread_hits = {}
+
+    # persistence
+    def save(self):
+        if self.state_file:
+            with self.lock:
+                _write_private(self.state_file, self.state)
+
+    def _credentials(self):
+        if self.agent_id and self._api_key:
+            return self.agent_id, self._api_key
+        creds = _read_json(self.credentials_file, {}) if self.credentials_file else {}
+        if creds.get("id") and creds.get("api_key"):
+            return creds["id"], creds["api_key"]
+        token = self.registration_token
+        if not token and self.registration_token_file:
+            with open(self.registration_token_file, encoding="utf-8") as f:
+                token = f.read().strip()
+        if not token:
+            raise RuntimeError(f"agent {self.name}: no credentials and no registration token")
+        reg = register(self.bridge_url, token, self.name, self.description,
+                       display_name=self.display_name, overwrite=self.overwrite)
+        if self.credentials_file:
+            _write_private(self.credentials_file, {"id": reg["id"], "api_key": reg["api_key"],
+                                                   "registered_at": int(time.time())})
+        self.log(f"registered agent {self.name}: id {reg['id']}")
+        return reg["id"], reg["api_key"]
+
+    # lifecycle
+    def start(self):
+        self.agent_id, self._api_key = self._credentials()
+        self.bridge = Bridge(self.bridge_url, self.agent_id, self._api_key)
+        with self.lock:
+            self.state.setdefault("connection_id", str(uuid.uuid4()))
+            self.state["agent_id"] = self.agent_id
+            self.save()
+        self.conn = Connection(self.bridge, self.state["connection_id"], scope=self.scope, filter=self.filter,
+                               rooms=self.declared_rooms, cursor=self.state.get("cursor"),
+                               on_event=self._on_event, on_control=self._on_control,
+                               on_cursor=self._on_cursor, on_fatal=self._on_fatal, log=self.log)
+        self.conn.start()
+        return self
+
+    def wait_connected(self, timeout=30.0):
+        return self.connected.wait(timeout)
+
+    def stop(self):
+        if self.conn:
+            self.conn.stop()
+        self.save()
+
+    def run_forever(self):
+        """Block until the connection stops for good (credentials refused, taken over) or Ctrl-C."""
+        try:
+            while self.conn and not self.conn.stopped.wait(1.0):
+                pass
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.stop()
+        return self.conn.fatal if self.conn else None
+
+    # connection callbacks (stream thread)
+    def _on_cursor(self, cursor, generation):
+        with self.lock:
+            self.state["cursor"], self.state["generation"] = cursor, generation
+            self.save()
+
+    def _on_fatal(self, exc):
+        self.connected.clear()
+        self.log(f"connection stopped for good: {exc}")
+
+    def _on_control(self, f):
+        t = f.get("type")
+        if t == "connection_state":
+            self.connected.set()
+            self._bound.clear()  # a fresh stream: re-check room bindings on next use
+        elif t == "gap":
+            self.pending_gap = f
+        elif t == "evicted":
+            self.connected.clear()
+        self.on_control(f)
+
+    def _thread_guard(self, msg):
+        now = time.monotonic()
+        key = (msg.room_id, msg.thread)
+        hits = [t for t in self._thread_hits.get(key, []) if now - t < self.thread_window_s]
+        if len(hits) >= self.max_thread_deliveries:
+            self._thread_hits[key] = hits
+            return False
+        hits.append(now)
+        self._thread_hits[key] = hits
+        return True
+
+    def _on_event(self, ev):
+        if ev.get("type") != "message":
+            self.on_event(ev)
+            return
+        p = ev.get("payload") or {}
+        mid = p.get("message_id")
+        if not mid or not ev.get("room_id"):
+            return
+        if not p.get("addressed"):
+            return  # never act on a frame that does not address us
+        if p.get("sender_name") == self.name or (self.agent_id and p.get("sender") == self.agent_id):
+            return  # our own words
+        if self.room_allowlist is not None and ev["room_id"] not in self.room_allowlist:
+            self.log(f"ignored {mid}: room {ev['room_id']} is not in the allowlist")
+            return
+        with self.lock:
+            if mid in self.state["delivered"]:
+                return
+        msg = Message(self, ev, gap=self.pending_gap)
+        if not self._thread_guard(msg):
+            self.log(f"loop guard: dropped {mid} from {msg.sender_name}: more than {self.max_thread_deliveries} "
+                     f"messages in thread {msg.thread} within {self.thread_window_s:.0f}s")
+            self._mark(mid)
+            return
+        try:
+            out = self.on_message(msg) if self.on_message else None
+            if isinstance(out, str) and out.strip():
+                msg.reply(out)
+        except Redeliver:
+            raise
+        except Exception as e:  # noqa: BLE001 - a failing handler must not wedge or loop the stream
+            self.log(f"on_message failed for {mid}: {type(e).__name__}: {e}")
+        self.pending_gap = None
+        self._mark(mid)
+
+    def _mark(self, mid):
+        with self.lock:
+            self.state["delivered"] = (self.state["delivered"] + [mid])[-self.delivered_keep:]
+            self.save()
+
+    # acting
+    def selector(self, room_id):
+        return f"{self.session_prefix}-{room_id}"[:64]
+
+    def _require(self):
+        if self.conn is None or self.bridge is None:
+            raise RuntimeError(f"agent {self.name} is not started")
+
+    def connect_room(self, room_id):
+        """connect_to_room for this room's session selector; returns the room context."""
+        self._require()
+        ctx = self.bridge.op("connect_to_room", {"room_id": room_id, "include_general_instructions": False},
+                             self.conn.connection_id, session_id=self.selector(room_id))
+        self._bound.add(room_id)
+        if isinstance(ctx, dict) and ctx.get("warning"):
+            self.log(f"connect_to_room {room_id}: {ctx['warning']}")
+        return ctx
+
+    def op(self, name, args=None, room_id=None):
+        """Any operation in the catalog. With room_id it runs as this agent's session in that room."""
+        self._require()
+        if not room_id:
+            return self.bridge.op(name, args or {}, self.conn.connection_id)
+        if room_id not in self._bound and name != "connect_to_room":
+            self.connect_room(room_id)
+        sel = self.selector(room_id)
+        try:
+            return self.bridge.op(name, args or {}, self.conn.connection_id, session_id=sel)
+        except SwitchError as e:
+            if e.status in (400, 404, 409) and "connect" in str(e.detail).lower():
+                self.connect_room(room_id)  # the binding went with an old stream: rebind, retry once
+                return self.bridge.op(name, args or {}, self.conn.connection_id, session_id=sel)
+            raise
+
+    def post(self, room_id, body, thread_id=None, targets=None):
+        """Post in a room; thread_id replies into that thread; targets (agent/user names) addresses
+        them via send_targeted_message, which prefixes the @mentions itself (don't repeat them in body)."""
+        targets = [t.lstrip("@") for t in (targets or []) if t]
+        if targets:
+            return self.op("send_targeted_message", {"body": body, "target_names": targets,
+                                                     "thread_id": thread_id}, room_id)
+        return self.op("post_message", {"body": body, "thread_id": thread_id}, room_id)
+
+    def read_context(self, room_id, limit=30, since=None, before=None):
+        args = {"room_id": room_id, "limit": int(limit)}
+        if since:
+            args["since"] = since
+        if before:
+            args["before"] = before
+        return self.op("read_context", args, room_id)

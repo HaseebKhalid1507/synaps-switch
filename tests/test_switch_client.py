@@ -248,5 +248,139 @@ class ConnectionTest(unittest.TestCase):
         self.assertFalse(any(t.is_alive() for t in c._threads))
 
 
+class AgentTest(unittest.TestCase):
+    """The library layer: on_message, auto-reply, loop guards, persistence."""
+
+    def setUp(self):
+        import tempfile
+        self.fb = FakeBridge().start()
+        self.dir = tempfile.mkdtemp(prefix="sc-agent-")
+        self.got = []
+        self.agents = []
+
+    def tearDown(self):
+        for a in self.agents:
+            a.stop()
+        self.fb.stop()
+        import shutil
+        shutil.rmtree(self.dir, ignore_errors=True)
+
+    def agent(self, handler=None, **kw):
+        kw.setdefault("registration_token", REG_TOKEN)
+        kw.setdefault("credentials_file", os.path.join(self.dir, "creds.json"))
+        kw.setdefault("state_file", os.path.join(self.dir, "state.json"))
+        a = sc.Agent(self.fb.url, "dept-bot", on_message=handler or self.got.append, **kw).start()
+        self.agents.append(a)
+        self.assertTrue(a.wait_connected(3))
+        return a
+
+    def ops(self, name):
+        return [c for c in self.fb.ops_calls if c[0] == name]
+
+    def test_registers_once_and_keeps_credentials_private(self):
+        a = self.agent()
+        path = os.path.join(self.dir, "creds.json")
+        self.assertEqual(os.stat(path).st_mode & 0o777, 0o600)
+        a.stop()
+        self.agents.clear()
+        self.agent()
+        self.assertEqual(len(self.fb.agents), 1)  # the second start reused the credentials
+
+    def test_only_addressed_messages_reach_on_message(self):
+        self.agent()
+        self.fb.push("message", ROOM, msg("m1", addressed=False))
+        self.fb.push("message", ROOM, msg("m2"))
+        self.assertTrue(self.fb.wait(lambda: len(self.got) >= 1))
+        time.sleep(0.3)
+        self.assertEqual([m.message_id for m in self.got], ["m2"])
+        m = self.got[0]
+        self.assertEqual((m.room_id, m.thread, m.sender_name, m.body), (ROOM, "m2", "user", "hi"))
+
+    def test_own_messages_are_ignored(self):
+        self.agent()
+        own = msg("m1")
+        own["sender_name"] = "dept-bot"
+        self.fb.push("message", ROOM, own)
+        self.fb.push("message", ROOM, msg("m2"))
+        self.assertTrue(self.fb.wait(lambda: len(self.got) >= 1))
+        time.sleep(0.3)
+        self.assertEqual([m.message_id for m in self.got], ["m2"])
+
+    def test_returned_string_is_a_threaded_reply_as_the_room_session(self):
+        self.agent(lambda m: f"echo {m.body}")
+        self.fb.push("message", ROOM, msg("m1", body="ping", thread="t0"))
+        self.assertTrue(self.fb.wait(lambda: self.ops("post_message")))
+        name, args, _ = self.ops("post_message")[0]
+        self.assertEqual(args, {"body": "echo ping", "thread_id": "t0"})
+        self.assertIn(("connect_to_room", "room-" + ROOM), self.fb.op_sessions)
+        self.assertIn(("post_message", "room-" + ROOM), self.fb.op_sessions)
+
+    def test_same_message_id_is_handled_once(self):
+        self.agent()
+        self.fb.push("message", ROOM, msg("m1"))
+        self.fb.push("message", ROOM, msg("m1"))
+        self.fb.push("message", ROOM, msg("m2"))
+        self.assertTrue(self.fb.wait(lambda: len(self.got) >= 2))
+        time.sleep(0.3)
+        self.assertEqual([m.message_id for m in self.got], ["m1", "m2"])
+
+    def test_handled_ids_survive_a_restart(self):
+        a = self.agent()
+        self.fb.push("message", ROOM, msg("m1"))
+        self.assertTrue(self.fb.wait(lambda: len(self.got) == 1))
+        a.stop()
+        self.agents.clear()
+        st = os.path.join(self.dir, "state.json")
+        import json
+        d = json.load(open(st))
+        d.pop("cursor")  # lose the cursor: the server would replay; the id list still says handled
+        json.dump(d, open(st, "w"))
+        self.fb.seq = 100  # the fake replays from the start for a cursorless open at 100
+        self.agent()
+        time.sleep(0.5)
+        self.assertEqual([m.message_id for m in self.got], ["m1"])
+
+    def test_handler_error_is_not_redelivered_but_redeliver_is(self):
+        calls = []
+
+        def handler(m):
+            calls.append(m.message_id)
+            if m.message_id == "boom":
+                raise ValueError("handler bug")
+            if m.message_id == "again" and calls.count("again") == 1:
+                raise sc.Redeliver()
+
+        self.agent(handler)
+        self.fb.push("message", ROOM, msg("boom"))
+        self.fb.push("message", ROOM, msg("again"))
+        self.assertTrue(self.fb.wait(lambda: calls.count("again") == 2, 6))
+        time.sleep(0.3)
+        self.assertEqual(calls.count("boom"), 1)
+        self.assertEqual(calls.count("again"), 2)
+
+    def test_loop_guard_caps_one_thread(self):
+        self.agent(max_thread_deliveries=3)
+        for i in range(6):
+            self.fb.push("message", ROOM, msg(f"m{i}", thread="t1"))
+        self.fb.push("message", ROOM, msg("other", thread="t2"))
+        self.assertTrue(self.fb.wait(lambda: any(m.message_id == "other" for m in self.got)))
+        self.assertEqual([m.message_id for m in self.got], ["m0", "m1", "m2", "other"])
+
+    def test_gap_rides_on_the_next_message(self):
+        self.agent()
+        self.fb.control({"type": "gap", "from_sequence": 1, "resumed_at": 100, "reason": "restart"})
+        self.fb.push("message", ROOM, msg("m1"))
+        self.fb.push("message", ROOM, msg("m2"))
+        self.assertTrue(self.fb.wait(lambda: len(self.got) >= 2))
+        self.assertEqual(self.got[0].gap["reason"], "restart")
+        self.assertIsNone(self.got[1].gap)
+
+    def test_targets_use_send_targeted_message(self):
+        a = self.agent()
+        a.post(ROOM, "over to you", thread_id="t9", targets=["@synaps-dev"])
+        name, args, _ = self.ops("send_targeted_message")[0]
+        self.assertEqual(args, {"body": "over to you", "target_names": ["synaps-dev"], "thread_id": "t9"})
+
+
 if __name__ == "__main__":
     unittest.main()

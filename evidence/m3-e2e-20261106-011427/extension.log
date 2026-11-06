@@ -1,0 +1,11 @@
+2026-11-06T01:14:35 [synaps-switch] [synaps] created session 20261106-061435-9cfc (sw-synaps-e2e-011427-3adf) for room e2e-011427 (73533478-d071-4396-9fc3-63f75850ec08), pinned
+2026-11-06T01:14:35 [synaps-switch] [synaps] delivered sw_ae3bec67e70a77c144382cf389808026 (thread sw_ae3bec67e70a77c144382cf389808026) from user to session 20261106-061435-9cfc
+2026-11-06T01:14:35 [synaps-switch] [synaps] subscription_changed: {"rooms": ["5b95a5ed-729d-442d-96e9-0437e85d3a0b", "73533478-d071-4396-9fc3-63f75850ec08", "e3995a36-443f-42bc-bcc0-b3d2f24df950"], "reason": "subscription updated"}
+2026-11-06T01:14:38 [synaps-switch] [synaps] posted in room 73533478-d071-4396-9fc3-63f75850ec08 (thread sw_ae3bec67e70a77c144382cf389808026): {'event_id': 'sw_0301810a548f41d896732b38a7bd8fad'}
+2026-11-06T01:14:41 [synaps-switch] [synaps] delivered sw_957bb841a85d5e3917c8796a36fc1b3a (thread sw_957bb841a85d5e3917c8796a36fc1b3a) from user to session 20261106-061435-9cfc
+2026-11-06T01:14:43 [synaps-switch] [synaps] posted in room 73533478-d071-4396-9fc3-63f75850ec08 (thread sw_957bb841a85d5e3917c8796a36fc1b3a): {'event_id': 'sw_ba9e1b6055c548db8e512b8d39466893'}
+2026-11-06T01:15:11 [synaps-switch] started: base ~/.synaps-switch-dev, 1 agent(s): synaps
+2026-11-06T01:15:11 [synaps-switch] [synaps] connecting: connection 84af7acc-57f6-4ded-813f-13399b9ac79d, cursor 4294967302, 3 known room(s)
+2026-11-06T01:15:11 [synaps-switch] [synaps] connected: rooms=3 cursor=4294967302 protocol=9 beat=2.0s
+2026-11-06T01:15:11 [synaps-switch] [synaps] delivered sw_c09b89de281f8ad72ebe7162516a906c (thread sw_c09b89de281f8ad72ebe7162516a906c) from user to session 20261106-061435-9cfc
+2026-11-06T01:15:14 [synaps-switch] [synaps] posted in room 73533478-d071-4396-9fc3-63f75850ec08 (thread sw_c09b89de281f8ad72ebe7162516a906c): {'event_id': 'sw_df467749abb149068c03fe96d5df1f74'}

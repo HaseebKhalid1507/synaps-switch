@@ -28,6 +28,7 @@ class FakeBridge:
         self.opens = []             # {query, last_event_id, generation}
         self.beats = []
         self.ops_calls = []         # (name, args, connection_id)
+        self.op_sessions = []       # (name, X-Switch-Session-Id or None)
         self.messages = []          # direct POST /message
         self.ops_handlers = {}
         self.generation = 0
@@ -248,17 +249,20 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(200, {"ok": True, "event_id": "$" + uuid.uuid4().hex})
             if len(rest) == 2 and rest[0] == "ops":
                 name, conn = rest[1], self.headers.get("X-Switch-Connection-Id")
+                sess = self.headers.get("X-Switch-Session-Id")
                 fb.ops_calls.append((name, body, conn))
+                fb.op_sessions.append((name, sess))
+                key = (conn, sess) if sess else conn
                 if name == "connect_to_room":
-                    fb.connection_rooms[conn] = body["room_id"]
+                    fb.connection_rooms[key] = body["room_id"]
                 h = fb.ops_handlers.get(name)
                 if h is None:
                     if name == "connect_to_room":
                         return self._json(200, {"result": {"room_id": body["room_id"], "name": "room",
                                                            "instructions": "be nice", "participants": [],
                                                            "warning": None}})
-                    if name == "post_message":
-                        if conn not in fb.connection_rooms:
+                    if name in ("post_message", "send_targeted_message"):
+                        if key not in fb.connection_rooms:
                             return self._json(400, {"detail": "not connected to a room"})
                         return self._json(200, {"result": {"event_id": "$" + uuid.uuid4().hex}})
                     return self._json(404, {"detail": f"unknown operation {name}"})

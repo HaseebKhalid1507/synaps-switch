@@ -4,6 +4,11 @@
 services:
   postgres:
     mem_limit: 512m
+    # Dev only: this machine runs disk-heavy jobs, and a Postgres waiting on fsync makes
+    # Switch miss its 15 s process lease (hard-coded), which stops its Mattermost bridge
+    # and drops posts made while it is down. No fsync: data survives container restarts,
+    # not a host crash. Never use these settings for anything that matters.
+    command: ["postgres", "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off"]
   init-db:
     mem_limit: 128m
   mattermost:

@@ -7,6 +7,7 @@ live login in place and refreshes it under the same lock the live sessions use
 broker client: it holds only short-lived access tokens, in memory.
 
   synapsdev.py setup              base dir, config, plugin link (idempotent)
+  synapsdev.py agency             build the agency specialists plugin into the private plugins dir
   synapsdev.py broker start|stop|status
   synapsdev.py daemon start|stop|status
   synapsdev.py sessions           sessions in the private daemon
@@ -109,6 +110,25 @@ def setup(_=None):
     if not link.exists() and not link.is_symlink():
         link.symlink_to(REPO)
     print(f"base dir {BASE}: config, synaps-switch.json, plugins/synaps-switch -> {os.readlink(link)}")
+    agency()
+
+
+def agency(_=None):
+    """The `agency` specialists plugin (agency/build_plugin.py, PR #15) as a real directory in the
+    private plugins dir, so room sessions can dispatch agent="agency:<slug>". Never the main install."""
+    out = BASE / "plugins" / "agency"
+    if out.is_symlink():
+        die(f"{out} is a symlink; the agency plugin must be a real directory")
+    if (out / ".agency-build").exists():
+        print(f"agency plugin present: {out}")
+        return
+    script = REPO / "agency" / "build_plugin.py"
+    if not script.exists():
+        print("agency plugin: skipped (agency/build_plugin.py is not on this branch yet; "
+              "see PR #15, or: git show origin/feat/agency:agency/build_plugin.py > /tmp/b.py && "
+              f"python3 /tmp/b.py --out {out})")
+        return
+    subprocess.run([sys.executable, str(script), "--out", str(out)], check=True, timeout=600)
 
 
 # ───────────────────────── broker ─────────────────────────
@@ -296,7 +316,7 @@ def main(argv):
         die(__doc__.strip(), 2)
     cmd, rest = argv[0], argv[1:]
     table = {
-        ("setup",): setup, ("broker", "start"): broker_start, ("broker", "stop"): broker_stop,
+        ("setup",): setup, ("agency",): agency, ("broker", "start"): broker_start, ("broker", "stop"): broker_stop,
         ("broker", "status"): broker_status, ("daemon", "start"): daemon_start,
         ("daemon", "stop"): daemon_stop, ("daemon", "status"): daemon_status, ("sessions",): sessions,
     }
