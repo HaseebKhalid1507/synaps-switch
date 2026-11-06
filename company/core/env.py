@@ -175,6 +175,15 @@ def apply_mutation(env: Env, m: dict) -> Env:
     elif op == "set_price":
         e.company["price"] = m["value"]
 
+    elif op == "set_dev_capacity":
+        # synaps-dev's capacity: x-company.dev_capacity {per_week, per_quarter} (board/mechanics.capacity)
+        keys = [k for k in ("per_week", "per_quarter") if m.get(k) is not None]
+        if not keys:
+            raise ValueError("set_dev_capacity needs per_week and/or per_quarter")
+        cap = e.company.setdefault("dev_capacity", {})
+        for k in keys:
+            cap[k] = int(m[k])
+
     else:
         raise ValueError(f"unknown mutation op: {op}")
 

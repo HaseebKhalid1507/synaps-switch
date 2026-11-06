@@ -78,7 +78,7 @@ def test_offline_three_generations_with_a_reject_and_a_revert(tmp_path):
     assert [r["parent"] for r in recs] == [None, "env1", "env2", "env2"]
     assert recs[1]["fitness"] > recs[1]["parent_fitness"] and recs[1]["kept"]
     assert recs[2]["fitness"] <= recs[2]["parent_fitness"] and not recs[2]["kept"]
-    assert "<=" in recs[2]["reason"]
+    assert "< parent" in recs[2]["reason"] and recs[2]["delta"] < 0
     assert recs[3]["fitness"] is None and recs[3]["approver"] == "Haseeb" and "campaign" in recs[3]["reason"]
     assert recs[1]["gate"]["ignored"][0]["why"] == "sender is an agent"
     assert sorted(p.name for p in (d / "envs").iterdir()) == ["env1.yaml", "env2.yaml"]
@@ -200,7 +200,9 @@ class Scripted:
 
 
 def test_select_reverts_a_worse_env_and_the_next_gen_builds_on_the_parent(tmp_path):
-    prop = Scripted({"op": "fire", "agent": "ops-maint"}, {"op": "link", "rooms": ["maintenance", "dev"]})
+    qa = {"op": "hire", "persona": "testing/testing-test-automation-engineer", "name": "qa", "room": "dev",
+          "role_note": "QA"}                      # unlinked, a tester only slows the merges: -1.67 on the stub quarter
+    prop = Scripted(qa, {"op": "link", "rooms": ["maintenance", "dev"]})
     res, d = _run(tmp_path, propose=prop, gate=ScriptedGate([["approve"], ["approve"]]), generations=2)
     recs = read_lineage(d / "lineage.jsonl")
     assert [r["outcome"] for r in recs] == ["seed", "reverted", "kept"]
@@ -418,3 +420,114 @@ def test_transport_gate_factory_is_released_before_every_trial(tmp_path):
     assert seen == [False] * 6                    # no quarter ever ran with the gate's board identity connected
     assert gate.opened == len(stops) == 3         # gen 1 ask, gen 1 outcome + gen 2 ask, gen 2 outcome
     assert not live["open"]                       # and closed when evolve returns
+
+
+# ───────────────────────── #31: effective levers only, min-gain ─────────────────────────
+
+
+def _noisy(bill_delta):
+    """The stub quarter, but every env except env1 gets a different LLM bill: the only thing that varies
+    between two runs of one org on a fixed seed (#13's gen 2: $0.06)."""
+    import dataclasses
+
+    def run(env, *, seed, generation):
+        m, log = stub_run(env, seed=seed, generation=generation)
+        if env.name != "env1":
+            m = dataclasses.replace(m, llm_cost_usd=round(m.llm_cost_usd + bill_delta, 4))
+        return m, log
+    return run
+
+
+NO_OP_VETO = {"op": "set_policy", "key": "finance_veto_usd", "value": 6000}   # a lever; every campaign is under both
+
+
+def test_a_noise_level_gain_is_no_effect_and_the_parent_stays(tmp_path):
+    prop = Scripted(NO_OP_VETO, {"op": "link", "rooms": ["maintenance", "dev"]})
+    res, d = _run(tmp_path, propose=prop, gate=ScriptedGate([["approve"], ["approve"]]), generations=2,
+                  run_quarter=_noisy(-0.06))
+    recs = read_lineage(d / "lineage.jsonl")
+    assert [r["outcome"] for r in recs] == ["seed", "no_effect", "kept"]
+    tie = recs[1]
+    assert tie["delta"] == pytest.approx(0.06) and not tie["kept"] and tie["min_gain"] == E.DEFAULT_MIN_GAIN == 0.5
+    assert tie["reason"].startswith("↔ no effect (Δ +0.06 < min-gain 0.5)") and "the parent stays" in tie["reason"]
+    assert recs[2]["parent"] == "env1" and prop.calls[1]["env"] == "env1"       # the next gen builds on the parent
+    assert prop.calls[1]["history"][0]["outcome"] == "no_effect"
+    assert sorted(p.name for p in (d / "envs").iterdir()) == ["env1.yaml", "env3.yaml"]
+    md = render(recs)
+    assert "| +0.06 | ↔ no effect (Δ +0.06 < min-gain 0.5) |" in md and "reverted" not in md
+    assert res["best"] == "env3"
+
+
+def test_min_gain_is_the_margin_and_a_loss_is_still_reverted(tmp_path):
+    _, d = _run(tmp_path, "low", propose=Scripted(NO_OP_VETO), gate=ScriptedGate([["approve"]]), generations=1,
+                run_quarter=_noisy(-0.06), min_gain=0.05)
+    assert read_lineage(d / "lineage.jsonl")[-1]["outcome"] == "kept"
+    _, d = _run(tmp_path, "loss", propose=Scripted(NO_OP_VETO), gate=ScriptedGate([["approve"]]), generations=1,
+                run_quarter=_noisy(+0.06))
+    rec = read_lineage(d / "lineage.jsonl")[-1]
+    assert rec["outcome"] == "reverted" and "↩️ reverted (fitness)" in render([rec])
+    _, d = _run(tmp_path, "big", propose=Scripted({"op": "link", "rooms": ["maintenance", "dev"]}),
+                gate=ScriptedGate([["approve"]]), generations=1, run_quarter=_noisy(-0.06))
+    rec = read_lineage(d / "lineage.jsonl")[-1]
+    assert rec["outcome"] == "kept" and rec["delta"] > 0.5 and "min-gain 0.5" in rec["reason"]
+
+
+def test_a_no_lever_proposal_is_re_asked_once_then_gated(tmp_path):
+    commander = {"op": "hire", "persona": "engineering/engineering-incident-response-commander",
+                 "name": "incident-commander", "room": "dev", "role_note": "coordinate incidents"}
+    prop = Scripted(commander, {"op": "link", "rooms": ["maintenance", "dev"]})
+    gate = ScriptedGate([["approve"]])
+    _run(tmp_path, propose=prop, gate=gate, generations=1)
+    assert prop.calls[1]["error"].startswith("no lever:") and "testing/*" in prop.calls[1]["error"]
+    assert len(gate.asked) == 1 and gate.asked[0]["change"] == "link #maintenance ↔ #dev"
+
+
+def test_two_no_lever_proposals_skip_the_generation_without_a_gate_or_a_trial(tmp_path):
+    commander = {"op": "hire", "persona": "engineering/engineering-incident-response-commander",
+                 "name": "incident-commander", "room": "dev", "role_note": "coordinate incidents"}
+    prop = Scripted(commander, {"op": "set_policy", "key": "dev_capacity_per_quarter", "value": 4})   # #13's gen 2s
+    gate, runner = ScriptedGate([["approve"]]), Counting()
+    res, d = _run(tmp_path, propose=prop, gate=gate, generations=1, run_quarter=runner)
+    rec = read_lineage(d / "lineage.jsonl")[-1]
+    assert rec["outcome"] == "skipped" and not rec["kept"] and rec["fitness"] is None and rec["approver"] is None
+    assert "dev_capacity_per_quarter" in rec["reason"] and "set_dev_capacity" in rec["reason"]
+    assert gate.asked == [] and {c[0] for c in runner.calls} == {"env1"}        # no gate, no trial quarter
+    assert "| 1 | env2 | env1 |" in render([rec]) and "⏭️ skipped (no lever)" in render([rec])
+
+
+def test_set_dev_capacity_is_a_lever_and_describes_itself():
+    env = _env()                                            # x-company.dev_capacity: {per_week: 3}
+    new, err = validate_mutation(env, {"op": "set_dev_capacity", "per_quarter": 4})
+    assert err is None and new.company["dev_capacity"] == {"per_week": 3, "per_quarter": 4}
+    assert E.describe({"op": "set_dev_capacity", "per_quarter": 4}, env) == "dev capacity: 3/week → 3/week, 4/quarter"
+    assert "whole numbers" in validate_mutation(env, {"op": "set_dev_capacity", "per_week": 0})[1]
+    assert validate_mutation(env, {"op": "set_dev_capacity", "per_week": 3})[1] == "the mutation changes nothing"
+
+
+def test_llm_proposer_prompt_lists_exactly_the_levers():
+    from company.board import levers
+    seen = []
+
+    def llm(system, prompt):
+        seen.append((system, prompt))
+        return {"diagnosis": "d", "mutation": {"op": "link", "rooms": ["maintenance", "dev"]}, "rationale": "r"}, 0.0
+
+    prop = LLMProposer(llm=llm, roster={})
+    env = _env()
+    summary = E.summarize(env, E.evaluate(env, (1,), stub_run, E.load_weights(), 1))
+    prop(summary, env, history=[], error=f"{levers.NO_LEVER} policy 'sev1_fix_weeks' is read by nothing")
+    system, prompt = seen[0]
+    for name, how, effect in levers.LEVERS:
+        assert f"- {name}: {how}. Effect: {effect}." in system
+    assert "min-gain" in system and "0.5" in system
+    assert "set_instructions" not in system and "sev1_fix_weeks" not in system
+    assert "refused before #board, no lever:" in prompt
+    shortlist = prompt.split("Roster shortlist")[1]
+    assert "testing/" in shortlist and "engineering/" not in shortlist and "design/" not in shortlist
+
+
+def test_stub_proposer_never_proposes_a_no_lever_change(tmp_path):
+    res, d = _run(tmp_path, gate=ScriptedGate([["approve"]] * 6), generations=6)
+    recs = read_lineage(d / "lineage.jsonl")
+    assert all(r["outcome"] != "skipped" for r in recs)
+    assert not any((r.get("mutation") or {}).get("rooms") == ["growth", "dev"] for r in recs)

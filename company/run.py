@@ -18,6 +18,11 @@ Ledger keeps one row per quarter.
         scripted approver offline; on Switch LLMProposer (Haiku) and a TransportGate on the board's prefixed
         identity (opened only for the gate, released before every trial quarter). Prints the lineage table
         (company.lineage_report.render); lineage.jsonl, lineage.md and kept envs go to --out (default company/).
+        A change is kept only if it beats its parent by more than --min-gain (default 0.5; evolve.DEFAULT_MIN_GAIN).
+
+--dev-per-week / --dev-per-quarter set the baseline: they are written into the --env's x-company.dev_capacity
+(replacing the file's value for that key), so with --generations every env evolved from it inherits them and a
+set_dev_capacity mutation changes them in its trial. They are not passed to the quarter as overrides.
 """
 from __future__ import annotations
 
@@ -30,7 +35,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from company.board.quarter import QuarterConfig, ledger_row, run_quarter_full
-from company.core.env import load_env
+from company.core.env import apply_mutation, load_env
 
 
 def kill_hook(spec):
@@ -55,6 +60,18 @@ def issues_from(arg, state_dir):
     return {"incidents": data["incidents"], "features": data["features"]}
 
 
+def seed_capacity(env, per_week=None, per_quarter=None, log=None):
+    """The --dev-per-* flags as the seed env's baseline: its x-company.dev_capacity, key by key."""
+    if per_week is None and per_quarter is None:
+        return env
+    from company.board.mechanics import cap_text, capacity
+    new = apply_mutation(env, {"op": "set_dev_capacity", "per_week": per_week, "per_quarter": per_quarter})
+    if log and capacity(env.company) != capacity(new.company):
+        log(f"dev capacity: {env.name} x-company.dev_capacity {cap_text(*capacity(env.company))} -> "
+            f"{cap_text(*capacity(new.company))} (--dev-per-week / --dev-per-quarter set the baseline)")
+    return new
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m company.run", description=__doc__.split("\n\n")[0])
     ap.add_argument("--env", required=True)
@@ -62,6 +79,8 @@ def main(argv=None) -> int:
     ap.add_argument("--generations", type=int, default=None, help="run the outer evolution loop (#11) instead")
     ap.add_argument("--seeds", default="1,2", help="--generations: the trial seeds (same seeds for every env)")
     ap.add_argument("--budget-usd", type=float, default=None, help="--generations: stop when spent reaches this")
+    ap.add_argument("--min-gain", type=float, default=None,
+                    help="--generations: keep a change only if fitness beats the parent's by more than this (0.5)")
     ap.add_argument("--gate-timeout", type=float, default=None, help="--generations: seconds; none = auto-reject")
     ap.add_argument("--gate-room", default=None, help="--generations on Switch: gate room (default <room-prefix>board)")
     ap.add_argument("--script", default=None, help='--generations offline: scripted approver, "approve|reject: why|..."')
@@ -99,7 +118,8 @@ def main(argv=None) -> int:
     ap.add_argument("-v", "--verbose", action="store_true", help="run log on stderr")
     a = ap.parse_args(argv)
 
-    env = load_env(a.env)
+    env = seed_capacity(load_env(a.env), a.dev_per_week, a.dev_per_quarter,
+                        log=(lambda line: print(line, file=sys.stderr, flush=True)) if a.verbose else None)
     live = a.transport == "switch"
     llm_kind = a.llm or ("haiku" if live else "stub")
     llm = None
@@ -113,7 +133,7 @@ def main(argv=None) -> int:
     qopts = dict(   # QuarterConfig fields shared by every quarter of this command
         transport=a.transport, llm=llm, llm_label=llm_kind, weeks=a.weeks, db=a.db, state_dir=a.state_dir,
         issues=issues_from(a.issues, a.state_dir), approver=a.approver or ("stub" if not live else None),
-        approvers=split(a.approvers), dev_per_week=a.dev_per_week, dev_per_quarter=a.dev_per_quarter,
+        approvers=split(a.approvers),   # --dev-per-*: in env (seed_capacity), so a dev_capacity mutation counts
         dev_timeout=a.dev_timeout, approve_timeout=a.approve_timeout, week_wall_s=a.week_wall, quiet_s=a.quiet,
         agent_prefix=a.agent_prefix, room_prefix=a.room_prefix, acme_remote=a.acme_remote, acme_prefix=a.acme_prefix,
         switch_url=a.switch_url, token_file=a.token_file, devstack=a.devstack,
@@ -175,8 +195,11 @@ def generations(a, env, qopts, llm_kind, split) -> int:
         approvers = approvers or ("haseeb",)
     out = Path(a.out) if a.out else None
     kw = {} if a.budget_usd is None else {"budget_usd": a.budget_usd}
+    if a.min_gain is not None:
+        kw["min_gain"] = a.min_gain
+    pkw = {} if a.min_gain is None else {"min_gain": a.min_gain}
     res = evolve(env, generations=a.generations, seeds=[int(s) for s in a.seeds.split(",")], run_quarter=run_q,
-                 propose=LLMProposer(roster=roster) if llm_kind == "haiku" else StubProposer(roster),
+                 propose=LLMProposer(roster=roster, **pkw) if llm_kind == "haiku" else StubProposer(roster),
                  gate=gate, read_rooms=read_rooms, roster=roster, approvers=approvers,
                  lineage_path=out / "lineage.jsonl" if out else "company/lineage.jsonl",
                  envs_dir=out / "envs" if out else "company/envs", gate_timeout_s=a.gate_timeout,

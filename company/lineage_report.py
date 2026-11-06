@@ -3,9 +3,11 @@
     python -m company.lineage_report [company/lineage.jsonl] [--run RUN | --all] [--out lineage.md]
 
 One table per evolution run (`run` = the evolve thread id; the latest run by default), one row per
-generation: the seed, then every proposal with its outcome: kept (fitness improved on the same seeds),
-reverted (trialed, did not improve), rejected / timeout (the #board humans said no, or nobody answered:
-not trialed), invalid (the board never produced a valid mutation). Below the table, the why of each row.
+generation: the seed, then every proposal with its outcome: kept (fitness beat the parent's by more than
+min-gain on the same seeds), no effect (trialed, 0 <= Δ <= min-gain: noise, the parent stays), reverted
+(trialed, fitness went down), rejected / timeout (the #board humans said no, or nobody answered: not
+trialed), skipped (the board proposed only changes no lever reads, refused before the gate), invalid (the
+board never produced a valid mutation). Below the table, the why of each row.
 """
 from __future__ import annotations
 
@@ -15,8 +17,16 @@ from pathlib import Path
 
 from company.core.lineage import read_lineage
 
-RESULT = {"seed": "seed", "kept": "✅ kept", "reverted": "↩️ reverted (fitness)", "rejected": "❌ rejected (human)",
-          "timeout": "⏱️ auto-rejected (timeout)", "invalid": "⚠️ invalid proposal"}
+RESULT = {"seed": "seed", "kept": "✅ kept", "no_effect": "↔ no effect", "reverted": "↩️ reverted (fitness)",
+          "rejected": "❌ rejected (human)", "timeout": "⏱️ auto-rejected (timeout)",
+          "skipped": "⏭️ skipped (no lever)", "invalid": "⚠️ invalid proposal"}
+
+
+def _result(r: dict) -> str:
+    o = r.get("outcome")
+    if o == "no_effect" and r.get("delta") is not None and r.get("min_gain") is not None:
+        return f"↔ no effect (Δ {r['delta']:+.2f} < min-gain {r['min_gain']:g})"
+    return RESULT.get(o, str(o))
 
 
 def _money(v) -> str:
@@ -31,14 +41,14 @@ def _row(r: dict) -> str:
     cells = [
         str(r.get("gen")), str(r.get("env")), str(r.get("parent") or "—"),
         str(r.get("change") or "seed").replace("|", "\\|"),
-        str(r.get("approver") or ("—" if r.get("outcome") in ("seed", "invalid", "timeout") else "?")),
+        str(r.get("approver") or ("—" if r.get("outcome") in ("seed", "invalid", "skipped", "timeout") else "?")),
         _money(m.get("profit")) if m else "—",
         f"{m['growth']:+.1%}" if m else "—",
         f"{m['mean_fix_weeks']:.2f} wk" if m else "—",
         f"${m['llm_cost_usd']:.2f}" if m else "—",
         f"{f:.2f}" if f is not None else "—",
         f"{d:+.2f}" if d is not None else "—",
-        RESULT.get(r.get("outcome"), str(r.get("outcome"))),
+        _result(r),
     ]
     return "| " + " | ".join(cells) + " |"
 

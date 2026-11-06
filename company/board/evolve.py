@@ -17,17 +17,21 @@ resumes where it stopped, also while it waits at the human gate:
 baseline   run_quarter(env_k) on every seed → mean fitness (company/fitness.yaml weights). Lineage gen 0.
 reflect    a compact summary: mean Metrics, per-seed fitness, QuarterLog highlights (fixes, regressions,
            escalations, spend), and on Switch `read_context` of every room (`read_rooms`).
-propose    the board persona (env's `board` agent + its Agency persona) proposes exactly ONE mutation of
-           the ops `core.env.apply_mutation` supports (incl. hire / swap_persona / fire from the roster),
-           with a diagnosis and a rationale. Validated by applying it; an invalid one is re-asked once
-           with the error; invalid twice → recorded as `invalid`, no gate.
+propose    the board persona (env's `board` agent + its Agency persona) proposes exactly ONE mutation that
+           moves one of the levers the quarter reads (company/board/levers.py: the prompt lists exactly
+           those), with a diagnosis and a rationale. Validated by applying it; an invalid one is re-asked
+           once with the error; invalid twice → recorded as `invalid`, no gate. A valid mutation that moves
+           no lever (a non-testing hire, an unread policy key, a link between other rooms) is refused the
+           same way: re-asked once, then recorded as `skipped`, never shown to the humans.
 post_gate  the env_diff + rationale go to #board (`gate.ask`), once: the thread id is checkpointed.
 await_gate interrupt(): the run pauses until the driver resumes it with a message from the gate's thread.
            Only a person on `approvers` (msg.sender_is_agent False) saying approve/reject decides
            (realwork.parse_decision, the MergeGate rules); anything else is logged as ignored and the run
            pauses again. No decision before the deadline (`gate_timeout_s`) → auto-reject, logged.
 trial      the candidate runs on the SAME seeds (common random numbers).
-select     kept iff mean fitness > the parent's; else reverted (the parent stays current).
+select     kept iff mean fitness beats the parent's by more than `min_gain` (0.5: a quarter on a seed is
+           deterministic except the real LLM bill, so a smaller gain is noise); 0 <= Δ <= min_gain is
+           `no_effect` and a loss (Δ < 0) `reverted`: either way the parent stays current.
 record     append_lineage (once per (run, gen), also across resumes); kept envs → <envs_dir>/env<k>.yaml.
            Stops after `generations` or when the $ budget (QuarterLog.llm_cost_usd + proposal costs) is spent.
 
@@ -60,15 +64,20 @@ import yaml
 from company.core.env import Env, apply_mutation, env_diff, load_env, save_env
 from company.core.fitness import fitness
 from company.core.lineage import append_lineage, read_lineage
-from company.board.mechanics import why_moved
+from company.board import levers
+from company.board.mechanics import cap_text, capacity, why_moved
 from company.realwork import approvers_from_env, parse_decision
 
 DEFAULT_SEEDS = (1, 2)
 DEFAULT_GATE_TIMEOUT_S = float(os.environ.get("COMPANY_GATE_TIMEOUT_S", 3600))
 DEFAULT_BUDGET_USD = 25.0
+# The keep margin. Fitness runs ~13-30 and subtracts the real LLM bill at weight 1; on a fixed seed nothing else
+# varies between two runs of one org. #13's mechanically identical pairs differed by $0.06 and $0.93 (one 370-s
+# fix), a quarter's bill is ~$0.5-2; the levers move fitness by 0.7 (hire QA) to 3.6 (the direct line).
+DEFAULT_MIN_GAIN = 0.5
 WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "fitness.yaml"
 OPS = ("set_instructions", "add_agent", "hire", "remove_agent", "fire", "swap_persona",
-       "link", "unlink", "set_policy", "set_budget", "set_price")
+       "link", "unlink", "set_policy", "set_budget", "set_price", "set_dev_capacity")
 NO_FIRE = ("board", "synaps-dev")
 NO_SWAP = ("synaps-dev",)
 METRIC_KEYS = ("revenue", "costs", "profit", "customers", "churn_rate", "growth", "open_incident_severity",
@@ -205,7 +214,8 @@ def summarize(env: Env, ev: dict, rooms: dict | None = None) -> dict:
         "highlights": [h.removeprefix("! ") for h in highlights][:40],
         "org": {"agents": org, "rooms": _rooms(env), "links": _links(env),
                 "budgets": env.company.get("budgets") or {}, "policies": env.company.get("policies") or {},
-                "price": env.company.get("price"), "weeks_per_quarter": env.company.get("weeks_per_quarter")},
+                "price": env.company.get("price"), "weeks_per_quarter": env.company.get("weeks_per_quarter"),
+                "dev_capacity": cap_text(*capacity(env.company))},
         "rooms": {k: str(v)[-800:] for k, v in (rooms or {}).items()},
     }
 
@@ -294,6 +304,11 @@ def validate_mutation(env: Env, m, *, roster: dict | None = None, tried=()) -> t
     elif op == "set_price":
         if not _num(m.get("value")) or not (1 <= m["value"] <= 1000):
             return None, "set_price needs a number \"value\" (1..1000)"
+    elif op == "set_dev_capacity":
+        given = [k for k in ("per_week", "per_quarter") if m.get(k) is not None]
+        if not given or any(not isinstance(m[k], int) or isinstance(m[k], bool) or not (1 <= m[k] <= 50)
+                            for k in given):
+            return None, "set_dev_capacity needs \"per_week\" and/or \"per_quarter\", whole numbers 1..50"
     for t in tried:
         if t.get("mutation") and _canon(t["mutation"]) == _canon(m):
             return None, f"already tried in generation {t['gen']} ({t['outcome']}): propose something else"
@@ -303,6 +318,9 @@ def validate_mutation(env: Env, m, *, roster: dict | None = None, tried=()) -> t
         return None, f"apply_mutation failed: {type(e).__name__}: {e}"
     if env_diff(env, new) == "":
         return None, "the mutation changes nothing"
+    no = levers.refusal(env, new, m)          # valid, but does the quarter read what it changes?
+    if no:
+        return None, no
     return new, None
 
 
@@ -332,6 +350,10 @@ def describe(m: dict | None, env: Env | None = None) -> str:
         return f"price: {env.company.get('price') if env else '?'} → {m.get('value')}"
     if op == "set_instructions":
         return f"rewrite {m.get('agent')}'s instructions"
+    if op == "set_dev_capacity":
+        old = capacity((env.company if env else None) or {})
+        new = tuple(m.get(k) if m.get(k) is not None else o for k, o in zip(("per_week", "per_quarter"), old))
+        return f"dev capacity: {cap_text(*old) if env else '?'} → {cap_text(*new)}"
     return op or "?"
 
 
@@ -389,26 +411,17 @@ class StubProposer:
 EVOLVE_PROTOCOL = """You are the board of acme-shop's AI company, reviewing the quarter that just ended.
 Find where value leaked and propose exactly ONE change to the org design (the env) for the next quarter.
 The humans in #board approve or reject it; an approved change is trialed on the same market seeds and kept
-only if fitness improves. fitness = {w_profit}*profit + {w_growth}*growth - {w_inc}*open_incident_severity
-- {w_llm}*llm_cost_usd.
+only if fitness beats the parent's by more than {min_gain} (min-gain: on a fixed seed only the LLM bill varies,
+so a smaller move is noise). fitness = {w_profit}*profit + {w_growth}*growth - {w_inc}*open_incident_severity
+- {w_llm}*llm_cost_usd. Open incidents cost churn and sales every week they stay open.
 
-How the org shapes a quarter (the highlights' "org:" and "quarter mechanics:" lines count it): a department's
-sev1/sev2 incident reaches synaps-dev the same week only over a direct link between its room and #dev; otherwise
-the board relays it at its next weekly sync, a week later. synaps-dev takes at most dev_capacity items a week.
-Every testing/* agent in #dev reviews each PR: more reviewers catch more regressions before the merge (an uncaught
-one reopens the incident), but each extra reviewer is another review round that costs tokens and may slip the
-merge a week. Open incidents cost churn and sales every week they stay open.
+The levers: the only things in the org the quarter reads (the highlights' "org:" and "quarter mechanics:"
+lines count them). Propose exactly one, as JSON:
+{levers}
 
-Allowed mutations (exactly one, as JSON):
-{{"op":"link","rooms":["<room>","<room>"]}}            direct line between two rooms (else they talk via #board)
-{{"op":"unlink","rooms":["<room>","<room>"]}}
-{{"op":"hire","persona":"<roster id>","name":"<new-agent-name>","room":"<room>","role_note":"<duties>"}}
-{{"op":"fire","agent":"<agent>"}}                        never board or synaps-dev
-{{"op":"swap_persona","agent":"<agent>","persona":"<roster id>"}}
-{{"op":"set_instructions","agent":"<agent>","text":"<the full new instructions>"}}
-{{"op":"set_policy","key":"<policy>","value":<number>}}   e.g. finance_veto_usd, sev1_fix_weeks
-{{"op":"set_budget","dept":"<dept>","value":<number>}}
-{{"op":"set_price","value":<number>}}
+Anything else changes nothing in the quarter and is refused before it reaches #board: a link between any other
+two rooms, hiring or swapping in a non-testing persona or anyone outside #dev, firing anyone but a #dev
+reviewer, rewriting instructions, any policy key but finance_veto_usd. Never fire board or synaps-dev.
 
 Rules: one small, explainable change; cite the numbers that justify it; do not repeat a change already
 tried (listed under History); hire / swap only personas from the Roster shortlist.
@@ -427,11 +440,12 @@ class LLMProposer:
     """The board persona proposing one mutation with company.llm.complete_json (Haiku, via the broker)."""
 
     def __init__(self, llm: Callable | None = None, roster: dict | None = None, weights: dict | None = None,
-                 shortlist=SHORTLIST):
+                 shortlist=SHORTLIST, min_gain: float = DEFAULT_MIN_GAIN):
         self.llm = llm
         self.roster = roster
         self.weights = weights or load_weights()
-        self.shortlist = shortlist
+        self.shortlist = [p for p in shortlist if p.startswith("testing/")]   # the only hires with a mechanic
+        self.min_gain = min_gain
 
     def _llm(self, system, prompt):
         if self.llm is not None:
@@ -443,15 +457,19 @@ class LLMProposer:
         w = self.weights
         return (board_persona(env, self.roster) + "\n\n" +
                 EVOLVE_PROTOCOL.format(w_profit=w.get("profit", 0.001), w_growth=w.get("growth", 0.5),
-                                       w_inc=w.get("incident_penalty", 2.0), w_llm=w.get("llm_cost", 1.0)))
+                                       w_inc=w.get("incident_penalty", 2.0), w_llm=w.get("llm_cost", 1.0),
+                                       min_gain=f"{self.min_gain:g}", levers=levers.prompt_lines()))
 
     def prompt(self, summary: dict, env: Env, history=(), error=None) -> str:
         roster = self.roster or {}
         short = [f"- {pid}: {roster[pid]['name']}: {roster[pid]['description'][:90]}" if pid in roster else f"- {pid}"
                  for pid in self.shortlist if not roster or pid in roster]
         hist = [f"- gen {h['gen']}: {h.get('change')} → {h.get('outcome')} ({h.get('reason') or ''})" for h in history]
-        parts = [summary_text(summary), "", "History:", *(hist or ["- none yet"]), "", "Roster shortlist:", *short]
-        if error:
+        parts = [summary_text(summary), "", "History:", *(hist or ["- none yet"]), "",
+                 "Roster shortlist (testing/*: the only hires with a mechanic):", *short]
+        if error and str(error).startswith(levers.NO_LEVER):
+            parts += ["", f"Your previous proposal was refused before #board, {error}. Propose one of the levers."]
+        elif error:
             parts += ["", f"Your previous proposal was invalid: {error}. Propose a different, valid single mutation."]
         return "\n".join(parts)
 
@@ -478,18 +496,27 @@ def gate_text(p: dict, approvers, board: str = "board", max_diff: int = 6000) ->
         f"Diagnosis: {p.get('diagnosis') or '-'}",
         f"Rationale: {p.get('rationale') or '-'}",
         f"{p['parent']} scored fitness {p['parent_fitness']:.2f} on seeds {p['seeds']}. If approved, {p['candidate']} "
-        "runs the same seeds and is kept only if it scores higher.",
+        f"runs the same seeds and is kept only if it beats that by more than {_g(p):g} (min-gain; a smaller move is "
+        "LLM-bill noise).",
         "```diff", diff.rstrip(), "```",
         f"Reply in this thread with `@{board} approve` or `@{board} reject <why>`. Only a person on the approvers "
         f"list decides; no decision in {int(p['timeout_s'])}s = auto-reject.",
     ])
 
 
+def _g(d: dict) -> float:
+    g = d.get("min_gain")
+    return float(DEFAULT_MIN_GAIN if g is None else g)
+
+
 def outcome_text(rec: dict) -> str:
     o = rec["outcome"]
     if o == "kept":
         return (f"Kept {rec['env']}: fitness {rec['fitness']:.2f} > {rec['parent_fitness']:.2f} "
-                f"({rec['parent']}) on seeds {rec['seeds']}.")
+                f"({rec['parent']}) on seeds {rec['seeds']}, Δ {rec['delta']:+.2f} > min-gain {_g(rec):g}.")
+    if o == "no_effect":
+        return (f"No effect: {rec['env']} scored {rec['fitness']:.2f} vs {rec['parent_fitness']:.2f} ({rec['parent']}) "
+                f"on seeds {rec['seeds']}, Δ {rec['delta']:+.2f} < min-gain {_g(rec):g}. {rec['parent']} stays.")
     if o == "reverted":
         return f"Reverted {rec['env']}: {rec['reason']}. {rec['parent']} stays."
     return f"Not trialed ({o}): {rec['reason']}. {rec['parent']} stays."
@@ -663,6 +690,7 @@ class EvolveState(TypedDict, total=False):
     seeds: list
     generations: int
     budget_usd: float | None
+    min_gain: float
     timeout_s: float
     gen: int
     seed_env: str
@@ -723,7 +751,7 @@ def build_graph(*, run_quarter, propose, gate, weights, approvers, lineage_path,
                "mutation": None, "change": "seed",
                "diagnosis": None, "rationale": "seed design", "approver": None, "decision": None, "outcome": "seed",
                "reason": None, "fitness": ev["fitness"], "parent_fitness": None, "delta": None, "kept": True,
-               "seeds": s["seeds"], "metrics": ev["metrics"], "eval": _strip_eval(ev),
+               "seeds": s["seeds"], "min_gain": _g(s), "metrics": ev["metrics"], "eval": _strip_eval(ev),
                "cost_usd": {"quarters": ev["cost_usd"], "proposal": 0.0}, "ts": time.time()}
         _write_record(s, rec)
         spent = s.get("spent_usd", 0.0) + ev["cost_usd"]
@@ -759,10 +787,15 @@ def build_graph(*, run_quarter, propose, gate, weights, approvers, lineage_path,
             attempts.append({"mutation": (prop or {}).get("mutation"), "error": err, "cost_usd": c})
             if err is None:
                 break
+            if len(attempts) == 1:
+                mut = (prop or {}).get("mutation")
+                what = describe(mut, env) if isinstance(mut, dict) and mut.get("op") else "the proposal"
+                say(f"gen {s['gen']}: {what} refused before #board, {err}; asking once more")
         spent = round(s.get("spent_usd", 0.0) + cost, 6)
         prop = {**(prop or {}), "cost_usd": round(cost, 6), "attempts": attempts, "error": err}
         if err is not None:
-            say(f"gen {s['gen']}: no valid proposal after {len(attempts)} attempts: {err}")
+            what = "skipped, no lever" if err.startswith(levers.NO_LEVER) else "no valid proposal"
+            say(f"gen {s['gen']}: {what} after {len(attempts)} attempts: {err}")
             return {"proposal": prop, "spent_usd": spent, "candidate": None}
         cand.name, cand.parent = f"env{env_index(s['seed_env']) + s['gen']}", env.name
         diff = env_diff(env, cand)
@@ -776,7 +809,7 @@ def build_graph(*, run_quarter, propose, gate, weights, approvers, lineage_path,
                 "candidate": s["candidate"]["name"], "change": describe(p["mutation"], env),
                 "mutation": p["mutation"], "diagnosis": p.get("diagnosis"), "rationale": p.get("rationale"),
                 "diff": s["diff"], "parent_fitness": s["current_eval"]["fitness"], "seeds": s["seeds"],
-                "timeout_s": s["timeout_s"], "thread": (g or {}).get("thread"),
+                "min_gain": _g(s), "timeout_s": s["timeout_s"], "thread": (g or {}).get("thread"),
                 "deadline": (g or {}).get("deadline"), "ignored": len((g or {}).get("ignored", []))}
 
     def post_gate(s):
@@ -812,25 +845,32 @@ def build_graph(*, run_quarter, propose, gate, weights, approvers, lineage_path,
 
     def select(s):
         parent, ev = s["current_eval"], s["trial"]
-        kept = ev["fitness"] > parent["fitness"]
+        delta = round(ev["fitness"] - parent["fitness"], 4)
+        outcome = "kept" if delta > _g(s) else ("reverted" if delta < 0 else "no_effect")
         out = {}
-        if kept:
+        if outcome == "kept":
             cand = env_from_dict(s["candidate"])
             envs_dir.mkdir(parents=True, exist_ok=True)
             save_env(cand, envs_dir / f"{cand.name}.yaml")
             out.update(current=s["candidate"], current_eval=ev)
-        return {**out, "record": _gen_record(s, "kept" if kept else "reverted", parent, ev)}
+        return {**out, "record": _gen_record(s, outcome, parent, ev)}
 
     def _gen_record(s, outcome, parent_eval, ev):
         parent_env = env_from_dict(s["current"])         # still the parent: updates land after the node
         p = s.get("proposal") or {}
         g = s.get("gate") or {}
         dec = g.get("decision") or {}
-        pf = parent_eval["fitness"]
+        pf, mg = parent_eval["fitness"], _g(s)
         if outcome in ("kept", "reverted"):
-            cmp = ">" if outcome == "kept" else "<="
-            reason = (f"fitness {ev['fitness']:.3f} {cmp} parent {pf:.3f} on seeds {s['seeds']} "
+            cmp = f"> parent {pf:.3f} + min-gain {mg:g}" if outcome == "kept" else f"< parent {pf:.3f}"
+            reason = (f"fitness {ev['fitness']:.3f} {cmp} on seeds {s['seeds']} "
                       f"(Δ {ev['fitness'] - pf:+.3f}): {why_moved(parent_eval, ev)}")
+        elif outcome == "no_effect":
+            reason = (f"↔ no effect (Δ {ev['fitness'] - pf:+.2f} < min-gain {mg:g}): fitness {ev['fitness']:.3f} vs "
+                      f"parent {pf:.3f} on seeds {s['seeds']}, the parent stays: {why_moved(parent_eval, ev)}")
+        elif outcome == "skipped":
+            reason = (f"refused before the gate after {len(p.get('attempts') or [])} attempts, "
+                      f"{str(p.get('error')).removeprefix(levers.NO_LEVER).strip()}")
         elif outcome == "invalid":
             reason = f"no valid mutation after {len(p.get('attempts') or [])} attempts: {p.get('error')}"
         elif outcome == "timeout":
@@ -845,15 +885,19 @@ def build_graph(*, run_quarter, propose, gate, weights, approvers, lineage_path,
                 "approver": dec.get("approver"), "decision": dec.get("decision"), "outcome": outcome, "reason": reason,
                 "fitness": ev["fitness"] if ev else None, "parent_fitness": pf,
                 "delta": round(ev["fitness"] - pf, 4) if ev else None, "kept": outcome == "kept",
-                "seeds": s["seeds"], "metrics": ev["metrics"] if ev else None, "eval": _strip_eval(ev) if ev else None,
+                "seeds": s["seeds"], "min_gain": mg,
+                "metrics": ev["metrics"] if ev else None, "eval": _strip_eval(ev) if ev else None,
                 "gate": {"thread": g.get("thread"), "ignored": g.get("ignored", [])} if g else None,
                 "cost_usd": {"quarters": ev["cost_usd"] if ev else 0.0, "proposal": p.get("cost_usd", 0.0)},
                 "diff": s.get("diff") or None, "ts": time.time()}
 
     def not_trialed(s):
         g = s.get("gate") or {}
-        outcome = "invalid" if s.get("candidate") is None else (
-            "timeout" if (g.get("decision") or {}).get("decision") == "timeout" else "rejected")
+        if s.get("candidate") is None:
+            err = str((s.get("proposal") or {}).get("error") or "")
+            outcome = "skipped" if err.startswith(levers.NO_LEVER) else "invalid"
+        else:
+            outcome = "timeout" if (g.get("decision") or {}).get("decision") == "timeout" else "rejected"
         return {"record": _gen_record(s, outcome, s["current_eval"], None)}
 
     def record(s):
@@ -953,7 +997,7 @@ def evolve(env, *, generations: int = 3, seeds=DEFAULT_SEEDS, run_quarter: Calla
            envs_dir="company/envs", budget_usd: float | None = DEFAULT_BUDGET_USD, weights: dict | None = None,
            approvers=None, gate_timeout_s: float | None = None, checkpoint="company/state/evolve.sqlite",
            thread_id: str | None = None, read_rooms: Callable | None = None, roster: dict | None = None,
-           fresh: bool = False, log: Callable | None = None) -> dict:
+           fresh: bool = False, log: Callable | None = None, min_gain: float = DEFAULT_MIN_GAIN) -> dict:
     """Run (or resume) the evolution. Returns {run, best, best_fitness, records, stop_reason, spent_usd}.
 
     Resumes the checkpointed thread when it exists (also paused at the gate); a finished thread asked for
@@ -993,14 +1037,15 @@ def evolve(env, *, generations: int = 3, seeds=DEFAULT_SEEDS, run_quarter: Calla
             v = snap.values
             if v.get("gen", 0) < generations and not str(v.get("stop_reason") or "").startswith("budget"):
                 say(f"continue {run}: {v.get('gen')} → {generations} generations")
-                graph.update_state(cfg, {"generations": generations, "stop_reason": None}, as_node="record")
+                graph.update_state(cfg, {"generations": generations, "stop_reason": None,
+                                         "min_gain": float(min_gain)}, as_node="record")
                 inp = None
             else:
                 return _result(run, snap.values, lineage_path)
         else:
             runner = f"{getattr(run_quarter, '__module__', '?')}.{getattr(run_quarter, '__name__', '?')}"
             inp = {"run": run, "runner": runner, "seeds": seeds, "generations": int(generations),
-                   "budget_usd": budget_usd,
+                   "budget_usd": budget_usd, "min_gain": float(min_gain),
                    "timeout_s": timeout_s, "seed_env": env.name, "current": env_to_dict(env), "spent_usd": 0.0,
                    "est_gen_usd": 0.0, "history": []}
         while True:
@@ -1064,6 +1109,8 @@ def main(argv=None) -> int:
     ap.add_argument("--approvers", help="comma list (default $COMPANY_APPROVERS or haseeb,aditya)")
     ap.add_argument("--gate-timeout", type=float, default=None, help="seconds; no decision = auto-reject")
     ap.add_argument("--budget-usd", type=float, default=DEFAULT_BUDGET_USD)
+    ap.add_argument("--min-gain", type=float, default=DEFAULT_MIN_GAIN,
+                    help="keep a change only if mean fitness beats the parent's by more than this (default 0.5)")
     ap.add_argument("--out", help="write lineage.jsonl, lineage.md and envs/ here (default: company/)")
     ap.add_argument("--lineage")
     ap.add_argument("--envs-dir")
@@ -1108,10 +1155,11 @@ def main(argv=None) -> int:
         read_rooms = switch_room_reader(lambda: gate.t, board, room_prefix=a.room_prefix)
     res = evolve(a.env, generations=a.generations, seeds=[int(s) for s in a.seeds.split(",")],
                  run_quarter=load_quarter_runner(quarter, **qopts),
-                 propose=StubProposer(roster) if proposer == "stub" else LLMProposer(roster=roster),
+                 propose=(StubProposer(roster) if proposer == "stub"
+                          else LLMProposer(roster=roster, min_gain=a.min_gain)),
                  gate=gate, lineage_path=lineage, envs_dir=envs_dir, budget_usd=a.budget_usd, approvers=approvers,
                  gate_timeout_s=a.gate_timeout, checkpoint=a.checkpoint, thread_id=a.thread, read_rooms=read_rooms,
-                 roster=roster, fresh=a.fresh, log=say)
+                 roster=roster, fresh=a.fresh, log=say, min_gain=a.min_gain)
     from company.lineage_report import render
     md = render(res["records"])
     if out:
