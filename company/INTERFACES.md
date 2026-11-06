@@ -98,7 +98,13 @@ def complete(system: str, prompt: str, *, profile="company", timeout=120) -> tup
     # env SYNAPS_MACHINE_TOKEN from ~/.synaps-cli/company/broker/token (broker on 127.0.0.1:18282)
     # returns (text without banner lines, cost_usd parsed from "session saved: … ($0.0011)")
 def complete_json(system, prompt, **kw) -> tuple[dict, float]   # strips ```json fences, json.loads, one retry
+class LLMError(RuntimeError)   # missing token, timeout, non-zero exit, empty reply, no JSON after the retry; .cost_usd = spent anyway
 ```
+
+Env overrides (defaults above): `COMPANY_SYNAPS_PROFILE` (the name the "company" profile has here), `COMPANY_BROKER_TOKEN_FILE`,
+`COMPANY_BROKER_URL`, `COMPANY_SYNAPS_BASE_DIR`. `python -m company.llm setup` writes the profile into a private base dir
+(Haiku, thinking off, tiny system.md, empty mcp.json, all built-in tools disabled, `auth.remote_endpoint` = the broker);
+`python -m company.llm ping` makes one live JSON call. The prompt is sent as one stdin line (newlines become `\n`).
 
 ## company/devworker.py  (owner: B)
 
