@@ -15,6 +15,39 @@ Branch `feat/v0`. Updated at each milestone.
 | DESIGN-company ask (3) | done: only addressed frames, never its own, each message id once (persisted), per-thread cap. Live: `tools/loopcheck.py`, evidence `evidence/loopcheck-20261106-012541/` |
 | agency plugin (PR #15) | built into the private base dir: `~/.synaps-switch-dev/plugins/agency`, real dir, 283 agents / 18 divisions; daemon loads `plugins=2 skills=19` |
 
+## M4 #26: acme-shop on GitHub (the fork, real PRs)
+
+Live: `evidence/m4/github/` (README there). acme-shop#3 fixed by synaps-dev, pushed with the fork's deploy key,
+**https://github.com/HaseebKhalid1507/acme-shop/pull/9** opened by the company process, reviewed on `gh pr diff`,
+squash-merged into `m26-gen-1` after a (scripted) human approve in #board. Spend ≈ $0.66.
+
+- The room session has **no GitHub login**: `GH_CONFIG_DIR` = empty dir, no `SSH_AUTH_SOCK` (the extension's
+  `session_env` refuses it, and the `workdir_repo` clone runs with the session env), `GIT_SSH_COMMAND` offers only
+  the deploy key (`IdentitiesOnly`, `IdentityAgent=none`, `-F /dev/null`). It pushes `<gen-k>-fix-N` and reports the
+  branch in RESULT `pr`; it never opens or merges a PR. Probe: `gh auth status` fails, a push to another repo is
+  denied to the deploy key.
+- The company process opens the PR (`realwork.land_pr` → `acme.open_pr`: `gh pr create -R <fork> --base gen-k
+  --head gen-k-fix-N`), reviews the head, and after a #board human approves merges with `gh pr merge --squash
+  --match-head-commit <reviewed sha>` (`acme.check_mergeable`: on ACME_REPO, open, same repo, into gen-k). Any
+  asker (board or ops-maint over the direct line) gets the same flow.
+- Untrusted input: the market and `fetch_issue` read only issues by `ACME_ISSUE_AUTHORS` (default
+  `HaseebKhalid1507,adityapat958`); the upstream `adityapat958/acme-shop` is never written.
+- Setup: `tools/synaps_dev.py setup --github` (baseline + gen branch on the fork, the synaps-dev entry with a $3 cap,
+  `~/.synaps-switch-dev/acme-github.env` for the company process). Local-remote mode stays the default and the tests'.
+- The private daemon config gets `turn_budget.event.max_provider_rounds = 80`: the default 24 ended synaps-dev's turn
+  mid-fix (one Switch event = one turn).
+- `company/board/live.py`: `local_merge` / `live_review` also take fork PRs when GitHub mode is on (still refuse
+  anything else); the gate passes the reviewed sha to them.
+- #16 item 3: `company/devworker.py` takes `COMPANY_DEV_PROFILE`, `COMPANY_BROKER_TOKEN_FILE`, `COMPANY_BROKER_URL`,
+  `COMPANY_SYNAPS_BASE_DIR`, `COMPANY_SYNAPS_BIN` (company/llm.py's scheme); bella's settings are in its docstring.
+
+For #13 (the full live run on GitHub): `set -a; . ~/.synaps-switch-dev/acme-github.env; set +a` plus the
+`COMPANY_BROKER_*` / `COMPANY_SYNAPS_BASE_DIR` exports in the company process; `--acme-remote` must be the fork's ssh
+URL, not `file://` (`apply_env` still refuses a non-local remote: lift that guard to `acfg.local or
+acfg.allow_github_writes` in quarter.py); fresh generation prefix per run (fix branches can't be reused); the
+daemon's turn budget raised; two fixes per room session fit the $3 cap (one ≈ $0.60, the second in the same session
+costs more as context grows).
+
 ## M4 #12: real work (synaps-dev → review → #board → merge)
 
 Live, 13/13 PASS: `evidence/m4/real-work/` (README there). acme-shop#1 fixed by synaps-dev in its own clone,
@@ -28,9 +61,7 @@ reviewed (harness pytest + testing-reality-checker on Haiku), approved by a huma
   with a lease on a branch this run created; GitHub writes refused without the flag; local mode.
 - Extension: agent keys `skill_file`, `workdir_repo`, `session_env`, `session_path`; `skill/synaps-dev.md`;
   `tools/synaps_dev.py setup` writes the synaps-dev entry; `tools/session_trace.py` dumps a session's tool calls.
-- Once push access is granted: `tools/synaps_dev.py setup --github`, `ACME_REMOTE=git@github.com:adityapat958/acme-shop.git`,
-  `ACME_ALLOW_GITHUB_WRITES=1`, push `baseline` + `gen-k` to the real repo, PR refs become GitHub URLs (`gh pr create`
-  in the skill's instructions), `merge_pr` uses `gh pr merge --squash`.
+- GitHub mode is #26 below (the fork, deploy key, PRs opened by the company process).
 - Test agents/rooms: `synaps-dev`, `m12-board`, `m12-reviewer`; rooms `m12-dev`, `m12-board`. The private plugin link
   `~/.synaps-switch-dev/plugins/synaps-switch` pointed at the #12 worktree for the run.
 

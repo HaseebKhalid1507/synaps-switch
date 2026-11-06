@@ -112,15 +112,30 @@ class SessionCost:
         return round(sum(s["cost"] for s in self.sessions()), 6)
 
 
-# ───────────────────────── local-remote only ─────────────────────────
+# ───────────────────────── local remote, or the fork in GitHub mode ─────────────────────────
 
 
-def local_merge(pr) -> bool:
-    """devworker.merge_pr, refused for anything but a local PR ref (no GitHub write, ever)."""
-    if not acme.is_local_remote(pr or ""):
-        raise acme.GitHubWriteRefused(f"live quarter runs local-remote only; not merging {pr!r}")
+def github_pr_ok(pr) -> bool:
+    """A GitHub PR the live loop may review and merge: GitHub mode is on (#26: ACME_ALLOW_GITHUB_WRITES=1,
+    ACME_REMOTE on GitHub) and the PR is on ACME_REPO, the fork. The upstream is refused (acme.guard_write)."""
+    cfg = acme.config()
+    try:
+        p = acme.parse_pr_ref(pr or "")
+    except acme.AcmeError:
+        return False
+    if p["local"] or cfg.local or not cfg.allow_github_writes or p["repo"].lower() != cfg.repo.lower():
+        return False
+    acme.guard_write(cfg, f"merge {pr}")
+    return True
+
+
+def local_merge(pr, head_sha=None) -> bool:
+    """devworker.merge_pr for a local PR ref, or (GitHub mode, #26) a PR on the fork; with head_sha the merge
+    happens only if the PR head is still the reviewed commit. Anything else is refused."""
+    if not acme.is_local_remote(pr or "") and not github_pr_ok(pr):
+        raise acme.GitHubWriteRefused(f"live quarter merges local PR refs, or fork PRs in GitHub mode; not {pr!r}")
     from company.devworker import merge_pr
-    return merge_pr(pr)
+    return merge_pr(pr, head_sha=head_sha)
 
 
 def no_fallback(issue, kind, base=None, **_):
@@ -133,9 +148,12 @@ def live_review(issue_titles):
 
     def review(pr, *, issue, issue_text="", tests=None):
         p = acme.parse_pr_ref(pr)
-        if not p["local"]:
-            raise acme.GitHubWriteRefused(f"live quarter runs local-remote only; not reviewing {pr!r}")
-        tests = acme.run_tests_at(p["remote"], p["head"])
+        if p["local"]:
+            tests = acme.run_tests_at(p["remote"], p["head"])
+        elif github_pr_ok(pr):                                   # GitHub mode: the head, cloned and tested here
+            tests = acme.run_tests_at(acme.read_url(p["repo"]), acme.pr_info(pr)["head"])
+        else:
+            raise acme.GitHubWriteRefused(f"live quarter reviews local PR refs, or fork PRs in GitHub mode; not {pr!r}")
         return rw.review_pr(pr, issue=issue, issue_text=issue_text or issue_titles.get(issue, ""), tests=tests)
     return review
 

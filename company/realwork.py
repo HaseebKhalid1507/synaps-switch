@@ -25,6 +25,7 @@ For a LangGraph board (#10/#11) the gate is two calls around interrupt():
 """
 from __future__ import annotations
 
+import inspect
 import json
 import os
 import re
@@ -337,12 +338,13 @@ def decide(req: MergeRequest, decision: str, *, approver: str, week: int,
     if decision != "approve":
         return rec
     if merge is None:
-        from company.devworker import merge_pr
-        sha = ((req.review or {}).get("tests") or {}).get("sha")
-
-        def merge(pr):                            # merge exactly the commit that was reviewed
-            return merge_pr(pr, head_sha=sha)
-    rec["merged"] = bool(merge(req.pr))
+        from company.devworker import merge_pr as merge
+    sha = ((req.review or {}).get("tests") or {}).get("sha")
+    try:                                          # merge exactly the commit that was reviewed, when merge can
+        pinned = "head_sha" in inspect.signature(merge).parameters
+    except (TypeError, ValueError):
+        pinned = False
+    rec["merged"] = bool(merge(req.pr, head_sha=sha) if pinned and sha else merge(req.pr))
     if rec["merged"]:
         t = (verify or acme.tests_after_merge)(req.pr)
         rec.update(tests_passed=bool(t.get("passed")), tests=t.get("summary"), merged_sha=t.get("sha"))
