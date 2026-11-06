@@ -15,13 +15,13 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
 import switch_client as sc  # noqa: E402
-from fake_bridge import REG_TOKEN, FakeBridge  # noqa: E402
+from fake_bridge import REG_TOKEN, WAIT, FakeBridge  # noqa: E402
 
 from company.transport import (  # noqa: E402
     FakeTransport, Msg, SwitchTransport, Transport, addresses, parse_mentions)
 
 
-def wait(pred, timeout=5.0):
+def wait(pred, timeout=WAIT):
     t0 = time.monotonic()
     while time.monotonic() - t0 < timeout:
         if pred():
@@ -209,8 +209,8 @@ def fabric(tmp_path):
 
 def switch(fabric, **kw):
     logs = []
-    t = SwitchTransport(state_dir=fabric.state_dir, connect_timeout=5, log=lambda *a: logs.append(" ".join(map(str, a))),
-                        **kw)
+    t = SwitchTransport(state_dir=fabric.state_dir, connect_timeout=WAIT,
+                        log=lambda *a: logs.append(" ".join(map(str, a))), **kw)
     t.logs = logs
     return t
 
@@ -343,7 +343,7 @@ def test_switch_registers_once_and_keeps_credentials_private(tmp_path):
     logs = []
     try:
         t = SwitchTransport(fb.url, agents=["finance"], state_dir=state, registration_token=REG_TOKEN,
-                            connect_timeout=5, log=lambda *a: logs.append(" ".join(map(str, a))))
+                            connect_timeout=WAIT, log=lambda *a: logs.append(" ".join(map(str, a))))
         t.start()
         t.stop()
         creds_file = state / "agents" / "finance.json"
@@ -352,7 +352,7 @@ def test_switch_registers_once_and_keeps_credentials_private(tmp_path):
         assert stat.S_IMODE(os.stat(state / "transport" / "finance.state.json").st_mode) == 0o600
         assert creds["id"] in fb.agents and creds["base_url"] == fb.url
         t2 = SwitchTransport(fb.url, agents=["finance"], state_dir=state, registration_token="unused",
-                             connect_timeout=5)
+                             connect_timeout=WAIT)
         t2.start()
         t2.stop()
         assert [a["name"] for a in fb.agents.values()].count("finance") == 1
@@ -360,7 +360,7 @@ def test_switch_registers_once_and_keeps_credentials_private(tmp_path):
         creds_file.unlink()
         with pytest.raises(sc.SwitchError) as e:
             SwitchTransport(fb.url, agents=["finance"], state_dir=state, registration_token=REG_TOKEN,
-                            connect_timeout=5).start()
+                            connect_timeout=WAIT).start()
         assert e.value.status == 409
         assert not any(creds["api_key"] in line or REG_TOKEN in line for line in logs)
     finally:
