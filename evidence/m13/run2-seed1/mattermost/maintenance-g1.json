@@ -1,0 +1,50 @@
+[
+ {
+  "id": "nw3kozi7wfn88pecwon375rxxh",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957323763,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "4rb6kjdcspyf88d7qxa1jnkn3e",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957323777,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "accpysmbeigh7krxzgyc7t39ce",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-ops-maint added to the channel by admin.",
+  "create_at": 1793957323839,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "p6xgzmeotbg43rcdos3i9pzc8o",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957323853,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "tpkt3m69g7bnjfg8rrupohbwra",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Hi there! Just @m13-s1-ops-maint me when you're ready.",
+  "create_at": 1793957323945,
+  "type": null
+ },
+ {
+  "id": "wkmgjmj7ntrd8qhphopc9mx34h",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hello! Tag @m13-s1-board to loop me in.",
+  "create_at": 1793957323966,
+  "type": null
+ }
+]

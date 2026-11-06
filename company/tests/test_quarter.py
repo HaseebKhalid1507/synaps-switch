@@ -123,10 +123,23 @@ def test_cli_generations_runs_the_outer_loop_on_this_quarter(tmp_path):
     assert [x["gen"] for x in recs] == [0, 1, 2] and recs[0]["outcome"] == "seed"
     assert all(x["runner"] == "company.board.quarter.run_quarter" for x in recs)
     assert (tmp_path / "out/lineage.md").exists()
+    assert "open_quarter: env3 g3" in (tmp_path / "out/run.log").read_text()   # the trial quarters' log
+    assert (tmp_path / "out/transcript.jsonl").stat().st_size > 0
     # every trial quarter is its own "<env>:<seed>" thread in the quarter db
     import sqlite3
     threads = {t for (t,) in sqlite3.connect(tmp_path / "board.db").execute("select distinct thread_id from checkpoints")}
     assert {"env1:1", "env1:2", "env2:1", "env2:2", "env3:1", "env3:2"} <= threads
+
+
+def test_cli_generations_after_a_quarter_in_the_same_db(tmp_path):
+    """The quarter's thread is re-run by --generations (its config differs); the trial log goes to a new --out."""
+    base = [sys.executable, "-m", "company.run", "--env", ENV1, "--transport", "fake", "--weeks", "3",
+            "--db", str(tmp_path / "q.db"), "--state-dir", str(tmp_path / "st")]
+    assert subprocess.run(base + ["--out", str(tmp_path / "a")], cwd=ROOT, capture_output=True, timeout=300).returncode == 0
+    r = subprocess.run(base + ["--generations", "1", "--seeds", "42", "--evolve-db", str(tmp_path / "e.sqlite"),
+                               "--out", str(tmp_path / "b" / "new")], cwd=ROOT, capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, r.stderr
+    assert "| 1 | env2 |" in r.stdout and (tmp_path / "b/new/run.log").exists()
 
 
 def test_cli_quarters(tmp_path):
@@ -278,6 +291,27 @@ def test_live_merge_is_local_remote_only():
     import company.acme as acme
     with pytest.raises(acme.GitHubWriteRefused):
         local_merge("https://github.com/adityapat958/acme-shop/pull/1")
+
+
+def test_live_acme_is_a_local_clone_or_the_fork_in_github_mode(monkeypatch, tmp_path):
+    import company.acme as acme
+    for k in ("ACME_REPO", "ACME_REMOTE", "ACME_ALLOW_GITHUB_WRITES", "ACME_DEPLOY_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    local = "file://" + str(tmp_path / "origin.git")
+    assert qm.live_acme_config(local).local
+    fork = "git@github.com:HaseebKhalid1507/acme-shop.git"
+    with pytest.raises(acme.GitHubWriteRefused, match="GitHub mode"):
+        qm.live_acme_config(fork)                                  # no ACME_ALLOW_GITHUB_WRITES
+    monkeypatch.setenv("ACME_ALLOW_GITHUB_WRITES", "1")
+    monkeypatch.setenv("ACME_REPO", "HaseebKhalid1507/acme-shop")
+    cfg = qm.live_acme_config(fork)
+    assert not cfg.local and cfg.allow_github_writes and cfg.remote_url == fork
+    monkeypatch.setenv("ACME_REMOTE", fork)
+    assert qm.live_acme_config().remote_url == fork                # from ACME_REMOTE (tools/live_env.sh)
+    with pytest.raises(acme.GitHubWriteRefused, match="upstream"):
+        qm.live_acme_config("git@github.com:adityapat958/acme-shop.git")
+    with pytest.raises(acme.GitHubWriteRefused, match="not ACME_REPO"):
+        qm.live_acme_config("git@github.com:someone/else.git")
 
 
 def test_synaps_dev_cost_is_its_room_sessions(tmp_path):

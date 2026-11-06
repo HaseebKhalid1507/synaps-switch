@@ -1,0 +1,5 @@
+gate person: watching ~m13-board-g1 for m13-board's proposals; policy {1: 'approve', 2: 'approve', 3: 'reject change freeze: no more org changes before the demo; propose it next quarter'}
+gate person: gen 1 env1 → env2: posted '@m13-board approve' as user
+gate person: gen 2 env2 → env3: posted '@m13-board approve' as user
+gate person: gen 3 env3 → env4: posted '@m13-board reject change freeze: no more org changes before the demo; propose it next quarter' as user
+gate person: all generations answered

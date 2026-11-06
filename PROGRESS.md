@@ -41,12 +41,28 @@ squash-merged into `m26-gen-1` after a (scripted) human approve in #board. Spend
 - #16 item 3: `company/devworker.py` takes `COMPANY_DEV_PROFILE`, `COMPANY_BROKER_TOKEN_FILE`, `COMPANY_BROKER_URL`,
   `COMPANY_SYNAPS_BASE_DIR`, `COMPANY_SYNAPS_BIN` (company/llm.py's scheme); bella's settings are in its docstring.
 
-For #13 (the full live run on GitHub): `set -a; . ~/.synaps-switch-dev/acme-github.env; set +a` plus the
-`COMPANY_BROKER_*` / `COMPANY_SYNAPS_BASE_DIR` exports in the company process; `--acme-remote` must be the fork's ssh
-URL, not `file://` (`apply_env` still refuses a non-local remote: lift that guard to `acfg.local or
-acfg.allow_github_writes` in quarter.py); fresh generation prefix per run (fix branches can't be reused); the
-daemon's turn budget raised; two fixes per room session fit the $3 cap (one ≈ $0.60, the second in the same session
-costs more as context grows).
+## M4 #13: the live run (env1 baseline vs evolved, real PRs)
+
+Live: `evidence/m13/` (README there). Two runs of `company.run --generations 3` on Switch + Mattermost, GitHub mode,
+3-week quarters, synaps-dev 1/week and 2/quarter. Approvals scripted as the Mattermost user `user` by a policy
+committed before the run (`evidence/m13/POLICY.md`: merges iff review PASS + pytest green; org changes approve
+gens 1-2, reject gen 3).
+
+- Run 1, seed 42: env1 13.62 → env2 `link #maintenance ↔ #dev` 15.96 kept (+2.33: fix time 2.50 → 1.50 wk, profit
+  $20.8k → $23.0k) → env3 `hire incident-commander` 16.02 kept (+0.06) → gen 3 `policy dev_capacity → 3` rejected by
+  the person. Run 2, seed 1: 12.85 → 14.19 kept (+1.35, the same link) → 15.12 kept (+0.93,
+  `policy dev_capacity_per_quarter → 4`), then its $6 budget guard stopped it.
+- 12 PRs merged on the fork, acme-shop#10 to #21, into `m13-gen-<k>` / `m13-s1-gen-<k>`; env1's through the board
+  relay, the evolved envs' over the direct line (ops-maint → synaps-dev in #dev). `main`/`baseline` untouched.
+- $7.21 total (synaps-dev $6.69), 47 min 41 s. No quarter failed; no resume needed.
+- **No fitness revert.** Both gen-2 changes were mechanical no-ops (the hire isn't a tester; `dev_capacity*` aren't
+  policy keys the mechanics read) and were kept because their trial's real LLM bill was lower; keep is a strict `>`
+  with no noise margin. Follow-ups: refuse `set_policy` keys nothing reads; a noise margin or ties to the parent.
+- Code: `quarter.live_acme_config` (a live quarter runs on the fork when `ACME_ALLOW_GITHUB_WRITES` is set, still
+  refuses the upstream and anything else; tested), `tools/live_env.sh` (the company process's live settings from
+  `~/.synaps-switch-dev`, values never printed), `--generations` passes `--out` to the trial quarters (run.log,
+  transcript.jsonl; the out dir is created), `evidence/m13/{export,threads,gate_person}.py`.
+- `company/envs/env2.yaml`, `env3.yaml`: run 1's evolved envs.
 
 ## M4 #12: real work (synaps-dev → review → #board → merge)
 

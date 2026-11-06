@@ -1,0 +1,50 @@
+[
+ {
+  "id": "eij9rg1nb7nu9ywfif1a4sq44e",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957783327,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "tuid4dn31pbhdj9jgfdicjpdfe",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957783380,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "kdxp8s3hzfbojqoeo1uicxghbo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-marketing added to the channel by admin.",
+  "create_at": 1793957783424,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "hfqon8jegbnquymoxcwtrtfsoh",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957783440,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "tb71t3bbyfyfj8s4q5we4m8rya",
+  "root_id": null,
+  "user": "m13-s1-marketing",
+  "message": "Hi! I'm here to help — mention @m13-s1-marketing anytime.",
+  "create_at": 1793957783525,
+  "type": null
+ },
+ {
+  "id": "4q4iao5dstn6zmnwaho791ikcy",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hello! I'm ready — just tag @m13-s1-board when you need me.",
+  "create_at": 1793957783564,
+  "type": null
+ }
+]

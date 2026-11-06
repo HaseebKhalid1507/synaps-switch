@@ -1,0 +1,2 @@
+{"gen": 1, "proposal": "env1 \u2192 env2", "mm_root": "nattkqkstbgujxh5x4qinwnn7r", "mm_post": "q6it6ux3rjfbixchkaceww48mc", "as": "user", "text": "@m13-s1-board approve", "scripted": true, "policy": "fixed before the run: approve gens 1-2, reject gen 3", "ts": 1793957780.6445005}
+{"gen": 2, "proposal": "env2 \u2192 env3", "mm_root": "eguuernuftdw3qbwzu5x75u59r", "mm_post": "bbxe4mch4fdz9c9e5ia3hunmyy", "as": "user", "text": "@m13-s1-board approve", "scripted": true, "policy": "fixed before the run: approve gens 1-2, reject gen 3", "ts": 1793958421.598807}

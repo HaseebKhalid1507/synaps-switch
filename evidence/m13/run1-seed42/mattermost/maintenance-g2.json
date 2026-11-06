@@ -1,0 +1,186 @@
+[
+ {
+  "id": "uo38g7swnjne3j3xwxpc3ck67r",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956379348,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "9thtiwwmpfy33k9ibbxz9q3yro",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956379364,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "fg78g8y68tgfub3d7ieritfq3r",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-ops-maint added to the channel by admin.",
+  "create_at": 1793956379413,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "4gzn6ymr93bwjeu9cssiok4cjh",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956379448,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "brsh76k6mtbxzr7bu7epqsupsa",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-reviewer added to the channel by admin.",
+  "create_at": 1793956379457,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ycf1rysz3fggzyrxoa34x64g6e",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956379470,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "w8qjgj6opfr48y69fysggjtz3c",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "Hello! Tag @m13-ops-maint to loop me in.",
+  "create_at": 1793956379575,
+  "type": null
+ },
+ {
+  "id": "q8b89opcu3dyxez43ei1umc3oy",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hello! Tag @m13-board to loop me in.",
+  "create_at": 1793956379594,
+  "type": null
+ },
+ {
+  "id": "4s9b57w6t7g5trnsa7usxcua6h",
+  "root_id": null,
+  "user": "m13-reviewer",
+  "message": "Hey! Ping @m13-reviewer and I'll jump in.",
+  "create_at": 1793956379644,
+  "type": null
+ },
+ {
+  "id": "dwegapoi97yqbdjsj5zuc59mdc",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hello! I'm ready — just tag @m13-market when you need me.",
+  "create_at": 1793956379659,
+  "type": null
+ },
+ {
+  "id": "s8dubi1o8bghzg9jjzh1xyt6go",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 90 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, issue #1) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956384451,
+  "type": null
+ },
+ {
+  "id": "45oftej9838yxbinnm31qjmhdh",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2, issue #2) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956384544,
+  "type": null
+ },
+ {
+  "id": "rwzdo7pmot8gjcast9trd1hasc",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue #3) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956385218,
+  "type": null
+ },
+ {
+  "id": "1jcfxmdqo3f18xcpq43rfhcu6y",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 30 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results (sev3, issue #4) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956385288,
+  "type": null
+ },
+ {
+  "id": "7zdfozeccfd8xyxhxkn1c4njic",
+  "root_id": "s8dubi1o8bghzg9jjzh1xyt6go",
+  "user": "m13-ops-maint",
+  "message": "Sev1 incident: empty coupon crashes checkout. Critical customer impact—blocking all transactions with coupons. Routing to @synaps-dev for immediate fix. cc @m13-board for awareness.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956386290,
+  "type": null
+ },
+ {
+  "id": "k67ycbbzjpdatn94ykadduy33r",
+  "root_id": null,
+  "user": "admin",
+  "message": "switch-admin added to the channel by admin.",
+  "create_at": 1793956386366,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "yztghw9yotfmtqoc5ep876tb1w",
+  "root_id": "s8dubi1o8bghzg9jjzh1xyt6go",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956386389,
+  "type": null
+ },
+ {
+  "id": "py4j9hac3j8nmcgfdy9bigu64o",
+  "root_id": "45oftej9838yxbinnm31qjmhdh",
+  "user": "m13-ops-maint",
+  "message": "Sev2 confirmed: tax double-charged on discounted orders. Customer impact: revenue leak + churn risk. Routing to @synaps-dev for immediate fix. Estimate 2–4 hours. Will track closure.\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956388238,
+  "type": null
+ },
+ {
+  "id": "op4hbuwzzpg1dc89zxr9jpur8h",
+  "root_id": "45oftej9838yxbinnm31qjmhdh",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956388274,
+  "type": null
+ },
+ {
+  "id": "3ctj8tjs878nfmxachuiyb78ie",
+  "root_id": "rwzdo7pmot8gjcast9trd1hasc",
+  "user": "m13-ops-maint",
+  "message": "@synaps-dev Sev2 incident #3: payment failure doesn't release inventory, causing negative stock. Customer impact: 60 customers affected, revenue risk from overselling. Owner: you. Fix required immediately.\n\n```json\n{\"type\": \"route\", \"issue\": 3, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956389780,
+  "type": null
+ },
+ {
+  "id": "9ft1e58qpfyd3foo7c7y7apr1y",
+  "root_id": "rwzdo7pmot8gjcast9trd1hasc",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956389841,
+  "type": null
+ },
+ {
+  "id": "rxa1gri3bj8uzbx7m9qed5kjmr",
+  "root_id": "1jcfxmdqo3f18xcpq43rfhcu6y",
+  "user": "m13-ops-maint",
+  "message": "Sev3 confirmed: string sort bug in product pricing. Routing to @synaps-dev for fix. Low customer impact but affects UX. ETA 2-4 hours.\n\n```json\n{\"type\": \"route\", \"issue\": 4, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956391344,
+  "type": null
+ },
+ {
+  "id": "eebuif186i8audigibfrsmotyr",
+  "root_id": "1jcfxmdqo3f18xcpq43rfhcu6y",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956391364,
+  "type": null
+ }
+]

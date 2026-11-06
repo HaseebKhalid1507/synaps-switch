@@ -13,7 +13,7 @@ The graph (one thread per quarter, SqliteSaver checkpoints after every node, thr
 - open_quarter: Switch only: register every agent (dept agents, the board, the `market` identity; synaps-dev
   must already exist), apply_env generation k on the board's own link with every dept agent invited into
   #board and the market into every room, pin the rooms, cut the acme-shop branch gen-k from baseline on
-  the local remote. The board says the quarter is open in #board.
+  the local remote (or the fork in GitHub mode, #26). The board says the quarter is open in #board.
 - operate(w): deps.week = w; the market posts each `Market.events_for_week(w)` event into its room,
   @-addressed to that room's dept agents (`Departments.event_message`); the dept agents act (ACTION blocks
   into the QuarterLog, finance reviews). FakeTransport is synchronous; on Switch the week ends when the
@@ -117,7 +117,7 @@ class QuarterConfig:
     switch_url: str | None = None
     token_file: str | None = None
     devstack: str | None = None
-    acme_remote: str | None = None           # local bare repo (file://...); live runs refuse anything else
+    acme_remote: str | None = None           # local bare repo (file://...), or the fork in GitHub mode (#26)
     acme_prefix: str = ""                    # branch gen-k becomes <prefix>gen-k
     ledger_rows: list = field(default_factory=list)   # earlier quarters' rows, kept in the Ledger
     quarter_label: Any = None
@@ -206,6 +206,7 @@ class Runtime:
         if self.cfg.log:
             self.cfg.log(line)
         if self.cfg.out_dir:
+            Path(self.cfg.out_dir).mkdir(parents=True, exist_ok=True)
             with open(Path(self.cfg.out_dir) / "run.log", "a", encoding="utf-8") as f:
                 f.write(line + "\n")
 
@@ -902,6 +903,21 @@ def write_ledger(rt: Runtime, rows):
 # ───────────────────────── live setup ─────────────────────────
 
 
+def live_acme_config(remote=None):
+    """acme-shop for a live quarter: a local bare clone (file://...), or the fork in GitHub mode (#26:
+    ACME_ALLOW_GITHUB_WRITES=1, the remote = ACME_REPO; the upstream is refused). Anything else is refused."""
+    from company import acme
+    remote = remote or os.environ.get("ACME_REMOTE")
+    acfg = acme.config(remote=remote) if remote else acme.config()
+    if acfg.local:
+        return acfg
+    if not acfg.allow_github_writes:
+        raise acme.GitHubWriteRefused("the live quarter runs on a local bare clone (file://...) or, in GitHub mode "
+                                      "(ACME_ALLOW_GITHUB_WRITES=1), on the fork ACME_REPO: not " + acfg.remote_url)
+    acme.guard_write(acfg, "start a generation")
+    return acfg
+
+
 def live_setup(rt: Runtime) -> dict:
     """Switch: every agent registered (SwitchTransport.start did), synaps-dev present, the generation's rooms
     applied on the board's link with the extra members, rooms pinned, acme-shop gen-k cut on the local remote."""
@@ -940,11 +956,7 @@ def live_setup(rt: Runtime) -> dict:
                     channels[name] = dev.mm(e, "GET", f"/channels/{r['channel_id']}", who="admin")["name"]
                 except (Exception, SystemExit):  # noqa: BLE001
                     rt.log(f"apply: no Mattermost channel name for {name}")
-    remote = cfg.acme_remote or os.environ.get("ACME_REMOTE")
-    acfg = acme.config(remote=remote) if remote else acme.config()
-    if not acfg.local:
-        raise acme.GitHubWriteRefused("the live quarter runs local-remote only: set acme_remote / ACME_REMOTE "
-                                      "to the local bare clone (file://...)")
+    acfg = live_acme_config(cfg.acme_remote)
     base = acme.start_generation(rt.k, acfg, prefix=cfg.acme_prefix)
     rt.log(f"apply: rooms {json.dumps(rooms)}; Mattermost {json.dumps(channels)}; acme-shop base {base} on {acfg.remote}")
     dev_room = (st.get("rooms") or {}).get("dev", {}).get("switch_name") or f"{cfg.room_prefix}dev-g{rt.k}"

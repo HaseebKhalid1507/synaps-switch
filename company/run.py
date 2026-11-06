@@ -153,7 +153,7 @@ def generations(a, env, qopts, llm_kind, split) -> int:
     from company.lineage_report import render
 
     say = (lambda *x: print(" ".join(map(str, x)), file=sys.stderr, flush=True)) if a.verbose else None
-    run_q = load_quarter_runner("quarter", **qopts)
+    run_q = load_quarter_runner("quarter", **qopts, out_dir=a.out)   # every quarter appends run.log, transcript.jsonl
     roster = load_personas()
     approvers = split(a.approvers)
     read_rooms = None

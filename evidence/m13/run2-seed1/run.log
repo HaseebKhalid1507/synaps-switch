@@ -1,0 +1,134 @@
+04:28:39 transport: registered m13-s1-board: agent id 9b098c7b-9b33-4df9-aaaa-3570d0aab754
+04:28:39 transport: registered m13-s1-ops-maint: agent id cbda033d-cb97-42ed-b2f4-80a3c24a1b08
+04:28:40 transport: registered m13-s1-growth: agent id 4b756124-5b20-4842-9f5a-09548819d9c5
+04:28:41 transport: registered m13-s1-marketing: agent id 5654f2c1-8228-4f27-b123-be55566ec975
+04:28:42 transport: registered m13-s1-finance: agent id 80ed0809-54af-4e18-aa9b-ce2f66222896
+04:28:42 transport: registered m13-s1-reviewer: agent id ac079006-ceba-4e16-8b5b-b27b31170d0f
+04:28:42 transport: registered m13-s1-market: agent id 3afd65d5-8eae-417c-a8fc-8c337b11b4e0
+04:28:44 apply: template: group 'm13-s1-env1-g1', 6 rooms
+04:28:45 apply: Mattermost fixup of m13-s1-board-g1 failed: SystemExit: 1
+04:28:45 apply: Mattermost fixup of m13-s1-dev-g1 failed: SystemExit: 1
+04:28:45 apply: Mattermost fixup of m13-s1-maintenance-g1 failed: SystemExit: 1
+04:28:45 apply: Mattermost fixup of m13-s1-growth-g1 failed: SystemExit: 1
+04:28:45 apply: Mattermost fixup of m13-s1-marketing-g1 failed: SystemExit: 1
+04:28:45 apply: Mattermost fixup of m13-s1-finance-g1 failed: SystemExit: 1
+04:28:45 apply: applied env1 generation 1: 6 rooms, 5 links, documents ['Handbook', 'Ledger']
+04:28:48 apply: rooms {"board": "10723623-7ba5-4331-b2bb-c204f1581a35", "dev": "1632bda2-cd67-43ef-9e25-7ac4d35d37af", "maintenance": "dcbdd3eb-0067-4692-9dcb-de09c914aa4a", "growth": "a2148fbe-cf3a-49c9-8713-279fb5c32b49", "marketing": "ccc381da-abfd-4433-b047-f12453079184", "finance": "a491e775-ec03-4403-bb2e-0845b9314c0d"}; Mattermost {"board": "m13-s1-board-g1", "dev": "m13-s1-dev-g1", "finance": "m13-s1-finance-g1", "growth": "m13-s1-growth-g1", "maintenance": "m13-s1-maintenance-g1", "marketing": "m13-s1-marketing-g1"}; acme-shop base m13-s1-gen-1 on git@github.com:HaseebKhalid1507/acme-shop.git
+04:28:48 week 1: org: direct lines none (every hand-off to #dev goes through #board); synaps-dev capacity 1/week, 2/quarter; PR reviewers in #dev: reviewer
+04:28:48 open_quarter: env1 g1 seed 1, 3 weeks, base m13-s1-gen-1
+04:28:48 week 1: market -> #maintenance: @ops-maint 90 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, is
+04:28:49 week 1: market -> #maintenance: @ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2
+04:28:49 week 1: market -> #maintenance: @ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue
+04:28:49 week 1: market -> #maintenance: @ops-maint 30 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results 
+04:29:11 week 1: 4 events; rooms quiet after 22.0s; llm $0.0178; routes 4
+04:29:11 week 1: #1 (sev1) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)
+04:29:11 week 1: #2 (sev2) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)
+04:29:11 week 1: #3 (sev2) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)
+04:29:11 week 1: #4 (sev3) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)
+04:29:11 week 2: market -> #growth: @growth Customer demand for 'Feature: free shipping on orders over 0' (issue #5, demand score 0.9) Decide now 
+04:29:11 week 2: market -> #growth: @growth Customer demand for 'Feature: 3-for-2 bundle discount (buy 3, pay for 2)' (issue #6, demand score 0.6)
+04:29:11 week 2: market -> #growth: @growth Customer demand for 'Feature: save cart for later and restore it' (issue #7, demand score 0.6) Decide 
+04:29:12 week 2: market -> #growth: @growth Customer demand for 'Feature: order history endpoint (GET /orders/<session>)' (issue #8, demand score 
+04:29:51 week 2: 4 events; rooms quiet after 39.8s; llm $0.0509; routes 6
+04:29:52 week 2: #1 (sev1) waited for board relay: raised wk1 by ops-maint in #maintenance, dispatched wk2
+04:29:52 week 2: dispatch acme-shop#1 (incident) on m13-s1-gen-1 as board
+04:31:32 week 2: RESULT acme-shop#1 via synaps-dev after 95.7s: proposed pr=https://github.com/HaseebKhalid1507/acme-shop/pull/16
+04:31:44 approver (scripted human, user via dev.py mm-post): approve acme-shop#1
+04:31:53 merge decision acme-shop#1: approve by user, merged=True tests_passed=True
+04:31:54 week 3: market -> #finance: @finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unu
+04:32:11 week 3: 1 events; rooms quiet after 16.8s; llm $0.4862; routes 6
+04:32:11 week 3: #2 (sev2) waited for board relay: raised wk1 by ops-maint in #maintenance, dispatched wk3 (+1 wk waiting for dev capacity, 1/week, 2/quarter)
+04:32:11 week 3: dispatch acme-shop#2 (incident) on m13-s1-gen-1 as board
+04:35:26 week 3: RESULT acme-shop#2 via synaps-dev after 191.3s: proposed pr=https://github.com/HaseebKhalid1507/acme-shop/pull/17
+04:35:37 approver (scripted human, user via dev.py mm-post): approve acme-shop#2
+04:35:45 merge decision acme-shop#2: approve by user, merged=True tests_passed=True
+04:35:48 week 3: quarter mechanics: items relayed by the board: 2; weeks waited for the board's relay: 2; weeks waited for dev capacity: 1; routes never dispatched: 2
+04:35:48 week 3: to the market: 0 campaign(s), $0 spend, mean quality 0.00, 0 citing a shipped feature; approved spend none; 0 item(s) approved, 0 denied by finance/policy; price $29.00; fixes [(1, 2), (2, 3)], features []
+04:35:48 settle: Metrics(revenue=$25,081, costs=$5,001, profit=$20,080, customers=1333, churn=1.9%, growth=-11.2%, open_sev=3.0, mean_fix_wks=2.50, llm=$1.18); fitness 12.8457; not approved at quarter end: 2
+04:35:48 report: Ledger of m13-s1-env1-g1 updated (1 row(s))
+04:36:23 apply: template: group 'm13-s1-env2-g2', 6 rooms
+04:36:24 apply: Mattermost fixup of m13-s1-board-g2 failed: SystemExit: 1
+04:36:24 apply: Mattermost fixup of m13-s1-dev-g2 failed: SystemExit: 1
+04:36:24 apply: Mattermost fixup of m13-s1-maintenance-g2 failed: SystemExit: 1
+04:36:24 apply: Mattermost fixup of m13-s1-growth-g2 failed: SystemExit: 1
+04:36:24 apply: Mattermost fixup of m13-s1-marketing-g2 failed: SystemExit: 1
+04:36:24 apply: Mattermost fixup of m13-s1-finance-g2 failed: SystemExit: 1
+04:36:24 apply: applied env2 generation 2: 6 rooms, 7 links, documents ['Handbook', 'Ledger']
+04:36:27 apply: rooms {"board": "28268f5f-c5ea-4916-9063-5a2ddbffd7b2", "dev": "ddc50bdf-dfe0-4fcb-b1d9-0947ce6ade6b", "maintenance": "b01dda2a-a8e5-499c-b2ff-1fd9fcc05cdd", "growth": "1acd6f6e-772f-4544-9619-fa0a69b75e0a", "marketing": "b12ef741-19b4-43cd-a760-d04b6dbbbcbd", "finance": "0c693558-fc7e-4da8-a1c5-96feb0de4869"}; Mattermost {"board": "m13-s1-board-g2", "dev": "m13-s1-dev-g2", "finance": "m13-s1-finance-g2", "growth": "m13-s1-growth-g2", "maintenance": "m13-s1-maintenance-g2", "marketing": "m13-s1-marketing-g2"}; acme-shop base m13-s1-gen-2 on git@github.com:HaseebKhalid1507/acme-shop.git
+04:36:27 week 1: org: direct lines #maintenance ↔ #dev; synaps-dev capacity 1/week, 2/quarter; PR reviewers in #dev: reviewer
+04:36:27 open_quarter: env2 g2 seed 1, 3 weeks, base m13-s1-gen-2
+04:36:28 week 1: market -> #maintenance: @ops-maint 90 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, is
+04:36:28 week 1: market -> #maintenance: @ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2
+04:36:28 week 1: market -> #maintenance: @ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue
+04:36:28 week 1: market -> #maintenance: @ops-maint 30 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results 
+04:36:54 week 1: 4 events; rooms quiet after 26.6s; llm $0.0258; routes 4
+04:36:54 week 1: #1 (sev1) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly
+04:36:54 week 1: #2 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly
+04:36:54 week 1: #3 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly
+04:36:54 week 1: #4 (sev3) raised wk1 by ops-maint in #maintenance: not urgent (sev1/sev2 only take the #maintenance ↔ #dev line), so it waits for the board's relay (wk2)
+04:36:54 week 1: #1 (sev1) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk1
+04:36:54 week 1: ops-maint hands acme-shop#1 to synaps-dev in #dev over the direct line
+04:36:54 week 1: dispatch acme-shop#1 (incident) on m13-s1-gen-2 as ops-maint
+04:38:43 week 1: RESULT acme-shop#1 via synaps-dev after 105.3s: proposed pr=https://github.com/HaseebKhalid1507/acme-shop/pull/18
+04:38:54 approver (scripted human, user via dev.py mm-post): approve acme-shop#1
+04:38:59 merge decision acme-shop#1: approve by user, merged=True tests_passed=True
+04:38:59 week 2: market -> #growth: @growth Customer demand for 'Feature: free shipping on orders over 0' (issue #5, demand score 0.9) Decide now 
+04:38:59 week 2: market -> #growth: @growth Customer demand for 'Feature: 3-for-2 bundle discount (buy 3, pay for 2)' (issue #6, demand score 0.6)
+04:38:59 week 2: market -> #growth: @growth Customer demand for 'Feature: save cart for later and restore it' (issue #7, demand score 0.6) Decide 
+04:38:59 week 2: market -> #growth: @growth Customer demand for 'Feature: order history endpoint (GET /orders/<session>)' (issue #8, demand score 
+04:39:38 week 2: 4 events; rooms quiet after 38.4s; llm $0.4715; routes 7
+04:39:38 week 2: #2 (sev2) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk2 (+1 wk waiting for dev capacity, 1/week, 2/quarter)
+04:39:38 week 2: ops-maint hands acme-shop#2 to synaps-dev in #dev over the direct line
+04:39:38 week 2: dispatch acme-shop#2 (incident) on m13-s1-gen-2 as ops-maint
+04:45:51 week 2: RESULT acme-shop#2 via synaps-dev after 370.5s: proposed pr=https://github.com/HaseebKhalid1507/acme-shop/pull/19
+04:45:59 approver (scripted human, user via dev.py mm-post): approve acme-shop#2
+04:46:04 merge decision acme-shop#2: approve by user, merged=True tests_passed=True
+04:46:04 week 3: market -> #finance: @finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unu
+04:46:21 week 3: 1 events; rooms quiet after 16.8s; llm $1.9780; routes 7
+04:46:24 week 3: quarter mechanics: items handed to synaps-dev directly: 2; weeks waited for dev capacity: 1; routes never dispatched: 2
+04:46:24 week 3: to the market: 0 campaign(s), $0 spend, mean quality 0.00, 0 citing a shipped feature; approved spend none; 0 item(s) approved, 0 denied by finance/policy; price $29.00; fixes [(1, 1), (2, 2)], features []
+04:46:24 settle: Metrics(revenue=$27,215, costs=$5,002, profit=$22,213, customers=1368, churn=1.9%, growth=-8.9%, open_sev=3.0, mean_fix_wks=1.50, llm=$1.98); fitness 14.1908; not approved at quarter end: 2
+04:46:24 report: Ledger of m13-s1-env2-g2 updated (1 row(s))
+04:47:03 apply: template: group 'm13-s1-env3-g3', 6 rooms
+04:47:03 apply: Mattermost fixup of m13-s1-board-g3 failed: SystemExit: 1
+04:47:03 apply: Mattermost fixup of m13-s1-dev-g3 failed: SystemExit: 1
+04:47:03 apply: Mattermost fixup of m13-s1-maintenance-g3 failed: SystemExit: 1
+04:47:03 apply: Mattermost fixup of m13-s1-growth-g3 failed: SystemExit: 1
+04:47:03 apply: Mattermost fixup of m13-s1-marketing-g3 failed: SystemExit: 1
+04:47:04 apply: Mattermost fixup of m13-s1-finance-g3 failed: SystemExit: 1
+04:47:04 apply: applied env3 generation 3: 6 rooms, 7 links, documents ['Handbook', 'Ledger']
+04:47:07 apply: rooms {"board": "0aa6a49a-8739-4767-99e9-2ad1024c18fe", "dev": "d98a0caa-4cab-4120-b4b3-11950342c540", "maintenance": "eda02e2d-98a5-45a9-8412-1f341f4f15e2", "growth": "4a20102f-ef75-4f96-a0bd-6fed80a4f2c0", "marketing": "4a81c88c-18a4-4663-acf2-6809b180d696", "finance": "721a1cff-2ae3-4028-a229-74437edf1776"}; Mattermost {"board": "m13-s1-board-g3", "dev": "m13-s1-dev-g3", "finance": "m13-s1-finance-g3", "growth": "m13-s1-growth-g3", "maintenance": "m13-s1-maintenance-g3", "marketing": "m13-s1-marketing-g3"}; acme-shop base m13-s1-gen-3 on git@github.com:HaseebKhalid1507/acme-shop.git
+04:47:07 week 1: org: direct lines #maintenance ↔ #dev; synaps-dev capacity 1/week, 2/quarter; PR reviewers in #dev: reviewer
+04:47:07 open_quarter: env3 g3 seed 1, 3 weeks, base m13-s1-gen-3
+04:47:07 week 1: market -> #maintenance: @ops-maint 90 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, is
+04:47:07 week 1: market -> #maintenance: @ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2
+04:47:07 week 1: market -> #maintenance: @ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue
+04:47:07 week 1: market -> #maintenance: @ops-maint 30 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results 
+04:47:30 week 1: 4 events; rooms quiet after 22.2s; llm $0.0143; routes 4
+04:47:30 week 1: #1 (sev1) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly
+04:47:30 week 1: #2 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly
+04:47:30 week 1: #3 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly
+04:47:30 week 1: #4 (sev3) raised wk1 by ops-maint in #maintenance: not urgent (sev1/sev2 only take the #maintenance ↔ #dev line), so it waits for the board's relay (wk2)
+04:47:30 week 1: #1 (sev1) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk1
+04:47:30 week 1: ops-maint hands acme-shop#1 to synaps-dev in #dev over the direct line
+04:47:30 week 1: dispatch acme-shop#1 (incident) on m13-s1-gen-3 as ops-maint
+04:48:29 week 1: RESULT acme-shop#1 via synaps-dev after 56.8s: proposed pr=https://github.com/HaseebKhalid1507/acme-shop/pull/20
+04:48:36 approver (scripted human, user via dev.py mm-post): approve acme-shop#1
+04:48:40 merge decision acme-shop#1: approve by user, merged=True tests_passed=True
+04:48:40 week 2: market -> #growth: @growth Customer demand for 'Feature: free shipping on orders over 0' (issue #5, demand score 0.9) Decide now 
+04:48:40 week 2: market -> #growth: @growth Customer demand for 'Feature: 3-for-2 bundle discount (buy 3, pay for 2)' (issue #6, demand score 0.6)
+04:48:40 week 2: market -> #growth: @growth Customer demand for 'Feature: save cart for later and restore it' (issue #7, demand score 0.6) Decide 
+04:48:41 week 2: market -> #growth: @growth Customer demand for 'Feature: order history endpoint (GET /orders/<session>)' (issue #8, demand score 
+04:49:21 week 2: 4 events; rooms quiet after 40.2s; llm $0.3349; routes 6
+04:49:21 week 2: #2 (sev2) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk2 (+1 wk waiting for dev capacity, 1/week, 2/quarter)
+04:49:21 week 2: ops-maint hands acme-shop#2 to synaps-dev in #dev over the direct line
+04:49:21 week 2: dispatch acme-shop#2 (incident) on m13-s1-gen-3 as ops-maint
+04:53:38 week 2: RESULT acme-shop#2 via synaps-dev after 253.4s: proposed pr=https://github.com/HaseebKhalid1507/acme-shop/pull/21
+04:53:50 approver (scripted human, user via dev.py mm-post): approve acme-shop#2
+04:53:59 merge decision acme-shop#2: approve by user, merged=True tests_passed=True
+04:53:59 week 3: market -> #finance: @finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unu
+04:54:16 week 3: 1 events; rooms quiet after 16.8s; llm $1.0517; routes 6
+04:54:20 week 3: quarter mechanics: items handed to synaps-dev directly: 2; weeks waited for dev capacity: 1; routes never dispatched: 2
+04:54:20 week 3: to the market: 0 campaign(s), $0 spend, mean quality 0.00, 0 citing a shipped feature; approved spend none; 0 item(s) approved, 0 denied by finance/policy; price $29.00; fixes [(1, 1), (2, 2)], features []
+04:54:20 settle: Metrics(revenue=$27,215, costs=$5,001, profit=$22,214, customers=1368, churn=1.9%, growth=-8.9%, open_sev=3.0, mean_fix_wks=1.50, llm=$1.05); fitness 15.1180; not approved at quarter end: 2
+04:54:20 report: Ledger of m13-s1-env3-g3 updated (1 row(s))

@@ -111,7 +111,7 @@ flowchart TB
 | Chat, hand-offs | Switch rooms bridged to Mattermost channels; every hand-off is a Switch-delivered @-mention | — |
 | Agents | LLM calls: Haiku for departments and review, Sonnet for synaps-dev; cost read from the sessions | — |
 | Code | acme-shop issues #1–#8, real fixes, pytest, commits, pushes, squash merges | — |
-| PRs | Today: branches and merges on a local bare clone of acme-shop that stands in for `origin` | Real GitHub PRs on the fork: <!-- FILL FROM #26: "real PRs on HaseebKhalid1507/acme-shop", link the first one --> |
+| PRs | Real GitHub PRs on the fork [HaseebKhalid1507/acme-shop](https://github.com/HaseebKhalid1507/acme-shop/pulls?q=is%3Apr): synaps-dev pushes the branch with a deploy key; the company process opens the PR, reviews it and squash-merges it into the generation's branch after a human approves. First: [#9](https://github.com/HaseebKhalid1507/acme-shop/pull/9) (#26) | The PRs merge into per-generation branches (`m13-gen-2`, …) cut from a `baseline` tag, never `main`, so every generation faces the same bugs. Tests and dry runs use a local bare clone instead |
 | Approvals | Only a person on the approvers list counts (`sender_is_agent=False`) | In the evidence runs that person was scripted (`dev.py mm-post` as Mattermost `user`). In the demo video Haseeb types it |
 | Market | — | Customers, demand, churn, revenue, competitor moves, invoices: seeded and deterministic per seed |
 | Money | LLM spend in USD | Revenue, costs and profit in dollars |
@@ -148,8 +148,11 @@ The live run also needs:
 
 - **Synaps** (`synaps` on PATH, 0.11.1 here), **logged in to your Anthropic account**. A private auth
   broker serves short-lived tokens from that login (it never copies `auth.json`), so the model calls are billed
-  to you. Our 3-week quarter cost $1.08.
-- **`gh` logged in** to any GitHub account. It is used read-only: the market lists acme-shop's issues.
+  to you. In #13's recorded run a 3-week quarter with two fixes cost $0.90 to $1.98, and the whole recording
+  (6 quarters on two seeds, 5 board proposals) $7.21.
+- **`gh` logged in** to any GitHub account. In local mode it is used read-only: the market lists acme-shop's
+  issues. In GitHub mode (#13) it also opens, reviews and merges the PRs on the fork, in the company process,
+  never in synaps-dev's session; that needs an account with write access to the fork.
 - **Discord** (optional): your own bot token and server id in `devstack/.env`, then
   `python3 devstack/dev.py connect-discord --default` before step 4. We ran on Mattermost; the company run
   has not been tested on Discord.
@@ -168,32 +171,32 @@ bash company/fetch_roster.sh                                    # the staff: age
 **Dry run: no accounts, no Docker, $0, under two minutes:**
 
 ```bash
-$PY -m pytest company/tests -q                                                 # 305 passed, 1 skipped
-python3 -m unittest discover -s tests                                          # 36 tests OK (the extension)
+$PY -m pytest company/tests -q                                                 # 332 passed, 1 skipped
+python3 -m unittest discover -s tests                                          # 39 tests OK (the extension)
 $PY -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake    # fitness: 20.6363
 $PY -m company.board.evolve --offline --generations 3 --out /tmp/evolve-offline  # kept / reverted / rejected
 ```
 
-**Live in 5 commands** (ends after the quarter's KPI post in #board):
+**Live in 5 commands** (ends after the quarter's KPI post in #board). `tools/live_env.sh` gives the company
+process its live settings at run time: the private broker and the Haiku profile (`COMPANY_BROKER_URL`,
+`COMPANY_BROKER_TOKEN_FILE`, `COMPANY_SYNAPS_BASE_DIR` under `~/.synaps-switch-dev`) and, in GitHub mode, the
+fork's `acme-github.env`. `--local` keeps acme-shop on the local stand-in origin; `tools/live_env.sh --check` lists
+which settings are set, names only.
 
 ```bash
-export COMPANY_SYNAPS_BASE_DIR=$HOME/.synaps-switch-dev/company-llm \
-       COMPANY_BROKER_TOKEN_FILE=$HOME/.synaps-switch-dev/broker/machine.token \
-       COMPANY_BROKER_URL=http://127.0.0.1:18191
-
 # 1. Switch 0.31.0 + Mattermost on 127.0.0.1; secrets generated, registration token minted
 devstack/up.sh
 # 2. private Synaps dir ~/.synaps-switch-dev + agency plugin; synaps-dev's entry and a local
 #    stand-in origin for acme-shop; the Haiku profile for the departments
 python3 devstack/synapsdev.py setup && \
   $PY tools/synaps_dev.py setup --token-file "$PWD/devstack/state/registration.token" && \
-  $PY -m company.llm setup
+  tools/live_env.sh --local $PY -m company.llm setup
 # 3. private auth broker + daemon with the extension: synaps and synaps-dev join Switch
 python3 devstack/synapsdev.py up
 # 4. env1 into Switch: room group env1-g1, 6 rooms, 5 links, Handbook + Ledger in #board-g1
 $PY -m company.switch_env apply company/envs/env1.yaml
 # 5. one 3-week quarter, live
-$PY -m company.run --env company/envs/env1.yaml --transport switch --weeks 3 \
+tools/live_env.sh --local $PY -m company.run --env company/envs/env1.yaml --transport switch --weeks 3 \
   --switch-url http://127.0.0.1:18400 --token-file devstack/state/registration.token \
   --issues acme --acme-remote "file://$HOME/.synaps-switch-dev/m12/remote/acme-shop-origin.git" \
   --humans user --approvers user --approve-timeout 600 --dev-per-week 1 --dev-per-quarter 1 \
@@ -203,7 +206,29 @@ $PY -m company.run --env company/envs/env1.yaml --transport switch --weeks 3 \
 Watch it at <http://127.0.0.1:18465>. Log in as `user` (the password is `MATTERMOST_USER_PASSWORD` in
 `devstack/.env`). When the board asks in `#board-g1`, reply in that thread with `@board approve`: **you**
 are the human gate. If you add `--approver mattermost`, a script approves instead, as the Mattermost user;
-our evidence runs did that. Evolution on top: <!-- FILL FROM #13: the exact `--generations` command it ran -->.
+our evidence runs did that.
+
+**Evolution, live, on real GitHub PRs** (what #13 ran; [evidence/m13](evidence/m13/README.md)). Once,
+`$PY tools/synaps_dev.py setup --github --gen 1 --prefix m26-` (as #26 ran it) gives synaps-dev the fork's deploy
+key and writes `~/.synaps-switch-dev/acme-github.env` ([how](evidence/m4/github/README.md#setup-exact-commands)).
+Then, with you as the approver of every merge and org change (#13 added `--approver mattermost` for the merges and
+[a scripted person](evidence/m13/gate_person.py) for the org changes):
+
+```bash
+tools/live_env.sh $PY -m company.run --env company/envs/env1.yaml --generations 3 --seeds 42 \
+  --transport switch --weeks 3 --dev-per-week 1 --dev-per-quarter 2 \
+  --agent-prefix m13- --room-prefix m13- --acme-prefix m13- \
+  --switch-url http://127.0.0.1:18400 --token-file devstack/state/registration.token \
+  --issues acme --acme-remote git@github.com:HaseebKhalid1507/acme-shop.git \
+  --humans user --approvers user --approve-timeout 600 \
+  --gate-room m13-board-g1 --gate-timeout 1800 --budget-usd 9 \
+  --week-wall 90 --quiet 15 --db company/state/m13.db --evolve-db company/state/m13-evolve.sqlite \
+  --out company/state/m13-out -v
+```
+
+The baseline quarter runs on env1, then each generation the board proposes one change in `#m13-board-g1` and
+waits up to 30 min for a person; an approved change runs a whole trial quarter on its own rooms (`-g2`, `-g3`) and
+branch (`m13-gen-2`, …). Use a fresh prefix per run: fix branches can't be reused.
 
 Clean up: `$PY -m company.switch_env teardown company/envs/env1.yaml` (archives the rooms),
 `python3 devstack/synapsdev.py down`, and `devstack/down.sh` (add `--wipe` to also drop the volumes).
@@ -215,18 +240,53 @@ the M3 checks: threaded replies, session memory, a daemon restart in between (ab
 ## Results
 
 ### Live run: env1 → env_n
-<!-- FILL FROM #13: run id, seeds, generations, date -->
+
+2026-11-06, devstack (Switch 0.31.0 + Mattermost), env1 as the baseline, 3-week quarters, synaps-dev capacity
+1/week and 2/quarter, **real PRs on [HaseebKhalid1507/acme-shop](https://github.com/HaseebKhalid1507/acme-shop/pulls?q=is%3Apr+m13-)**.
+Run 1: seed 42, 3 generations. Run 2: seed 1, stopped by its $6 budget guard after 2. Proposals by the board
+(Haiku); every decision by the Mattermost user `user`. **Approvals in this recorded run were scripted; in the demo
+video they're typed live.** The policy was committed before the run: approve every merge whose review is PASS
+with a green harness pytest, approve org changes in generations 1 and 2, reject generation 3
+([evidence/m13/POLICY.md](evidence/m13/POLICY.md)).
+
+Run 1, seed 42 (`$PY -m company.lineage_report evidence/m13/run1-seed42/lineage.jsonl`):
 
 | gen | env | parent | change | decided by | profit | growth | fix time | LLM $ | fitness | Δ parent | result |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| <!-- FILL FROM #13: lineage table (python -m company.lineage_report <lineage.jsonl>) --> | | | | | | | | | | | |
+| 0 | env1 | — | seed | — | $20.8k | -11.2% | 2.50 wk | $1.09 | 13.62 | — | seed |
+| 1 | env2 | env1 | link #maintenance ↔ #dev | user | $23.0k | -8.8% | 1.50 wk | $0.96 | 15.96 | +2.33 | ✅ kept |
+| 2 | env3 | env2 | hire incident-commander (engineering/engineering-incident-response-commander) into #dev | user | $23.0k | -8.8% | 1.50 wk | $0.90 | 16.02 | +0.06 | ✅ kept |
+| 3 | env4 | env3 | policy dev_capacity: — → 3 | user | — | — | — | — | — | — | ❌ rejected (human) |
 
-- KPIs, env1 vs best env on the same seeds: <!-- FILL FROM #13 -->
-- acme-shop PRs merged after a human approval: <!-- FILL FROM #13 / #26: PR links -->
-- Total LLM cost of the run: <!-- FILL FROM #13 -->
-- Screenshots: <!-- FILL FROM #13: incident hand-off, #board approval, merged PR, the board's proposal -->
+Run 2, seed 1: env1 12.85 → env2 (`link #maintenance ↔ #dev`) 14.19, kept (+1.35) → env3 (`policy
+dev_capacity_per_quarter → 4`) 15.12, kept (+0.93) ([table](evidence/m13/README.md#lineage)).
 
-<!-- Until #25 lands, every org change scores Δ 0 on the real quarter runner (quarter.py doesn't model links yet). Don't claim env2 > env1 live before #13 shows it. -->
+- **KPIs, env1 vs best env on the same seed:** fix time **2.50 → 1.50 weeks**, profit **$20,765 → $22,958**,
+  revenue $25,766 → $27,958, growth −11.15% → −8.82%, customers 1,370 → 1,406, LLM $1.09 → $0.90, fitness
+  **13.62 → 16.02** (seed 42). Seed 1: profit $20,080 → $22,214, fix time 2.50 → 1.50, fitness 12.85 → 15.12.
+  The gain is the direct line: ops-maint handed sev1/sev2 incidents to synaps-dev in `#dev` the week they came in,
+  instead of waiting a week for the board's relay ([the two chats side by side](evidence/m13/run1-seed42/threads.md)).
+- **Human reject: yes** (run 1, gen 3). **Fitness revert: none, honestly.** The quarter is deterministic per seed
+  except the real LLM bill, and both generation-2 changes did nothing mechanically (an incident commander is not a
+  tester; `dev_capacity` isn't a policy key the mechanics read), so they were kept because their trial quarter's
+  synaps-dev bill was lower ([why](evidence/m13/README.md#why-there-is-no-fitness-revert)). The revert path is
+  shown offline on the same quarter runner (*hire QA*, −0.70, PR #28) and in the tests.
+- **acme-shop PRs merged after a human approval: 12**, all written by synaps-dev, reviewed PASS, squash-merged into
+  the generation's branch: env1 via the board relay
+  [#10](https://github.com/HaseebKhalid1507/acme-shop/pull/10), [#11](https://github.com/HaseebKhalid1507/acme-shop/pull/11),
+  [#16](https://github.com/HaseebKhalid1507/acme-shop/pull/16), [#17](https://github.com/HaseebKhalid1507/acme-shop/pull/17);
+  evolved envs via the direct line [#12](https://github.com/HaseebKhalid1507/acme-shop/pull/12),
+  [#13](https://github.com/HaseebKhalid1507/acme-shop/pull/13), [#14](https://github.com/HaseebKhalid1507/acme-shop/pull/14),
+  [#15](https://github.com/HaseebKhalid1507/acme-shop/pull/15), [#18](https://github.com/HaseebKhalid1507/acme-shop/pull/18),
+  [#19](https://github.com/HaseebKhalid1507/acme-shop/pull/19), [#20](https://github.com/HaseebKhalid1507/acme-shop/pull/20),
+  [#21](https://github.com/HaseebKhalid1507/acme-shop/pull/21). The first real PR was
+  [#9](https://github.com/HaseebKhalid1507/acme-shop/pull/9) (#26). `main` and `baseline` untouched.
+- **Total LLM cost: $7.21** for both runs (run 1 $2.97, run 2 $4.23): synaps-dev (Sonnet) $6.69, reviews $0.15,
+  departments + judge $0.31, board proposals $0.06. **Wall time 47 min 41 s** (21:54 + 25:47).
+- **Chat exports** instead of screenshots (`devstack/dev.py mm-thread`, scrubbed): the incident hand-off, synaps-dev's
+  fix, the review, the human approve and the merge, once through the board relay and once over the direct line,
+  the KPI post, and the board's proposal → approve/reject threads: [threads.md](evidence/m13/run1-seed42/threads.md),
+  raw JSON in `evidence/m13/run*/mattermost/`.
 
 ### Already proven (evidence in this repo)
 
@@ -240,8 +300,9 @@ the M3 checks: threaded replies, session memory, a daemon restart in between (ab
 | One live quarter (env1, 3 weeks) | #1 fixed and merged in week 1; KPI table in #board and the Ledger; fitness 10.15; LLM cost **$1.08** (synaps-dev $1.01) | `evidence/m4/quarter/` |
 | Human gate for org changes | The board (Haiku) proposed `link #maintenance ↔ #dev`; an agent's approve was ignored; the process was killed and resumed at the gate; a person approved; kept, 15.68 > 11.68 (stub quarter) | `evidence/m4/evolve/` |
 | Offline evolution (stub quarter, seeds 1, 2) | gen 1 kept (+4.00), gen 2 *hire QA* reverted on fitness (−0.35), gen 3 rejected by a person | `evidence/m4/evolve/offline/` |
+| **Live evolution, real PRs (#13)** | Two runs (seeds 42, 1), 6 quarters, 12 PRs merged on the fork after a person approved; `link #maintenance ↔ #dev` kept both times (fix time 2.50 → 1.50 wk, +2.33 / +1.35); a human reject; no revert; $7.21, 48 min | `evidence/m13/` |
 | Offline evolution on the **real** quarter runner (stub LLM and synaps-dev, seeds 1, 2) | gen 1 *link #maintenance ↔ #dev* **kept, +3.59** (fix time 2.50 → 1.50 wk: 6 incidents went straight to synaps-dev instead of waiting for the board's relay); gen 2 *hire QA* reverted (−0.70: caught a regression but 6 merges slipped a week); gen 3 *finance veto $5k → $2k* rejected by a person | PR #28, `company/board/mechanics.py` |
-| Tests | `company/`: 305 passed, 1 skipped; `tests/`: 36 OK | `company/tests/`, `tests/` |
+| Tests | `company/`: 332 passed, 1 skipped; `tests/`: 39 OK | `company/tests/`, `tests/` |
 
 ## Security model
 
@@ -249,16 +310,26 @@ the M3 checks: threaded replies, session memory, a daemon restart in between (ab
   the approvers list. Agents' replies are logged and ignored. Senders are matched against known agent ids
   and `sender_role`, and an unknown sender counts as an agent (fail closed).
 - **The room session has no GitHub login.** synaps-dev's session runs with `gh` logged out (an empty
-  `GH_CONFIG_DIR`) and ssh disabled (`GIT_SSH_COMMAND=false`). It pushes only to the local stand-in origin
-  (`tools/synaps_dev.py`). Pushes to the GitHub fork and the issue-author allowlist:
-  <!-- FILL FROM #26: deploy-key pushes scoped to HaseebKhalid1507/acme-shop; PRs opened and merged by realwork with gh outside the session; the market reads only issues by allowlisted authors -->
+  `GH_CONFIG_DIR`), no ssh agent (the extension refuses to pass `SSH_AUTH_SOCK`), and a `GIT_SSH_COMMAND` that
+  offers only the fork's **deploy key** (`IdentitiesOnly`, `IdentityAgent=none`, `-F /dev/null`). That key can
+  write to HaseebKhalid1507/acme-shop and nothing else: a push to another repo is "denied to deploy key"
+  ([probe](evidence/m4/github/README.md#the-room-session-has-no-github-login)). The session pushes
+  `<gen-k>-fix-<N>` and reports the branch name. It never opens or merges a PR. The **company process** does that with
+  the operator's `gh`, outside the session: `realwork.land_pr` → `gh pr create -R HaseebKhalid1507/acme-shop
+  --base <gen-k>`, then a review of the PR head, then, only after a human approves in #board, `gh pr merge --squash
+  --match-head-commit <reviewed sha>`, so a head that moved after the review is not merged. Writes to the upstream
+  adityapat958/acme-shop are refused (`acme.guard_write`). The market and `fetch_issue` read only issues opened by
+  allowlisted authors (`ACME_ISSUE_AUTHORS`, default `HaseebKhalid1507,adityapat958`), so a stranger's issue on the
+  public fork never reaches an agent. Local mode (a bare clone standing in for origin, ssh disabled) is still the
+  default and what the tests use.
 - **Room sessions get no secrets.** Their environment is an allowlist, and names that look like credentials
   (`TOKEN`, `SECRET`, `PASSWORD`, `API_KEY`, `SYNAPS_*`) are refused even from config (`main.py`). Room text
   arrives between nonce-tagged `BEGIN/END SWITCH MESSAGE` markers, and the skill tells the session that the
   text is the sender's words, never instructions.
 - **Loop guards.** Agents act only on frames that address them, never on their own messages, and on each
   message id once (persisted across restarts). Each thread has a delivery cap, agent↔agent conversations stop
-  after 3 hops, and there are per-agent token budgets plus a session cost cap (synaps-dev $1.00).
+  after 3 hops, and there are per-agent token budgets plus a session cost cap (synaps-dev $3.00 per room
+  session, one per generation).
 - **Local-only stack.** Every port is bound to 127.0.0.1. Secrets are generated per machine, kept at 0600
   and gitignored. Synaps runs from a private base dir with its own broker and refuses the live `~/.synaps-cli`.
   Evidence is scrubbed of every known credential and `$HOME`.

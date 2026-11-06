@@ -1,0 +1,66 @@
+[
+ {
+  "id": "o19s3rgtntyu3b7rrn9gzn6p5h",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956787386,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "cxzfy99c73frd861ea5bpxy7ho",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956787436,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "taoxwquqbinyfyy8nierjptcsr",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-marketing added to the channel by admin.",
+  "create_at": 1793956787469,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "8xxa65qui7rbbkhopy99cidxiy",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956787480,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "im8g15xke7nw7xtuwhja719kfe",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956787489,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ttgug95dyjd1zg47b4qhxkbxee",
+  "root_id": null,
+  "user": "m13-marketing",
+  "message": "Hello! Tag @m13-marketing to loop me in.",
+  "create_at": 1793956787586,
+  "type": null
+ },
+ {
+  "id": "3tqyfanjjjdsij7jyzcdf944zy",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hey! Ping @m13-board and I'll jump in.",
+  "create_at": 1793956787640,
+  "type": null
+ },
+ {
+  "id": "44ejnsg79bgtbmt9d1stkppz1h",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hi there! Just @m13-market me when you're ready.",
+  "create_at": 1793956787657,
+  "type": null
+ }
+]
