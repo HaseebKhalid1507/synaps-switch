@@ -1,0 +1,13 @@
+GH_CONFIG_DIR=~/.synaps-switch-dev/m12/gh-none (files: 0)
+SSH_AUTH_SOCK=<unset>
+GIT_SSH_COMMAND=ssh -i ~/.synaps-switch-dev/m12/deploy/acme-shop -o IdentitiesOnly=yes -o IdentityAgent=none -F /dev/null -o BatchMode=yes
+credential-like env names: <end>
+You are not logged into any GitHub hosts. To log in, run: gh auth login
+gh auth status exit=1
+gh api user exit=4
+ssh-add -l exit=2 (2 = no agent)
+origin: git@github.com:HaseebKhalid1507/acme-shop.git
+ls-remote origin exit=0
+ERROR: Permission to HaseebKhalid1507/synaps-switch.git denied to deploy key
+fatal: Could not read from remote repository.
+push other repo exit=128

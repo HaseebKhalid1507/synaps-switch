@@ -1,0 +1,78 @@
+diff --git a/shop/checkout.py b/shop/checkout.py
+index 9124269..7cd835e 100644
+--- a/shop/checkout.py
++++ b/shop/checkout.py
+@@ -55,12 +55,7 @@ def _reserve(self) -> None:
+             self._reserved[li.product.id] = li.qty
+ 
+     def _release(self) -> None:
+-        """Return reserved stock on payment failure.
+-
+-        BUG-3 (sev2): this method is never called on PaymentError — stock
+-        stays decremented even when payment fails, leaking inventory.
+-        """
+-        # the loop is correct but _release() is not called in place_order()
++        """Return reserved stock on payment failure."""
+         for pid, qty in self._reserved.items():
+             self._catalog.adjust_stock(pid, qty)
+         self._reserved.clear()
+@@ -79,7 +74,7 @@ def place_order(
+         try:
+             _stub_payment(payment_method, breakdown["total"], card_token)
+         except PaymentError:
+-            # BUG-3: should call self._release() here — intentionally omitted
++            self._release()
+             raise
+ 
+         order = Order(
+diff --git a/tests/test_issue_3.py b/tests/test_issue_3.py
+new file mode 100644
+index 0000000..f46a4bf
+--- /dev/null
++++ b/tests/test_issue_3.py
+@@ -0,0 +1,45 @@
++"""Regression test for acme-shop#3.
++
++Inventory must be released (stock restored) when payment fails.
++Before the fix, _release() was never called on PaymentError, so stock stayed
++decremented permanently — causing inventory to drift negative.
++"""
++import pytest
++from shop.catalog import Catalog
++from shop.cart import Cart
++from shop.checkout import Checkout, PaymentError
++
++
++@pytest.fixture
++def setup():
++    catalog = Catalog.default()
++    cart = Cart(catalog)
++    return catalog, cart
++
++
++def test_stock_restored_after_payment_failure(setup):
++    """Stock must return to its pre-checkout level when payment is declined."""
++    catalog, cart = setup
++    stock_before = catalog.get("SKU-004").stock  # 10
++
++    cart.add("SKU-004", qty=3)
++    co = Checkout(cart, catalog)
++    with pytest.raises(PaymentError):
++        co.place_order(card_token="FAIL")
++
++    stock_after = catalog.get("SKU-004").stock
++    assert stock_after == stock_before, (
++        f"Expected stock {stock_before} after failed payment, got {stock_after}. "
++        "Inventory was not released."
++    )
++
++
++def test_stock_decremented_after_successful_order(setup):
++    """Control: stock IS reduced on a successful order."""
++    catalog, cart = setup
++    cart.add("SKU-004", qty=2)
++
++    co = Checkout(cart, catalog)
++    co.place_order(card_token=None)
++
++    assert catalog.get("SKU-004").stock == 8

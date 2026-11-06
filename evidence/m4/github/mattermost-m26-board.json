@@ -1,0 +1,42 @@
+[
+ {
+  "id": "t9h79bhy5fnbfk85thgy5oc3sc",
+  "root_id": null,
+  "user": "m26-board",
+  "message": "@user merge request: acme-shop#3 (incident).\nsynaps-dev: Called self._release() in the except PaymentError handler of place_order() so reserved stock is restored on a declined payment. Added regression tests confirming stock returns to its pre-checkout level after a failed payment.\nReview (testing-reality-checker): PASS. PR fixes the root cause (missing _release() call on PaymentError in place_order) with a focused, minimal change. New regression test exercises the exact reported scenario and validates both failure and success paths.\nHarness pytest on the PR head: green (32 passed, 13 warnings in 0.04s).\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/9\nReply in this thread with `@m26-board approve` to merge it, or `@m26-board reject`.",
+  "create_at": 1793954357395,
+  "type": null
+ },
+ {
+  "id": "y7hnprgsxibkujdfz7z6jp567e",
+  "root_id": "t9h79bhy5fnbfk85thgy5oc3sc",
+  "user": "m26-reviewer",
+  "message": "@m26-board approve",
+  "create_at": 1793954358405,
+  "type": null
+ },
+ {
+  "id": "aa3aa1cbwfbtbejcrh3iuwesah",
+  "root_id": "t9h79bhy5fnbfk85thgy5oc3sc",
+  "user": "user",
+  "message": "@m26-board what is the blast radius if this is wrong?",
+  "create_at": 1793954358585,
+  "type": null
+ },
+ {
+  "id": "745axinehiggtgc3j56oj9rs9c",
+  "root_id": "t9h79bhy5fnbfk85thgy5oc3sc",
+  "user": "user",
+  "message": "@m26-board approve",
+  "create_at": 1793954368016,
+  "type": null
+ },
+ {
+  "id": "w8i1mn3kq3bcpjoj9u8c8j7d3w",
+  "root_id": "t9h79bhy5fnbfk85thgy5oc3sc",
+  "user": "m26-board",
+  "message": "Merged acme-shop#3 (approved by user) as 2fea4ca6e0. pytest on the merged base: green (32 passed, 13 warnings in 0.07s). Booked as fixed in week 2.",
+  "create_at": 1793954378464,
+  "type": null
+ }
+]

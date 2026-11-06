@@ -1,16 +1,27 @@
 """company/acme.py — acme-shop, the company's real product: issues, remotes, PR refs, trial reset.
 
-The market is built from the real acme-shop issues (read-only `gh issue list`). The work is pushed
-to a git remote that is either the real repo or a local bare clone standing in for it:
+The market is built from the acme-shop issues (read-only `gh issue list`). The work is pushed to a git
+remote that is either a GitHub repo (the fork) or a local bare clone standing in for it:
 
-    ACME_REPO                  owner/name, issues are read from here         (default adityapat958/acme-shop)
+    ACME_REPO                  owner/name, issues are read from here and PRs live here
+                               (default adityapat958/acme-shop: the upstream, read-only for us)
     ACME_REMOTE                where branches are pushed and PRs are merged  (default git@github.com:<repo>.git)
                                file:///abs/path.git or /abs/path.git = LOCAL mode: a PR is a branch on that
                                bare repo, its ref is "file:///abs/path.git?head=<branch>&base=<base>",
                                a merge is a squash merge pushed to <base>. No GitHub write ever happens.
-    ACME_ALLOW_GITHUB_WRITES   "1" to allow pushes/PRs/merges on GitHub. Without it the GitHub
-                               path refuses before calling git push / gh (the real-repo path stays
-                               behind config until the account has push access).
+    ACME_ALLOW_GITHUB_WRITES   "1" to allow pushes/PRs/merges on GitHub. Without it the GitHub path refuses
+                               before calling git push / gh. The upstream (adityapat958/acme-shop) is
+                               refused always, and so is a remote that is not ACME_REPO.
+    ACME_DEPLOY_KEY            private key file for the remote (a deploy key with write access to that one
+                               repo). Every git call of this module then uses only that key over ssh (no
+                               ssh agent, no ~/.ssh/config), never the operator's own keys.
+    ACME_ISSUE_AUTHORS         comma-separated GitHub logins whose issues the market reads
+                               (default HaseebKhalid1507,adityapat958). The fork is public: anyone can file
+                               an issue there, and an issue from anyone else is dropped, never shown to an agent.
+
+GitHub mode (the fork, #26) is `python3 tools/synaps_dev.py setup --github`: it writes the synaps-dev entry
+(deploy-key pushes, gh logged out in the room session) and an env file with the four ACME_* settings
+above for the company process, which opens and merges the PRs with the operator's own gh.
 
 Trial reset (so env_k and env_{k+1} face the same bugs): the remote gets a `baseline` tag once,
 and every generation k works on its own branch `gen-k` cut from `baseline`. Work branches are
@@ -25,6 +36,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -33,6 +45,9 @@ from pathlib import Path
 from urllib.parse import parse_qs, quote, urlparse
 
 REPO_DEFAULT = "adityapat958/acme-shop"
+UPSTREAM = "adityapat958/acme-shop"          # read-only for us: issues only, never a push, PR or merge
+FORK_DEFAULT = "HaseebKhalid1507/acme-shop"   # GitHub mode (#26)
+ISSUE_AUTHORS_DEFAULT = ("HaseebKhalid1507", "adityapat958")
 BASELINE_TAG = "baseline"
 PRIORITY_DEMAND = {"high": 0.9, "medium": 0.6, "low": 0.3}
 DEFAULT_DEMAND = 0.5
@@ -58,6 +73,7 @@ class AcmeConfig:
     repo: str = REPO_DEFAULT
     remote: str = ""
     allow_github_writes: bool = False
+    deploy_key: str = ""
 
     @property
     def local(self) -> bool:
@@ -77,7 +93,34 @@ def config(**over) -> AcmeConfig:
     allow = over.get("allow_github_writes")
     if allow is None:
         allow = e.get("ACME_ALLOW_GITHUB_WRITES") == "1"
-    return AcmeConfig(repo=repo, remote=remote, allow_github_writes=bool(allow))
+    key = over.get("deploy_key") or e.get("ACME_DEPLOY_KEY") or ""
+    return AcmeConfig(repo=repo, remote=remote, allow_github_writes=bool(allow),
+                      deploy_key=os.path.expanduser(key) if key else "")
+
+
+def issue_authors() -> tuple[str, ...]:
+    raw = os.environ.get("ACME_ISSUE_AUTHORS")
+    names = raw.split(",") if raw is not None else ISSUE_AUTHORS_DEFAULT
+    return tuple(n.strip().lstrip("@") for n in names if n.strip())
+
+
+def ssh_command(key: str) -> str:
+    """GIT_SSH_COMMAND that offers only `key`: no ssh agent, no ~/.ssh/config identities."""
+    return (f"ssh -i {shlex.quote(key)} -o IdentitiesOnly=yes -o IdentityAgent=none -F /dev/null "
+            "-o BatchMode=yes")
+
+
+def git_env(key: str | None = None) -> dict:
+    """Extra env for git: with a deploy key (arg or ACME_DEPLOY_KEY), ssh uses that key only."""
+    key = key if key is not None else os.path.expanduser(os.environ.get("ACME_DEPLOY_KEY") or "")
+    return {"GIT_SSH_COMMAND": ssh_command(key)} if key else {}
+
+
+def github_repo_of(url: str) -> str | None:
+    """owner/name of a GitHub remote URL (ssh or https), else None."""
+    m = re.fullmatch(r"(?:git@github\.com:|ssh://git@github\.com/|https://github\.com/)([^/]+/[^/]+?)(?:\.git)?/?",
+                     (url or "").strip())
+    return m.group(1) if m else None
 
 
 def is_local_remote(url: str) -> bool:
@@ -89,17 +132,27 @@ def local_path(url: str) -> Path:
 
 
 def guard_write(cfg: AcmeConfig, what: str) -> None:
-    if not cfg.local and not cfg.allow_github_writes:
+    if cfg.local:
+        return
+    if not cfg.allow_github_writes:
         raise GitHubWriteRefused(f"refusing {what} on {cfg.remote_url}: set ACME_ALLOW_GITHUB_WRITES=1 "
                                  "(needs push access to the repo), or point ACME_REMOTE at a local bare clone")
+    target = github_repo_of(cfg.remote_url)
+    if (target or "").lower() == UPSTREAM.lower() or cfg.repo.lower() == UPSTREAM.lower():
+        raise GitHubWriteRefused(f"refusing {what}: {UPSTREAM} is the upstream, read-only; writes go to the fork "
+                                 f"(ACME_REPO={FORK_DEFAULT})")
+    if target is None or target.lower() != cfg.repo.lower():
+        raise GitHubWriteRefused(f"refusing {what}: the remote {cfg.remote_url} is not ACME_REPO {cfg.repo}")
 
 
 # ───────────────────────── git helpers ─────────────────────────
 
 
 def git(*args, cwd=None, check=True, timeout=120, env=None) -> subprocess.CompletedProcess:
-    r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=timeout,
-                       env={**os.environ, "GIT_TERMINAL_PROMPT": "0", **(env or {})})
+    e = {**os.environ, "GIT_TERMINAL_PROMPT": "0", **git_env(), **(env or {})}
+    if "GIT_SSH_COMMAND" in git_env():
+        e.pop("SSH_AUTH_SOCK", None)                 # deploy-key mode: the agent's keys are never offered
+    r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=timeout, env=e)
     if check and r.returncode != 0:
         raise AcmeError(f"git {' '.join(args[:3])} failed: {(r.stderr or r.stdout).strip()[-400:]}")
     return r
@@ -162,13 +215,39 @@ def make_local_origin(dest_dir, source: str | None = None) -> str:
 # ───────────────────────── issues → market ─────────────────────────
 
 
-def fetch_issues(repo: str, label: str, *, run=subprocess.run) -> list[dict]:
-    """Read-only: gh issue list -R repo --label label (open and closed, so every run sees the same set)."""
+def fetch_issues(repo: str, label: str, *, run=subprocess.run, authors=None) -> list[dict]:
+    """Read-only: gh issue list -R repo --label label (open and closed, so every run sees the same set).
+    Only issues authored by an allowed login (ACME_ISSUE_AUTHORS) are kept: the fork is public."""
     r = run(["gh", "issue", "list", "-R", repo, "--label", label, "--state", "all", "--limit", "100",
-             "--json", "number,title,labels,body,state"], capture_output=True, text=True, timeout=60)
+             "--json", "number,title,labels,body,state,author"], capture_output=True, text=True, timeout=60)
     if r.returncode != 0:
         raise AcmeError(f"gh issue list --label {label} failed: {(r.stderr or '').strip()[-300:]}")
-    return json.loads(r.stdout or "[]")
+    return [i for i in json.loads(r.stdout or "[]") if allowed_author(i, authors)]
+
+
+def author_of(issue: dict) -> str:
+    a = issue.get("author") if "author" in issue else issue.get("user")
+    return str((a.get("login") if isinstance(a, dict) else a) or "")
+
+
+def allowed_author(issue: dict, authors=None) -> bool:
+    allow = {a.lower() for a in (authors if authors is not None else issue_authors())}
+    login = author_of(issue).lower()
+    return bool(login) and login in allow
+
+
+def fetch_issue(repo: str, number: int, *, run=subprocess.run, authors=None) -> dict:
+    """Read-only: one issue {number, title, body, author}. Refuses an issue by an author not on the list."""
+    r = run(["gh", "issue", "view", str(int(number)), "-R", repo, "--json", "number,title,body,author,labels"],
+            capture_output=True, text=True, timeout=60)
+    if r.returncode != 0:
+        raise AcmeError(f"gh issue view {number} failed: {(r.stderr or '').strip()[-300:]}")
+    issue = json.loads(r.stdout or "{}")
+    if not allowed_author(issue, authors):
+        raise AcmeError(f"{repo}#{number} is by {author_of(issue) or 'nobody'!r}, not an allowed issue author "
+                        "(ACME_ISSUE_AUTHORS): not read")
+    return {"number": issue.get("number"), "title": issue.get("title") or "", "body": issue.get("body") or "",
+            "author": author_of(issue)}
 
 
 def _labels(issue: dict) -> list[str]:
@@ -209,6 +288,7 @@ def load_issues(repo: str | None = None, *, cache: str | os.PathLike | None = No
         return json.loads(Path(cache).read_text())
     data = market_issues(fetch_issues(repo, "incident", run=run), fetch_issues(repo, "feature", run=run))
     data["repo"] = repo
+    data["authors"] = list(issue_authors())
     if cache:
         Path(cache).parent.mkdir(parents=True, exist_ok=True)
         Path(cache).write_text(json.dumps(data, indent=1) + "\n")
@@ -239,6 +319,23 @@ def gen_branch(k: int, prefix: str = "") -> str:
 
 def work_branch(issue: int, base: str) -> str:
     return f"{base}-fix-{int(issue)}"
+
+
+_GEN = re.compile(r"(?:[A-Za-z0-9._-]*-)?gen-\d+")
+
+
+def is_gen_branch(name: str) -> bool:
+    """gen-k or <prefix>gen-k: the only bases a PR may target (never main)."""
+    return bool(_GEN.fullmatch(name or ""))
+
+
+def check_pr_branches(head: str, base: str, issue: int | None = None) -> None:
+    """A PR is <base>-fix-<N> into a generation branch, nothing else."""
+    if not is_gen_branch(base):
+        raise AcmeError(f"refusing a PR into {base!r}: PRs target gen-k branches only, never main")
+    want = re.fullmatch(re.escape(base) + r"-fix-(\d+)", head or "")
+    if not want or (issue is not None and int(want.group(1)) != int(issue)):
+        raise AcmeError(f"refusing head {head!r}: expected {work_branch(issue, base) if issue else base + '-fix-<N>'}")
 
 
 def ensure_baseline(cfg: AcmeConfig, ref: str = "main") -> str:
@@ -307,6 +404,77 @@ def parse_pr_ref(ref: str) -> dict:
     raise AcmeError(f"not a PR ref: {ref!r}")
 
 
+def pr_info(pr: str, *, run=subprocess.run) -> dict:
+    """Read-only: a GitHub PR's {repo, number, url, state, head, base, head_sha, cross_repo}."""
+    p = parse_pr_ref(pr)
+    if p["local"]:
+        return {**p, "state": "OPEN", "cross_repo": False}
+    r = run(["gh", "pr", "view", p["url"], "--json",
+             "number,url,state,baseRefName,headRefName,headRefOid,isCrossRepository"],
+            capture_output=True, text=True, timeout=60)
+    if r.returncode != 0:
+        raise AcmeError(f"gh pr view failed: {(r.stderr or '').strip()[-300:]}")
+    d = json.loads(r.stdout or "{}")
+    return {"local": False, "repo": p["repo"], "number": d.get("number", p["number"]), "url": d.get("url") or p["url"],
+            "state": d.get("state"), "head": d.get("headRefName"), "base": d.get("baseRefName"),
+            "head_sha": d.get("headRefOid"), "cross_repo": bool(d.get("isCrossRepository", True))}
+
+
+def read_url(repo: str, cfg: AcmeConfig | None = None) -> str:
+    """Where to clone a GitHub repo from for reading: the configured remote (deploy key) when it is that
+    repo, else anonymous https (acme-shop and its fork are public)."""
+    cfg = cfg or config()
+    if not cfg.local and (github_repo_of(cfg.remote_url) or "").lower() == repo.lower():
+        return cfg.remote_url
+    return f"https://github.com/{repo}.git"
+
+
+def open_pr(cfg: AcmeConfig, head: str, base: str, *, issue: int, title: str = "", body: str = "",
+            run=subprocess.run) -> str:
+    """The PR for a pushed work branch, opened by the company process, never by the room session.
+    Local mode: the local PR ref. GitHub: `gh pr create -R <repo> --base <gen-k> --head <gen-k>-fix-N`
+    with the operator's gh (an open same-repo PR for that head/base is reused). Returns the ref / URL."""
+    check_pr_branches(head, base, issue)
+    refs = remote_refs(cfg.remote_url)
+    if f"refs/heads/{head}" not in refs:
+        raise AcmeError(f"{head} is not on {cfg.remote_url}: nothing to open a PR from")
+    if f"refs/heads/{base}" not in refs:
+        raise AcmeError(f"{base} is not on {cfg.remote_url}")
+    if cfg.local:
+        return local_pr_ref(cfg.remote_url, head, base)
+    guard_write(cfg, "gh pr create")
+    r = run(["gh", "pr", "list", "-R", cfg.repo, "--head", head, "--base", base, "--state", "open",
+             "--json", "url,isCrossRepository"], capture_output=True, text=True, timeout=60)
+    if r.returncode == 0:
+        same = [x for x in json.loads(r.stdout or "[]") if not x.get("isCrossRepository")]
+        if same:
+            return same[0]["url"]
+    r = run(["gh", "pr", "create", "-R", cfg.repo, "--base", base, "--head", head,
+             "--title", title or f"Fix #{issue}", "--body", body or f"Refs #{issue}"],
+            capture_output=True, text=True, timeout=90)
+    if r.returncode != 0:
+        raise AcmeError(f"gh pr create failed: {(r.stderr or r.stdout or '').strip()[-300:]}")
+    url = (r.stdout or "").strip().splitlines()[-1] if (r.stdout or "").strip() else ""
+    p = parse_pr_ref(url)
+    if p["local"] or p["repo"].lower() != cfg.repo.lower():
+        raise AcmeError(f"gh pr create returned {url!r}, not a PR on {cfg.repo}")
+    return url
+
+
+def check_mergeable(pr: str, cfg: AcmeConfig | None = None, *, run=subprocess.run) -> dict:
+    """Before a GitHub merge: the PR is on ACME_REPO, open, not from another fork, <gen-k>-fix-N into gen-k."""
+    cfg = cfg or config()
+    info = pr_info(pr, run=run)
+    if info["repo"].lower() != cfg.repo.lower():
+        raise AcmeError(f"refusing to merge {pr}: not on ACME_REPO {cfg.repo}")
+    if info["cross_repo"]:
+        raise AcmeError(f"refusing to merge {pr}: its head is in another fork")
+    if info.get("state") != "OPEN":
+        raise AcmeError(f"refusing to merge {pr}: state {info.get('state')}")
+    check_pr_branches(info["head"], info["base"])
+    return info
+
+
 def pr_diff(pr: str, *, run=subprocess.run) -> str:
     p = parse_pr_ref(pr)
     if not p["local"]:
@@ -330,14 +498,26 @@ def pr_files(pr: str) -> list[str]:
 # ───────────────────────── tests + merge ─────────────────────────
 
 
+def harness_env(home) -> dict:
+    """The environment pytest runs in when the harness tests an agent's branch: the code is untrusted, so
+    none of the operator's credentials (no ssh agent, gh logged out, no tokens, HOME a temp dir)."""
+    e = {k: os.environ[k] for k in ("PATH", "LANG", "LC_ALL", "TZ") if os.environ.get(k)}
+    gh_none = Path(home) / "gh-none"
+    gh_none.mkdir(exist_ok=True)
+    e.update({"HOME": str(home), "GH_CONFIG_DIR": str(gh_none), "GIT_SSH_COMMAND": "false",
+              "GIT_TERMINAL_PROMPT": "0", "PYTHONDONTWRITEBYTECODE": "1"})
+    return e
+
+
 def run_tests_at(remote: str, ref: str, *, python: str | None = None, timeout=300) -> dict:
-    """Fresh clone of ref, `python -m pytest -q` in it. {passed, sha, summary, output}."""
+    """Fresh clone of ref, `python -m pytest -q` in it (in harness_env). {passed, sha, summary, output}."""
     with tempfile.TemporaryDirectory(prefix="acme-tests-") as tmp:
         co = clone(remote, Path(tmp) / "co", ref)
         sha = git("rev-parse", "HEAD", cwd=co).stdout.strip()
+        home = Path(tmp) / "home"
+        home.mkdir()
         r = subprocess.run([python or sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"],
-                           cwd=co, capture_output=True, text=True, timeout=timeout,
-                           env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+                           cwd=co, capture_output=True, text=True, timeout=timeout, env=harness_env(home))
     out = (r.stdout + r.stderr).strip()
     tail = [l for l in out.splitlines() if re.search(r"\d+ (passed|failed|error)", l)]
     return {"passed": r.returncode == 0, "sha": sha, "summary": (tail[-1] if tail else out[-200:]).strip("= "),
@@ -345,8 +525,9 @@ def run_tests_at(remote: str, ref: str, *, python: str | None = None, timeout=30
 
 
 def merge_local(pr: str, *, message: str | None = None, author="Haseeb Khalid",
-                email="HaseebKhalid1507@users.noreply.github.com") -> dict:
-    """Squash-merge a local PR into its base and push the base (a plain, fast-forward push)."""
+                email="HaseebKhalid1507@users.noreply.github.com", head_sha: str | None = None) -> dict:
+    """Squash-merge a local PR into its base and push the base (a plain, fast-forward push).
+    With head_sha (the commit that was reviewed), a head that moved since is not merged."""
     p = parse_pr_ref(pr)
     if not p["local"]:
         raise AcmeError("merge_local takes a local PR ref")
@@ -356,6 +537,9 @@ def merge_local(pr: str, *, message: str | None = None, author="Haseeb Khalid",
     with tempfile.TemporaryDirectory(prefix="acme-merge-") as tmp:
         co = clone(p["remote"], Path(tmp) / "co", p["base"])
         git("fetch", "-q", "origin", f"refs/heads/{p['head']}:refs/remotes/origin/{p['head']}", cwd=co)
+        cur = git("rev-parse", f"origin/{p['head']}", cwd=co).stdout.strip()
+        if head_sha and cur != head_sha:
+            return {"merged": False, "error": f"head moved since the review ({head_sha[:10]} -> {cur[:10]})", **p}
         r = git("merge", "--squash", f"origin/{p['head']}", cwd=co, check=False, env=ident)
         if r.returncode != 0:
             return {"merged": False, "error": (r.stderr or r.stdout).strip()[-300:], **p}
@@ -375,7 +559,7 @@ def base_of(pr: str) -> tuple[str, str]:
         return p["remote"], p["base"]
     r = subprocess.run(["gh", "pr", "view", p["url"], "--json", "baseRefName", "-q", ".baseRefName"],
                        capture_output=True, text=True, timeout=60)
-    return f"https://github.com/{p['repo']}.git", (r.stdout.strip() or "main")
+    return read_url(p["repo"]), (r.stdout.strip() or "main")
 
 
 def tests_after_merge(pr: str) -> dict:

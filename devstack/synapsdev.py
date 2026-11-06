@@ -48,7 +48,12 @@ client_input = shared
 extension.synaps-switch.base_dir = {base}
 extension.synaps-switch.state_dir = {base}/synaps-switch
 extension.synaps-switch.config_file = {cfg}
-"""
+""" + "{budget}"
+
+# A Switch event is one turn. The default 24 provider rounds per event turn cut synaps-dev off mid-fix (#26,
+# acme-shop#3: 25 tool calls, then the turn ended without a RESULT). Cost stays capped per session
+# (max_session_cost in synaps-switch.json).
+TURN_BUDGET = "turn_budget.event.max_provider_rounds = 80\n"
 
 
 def die(msg, code=1):
@@ -84,10 +89,13 @@ def setup(_=None):
         os.chmod(d, 0o700)
     cfg_json = BASE / "synaps-switch.json"
     cfg = BASE / "config"
-    want = CONFIG.format(cfg=cfg_json, base=BASE)
+    want = CONFIG.format(cfg=cfg_json, base=BASE, budget=TURN_BUDGET)
     if not cfg.exists() or "extension.synaps-switch.base_dir" not in cfg.read_text():
         cfg.write_text(want)
         os.chmod(cfg, 0o600)
+    elif "turn_budget.event.max_provider_rounds" not in cfg.read_text():
+        with open(cfg, "a") as f:
+            f.write(TURN_BUDGET)
     if not cfg_json.exists():
         dev_env = REPO / "devstack" / ".env"
         port = "18400"

@@ -84,6 +84,31 @@ class RoomSessionTest(unittest.TestCase):
         self.assertEqual(env["TERM"], "dumb")
         self.assertEqual(dict(main.session_env()).keys() - set(main.SESSION_ENV_KEYS), {"TERM"})
 
+    def test_session_never_gets_the_ssh_agent(self):
+        with mock.patch.dict(os.environ, {"SSH_AUTH_SOCK": "/run/user/1000/agent.sock", "SSH_AGENT_PID": "42"}):
+            env = dict(main.session_env({"SSH_AUTH_SOCK": "/run/user/1000/agent.sock", "SSH_AGENT_PID": "42",
+                                         "GIT_SSH_COMMAND": "ssh -i /k -o IdentityAgent=none"}))
+        self.assertNotIn("SSH_AUTH_SOCK", env)
+        self.assertNotIn("SSH_AGENT_PID", env)
+        self.assertEqual(env["GIT_SSH_COMMAND"], "ssh -i /k -o IdentityAgent=none")
+
+    def test_workdir_clone_runs_with_the_session_env(self):
+        work = self.tmp / "work"
+        work.mkdir()
+        seen = {}
+        real = subprocess.run
+
+        def spy(argv, **kw):
+            seen.update(kw.get("env") or {})
+            return real(argv, **kw)
+        senv = main.session_env({"GIT_SSH_COMMAND": "ssh -i /deploy-key", "GH_CONFIG_DIR": "/gh-none"})
+        with mock.patch.dict(os.environ, {"SSH_AUTH_SOCK": "/run/agent.sock", "GH_TOKEN": "x"}), \
+                mock.patch.object(main.subprocess, "run", spy):
+            main.prepare_workdir(work, {"url": "file://" + str(self.bare), "dir": "acme-shop"}, senv)
+        self.assertEqual(seen["GIT_SSH_COMMAND"], "ssh -i /deploy-key")
+        self.assertNotIn("SSH_AUTH_SOCK", seen)
+        self.assertNotIn("GH_TOKEN", seen)
+
     def test_prepare_workdir_clones_once(self):
         work = self.tmp / "work"
         work.mkdir()
@@ -141,29 +166,57 @@ class RoomSessionTest(unittest.TestCase):
 
 
 class SynapsDevEntryTest(unittest.TestCase):
-    def test_local_entry_has_no_secret_and_blocks_github(self):
+    def load(self, tmp):
         import importlib.util
-        tmp = tempfile.mkdtemp(prefix="sd-entry-")
         with mock.patch.dict(os.environ, {"SYNAPS_SWITCH_DEV_BASE": tmp}):
             spec = importlib.util.spec_from_file_location("synaps_dev_tool", Path(__file__).parent.parent / "tools" / "synaps_dev.py")
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-            e = mod.entry("file:///x/origin.git", "o/acme-shop", False, "http://127.0.0.1:18400", "/t/registration.token")
-            g = mod.entry("git@github.com:o/acme-shop.git", "o/acme-shop", True, "http://127.0.0.1:18400", "/t/registration.token")
+        return mod
+
+    def test_local_entry_has_no_secret_and_blocks_github(self):
+        tmp = tempfile.mkdtemp(prefix="sd-entry-")
+        mod = self.load(tmp)
+        e = mod.entry("file:///x/origin.git", "o/acme-shop", False, "http://127.0.0.1:18400", "/t/registration.token")
         self.assertEqual(e["name"], "synaps-dev")
         self.assertEqual(e["skill_file"], "skill/synaps-dev.md")
         self.assertTrue((Path(__file__).parent.parent / e["skill_file"]).exists())
         self.assertEqual(e["session_env"]["GIT_SSH_COMMAND"], "false")
         self.assertIn("gh-none", e["session_env"]["GH_CONFIG_DIR"])
         self.assertIn("?head=<base>-fix-<N>&base=<base>", e["instructions"])
-        self.assertNotIn("GIT_SSH_COMMAND", g["session_env"])
-        self.assertIn("gh pr create", g["instructions"])
         blob = json.dumps(e)
         self.assertNotIn("api_key", blob)
-        self.assertLessEqual(e["max_session_cost"], 1.0)
+        self.assertEqual(e["max_session_cost"], 3.0)
         self.assertTrue(e["model"].startswith("claude-sonnet"))
         env = dict(main.session_env(e["session_env"], e["session_path"]))
         self.assertEqual(env["GIT_AUTHOR_EMAIL"], "HaseebKhalid1507@users.noreply.github.com")
+
+    def test_github_entry_pushes_with_the_deploy_key_only_and_opens_no_pr(self):
+        tmp = tempfile.mkdtemp(prefix="sd-entry-")
+        mod = self.load(tmp)
+        key = os.path.join(tmp, "deploy", "acme-shop")
+        g = mod.entry("git@github.com:HaseebKhalid1507/acme-shop.git", "HaseebKhalid1507/acme-shop", True,
+                      "http://127.0.0.1:18400", "/t/registration.token", deploy_key=key)
+        se = g["session_env"]
+        self.assertTrue(se["GH_CONFIG_DIR"].endswith("gh-none") and not os.listdir(se["GH_CONFIG_DIR"]))
+        self.assertIn(f"-i {key} ", se["GIT_SSH_COMMAND"])
+        for opt in ("IdentitiesOnly=yes", "IdentityAgent=none", "-F /dev/null"):
+            self.assertIn(opt, se["GIT_SSH_COMMAND"])
+        self.assertNotIn("SSH_AUTH_SOCK", se)
+        self.assertEqual(g["workdir_repo"]["url"], "git@github.com:HaseebKhalid1507/acme-shop.git")
+        self.assertNotIn("gh pr create", g["instructions"])
+        self.assertIn("BRANCH NAME", g["instructions"])
+        self.assertIn("HaseebKhalid1507, adityapat958", g["instructions"])
+        self.assertEqual(g["max_session_cost"], 3.0)
+        self.assertNotIn("BEGIN", json.dumps(g))                       # the key is a path, never its content
+        env = dict(main.session_env(se, g["session_path"]))           # what the extension really passes
+        self.assertEqual(env["GIT_SSH_COMMAND"], se["GIT_SSH_COMMAND"])
+        self.assertNotIn("SSH_AUTH_SOCK", env)
+        genv = mod.github_env("HaseebKhalid1507/acme-shop", key)
+        self.assertEqual(genv["ACME_REMOTE"], "git@github.com:HaseebKhalid1507/acme-shop.git")
+        self.assertEqual(genv["ACME_ALLOW_GITHUB_WRITES"], "1")
+        with self.assertRaises(ValueError):
+            mod.entry("git@github.com:o/r.git", "o/r", True, "u", "t")
 
 
 if __name__ == "__main__":
