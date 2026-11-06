@@ -14,7 +14,12 @@ Config (extension config keys, resolved by Synaps):
 
 Agent entry: name, description, display_name, bridge_url, registration_token_file
 (read once, at registration; never logged), model, max_session_cost, thinking,
-instructions, rooms (optional allowlist of room ids).
+instructions, rooms (optional allowlist of room ids), and for a working agent such as synaps-dev:
+  skill_file     markdown appended to the room session's system prompt (path, relative to the plugin dir)
+  workdir_repo   {"url": git URL, "dir": "acme-shop", "branch": optional}: each new room session gets its
+                 own clone in its room work dir and runs in it (a resumed session keeps its clone)
+  session_env    {"NAME": "value"} extra environment for the session's tools (e.g. GH_CONFIG_DIR, GIT_AUTHOR_*)
+  session_path   [dirs] prepended to the session's PATH (e.g. a venv with pytest)
 
 stdout is JSON-RPC only. Logs go to stderr and <state_dir>/extension.log, never a credential.
 """
@@ -25,6 +30,7 @@ import re
 import secrets
 import socket
 import stat
+import subprocess
 import sys
 import threading
 import time
@@ -212,11 +218,56 @@ def daemon_sessions():
     return {s.get("id"): s for s in (w.get("sessions") or []) if s.get("id")}
 
 
-def session_env():
-    """What a room session's tools see: a short allowlist, never the daemon's credentials."""
-    env = [(k, os.environ[k]) for k in SESSION_ENV_KEYS if os.environ.get(k)]
-    env.append(("TERM", "dumb"))
-    return sorted(env)
+ENV_NAME = re.compile(r"[A-Z_][A-Z0-9_]{0,63}")
+ENV_DENY = re.compile(r"TOKEN|SECRET|PASSWORD|API_KEY|^SYNAPS_|^LD_", re.I)
+
+
+def session_env(extra=None, path_prepend=None):
+    """What a room session's tools see: a short allowlist, never the daemon's credentials.
+    extra/path_prepend come from the agent's config (session_env, session_path); names that look
+    like credentials are refused there, so a config can't hand a session a secret by accident."""
+    env = {k: os.environ[k] for k in SESSION_ENV_KEYS if os.environ.get(k)}
+    env["TERM"] = "dumb"
+    for k, v in (extra or {}).items():
+        if not isinstance(k, str) or not ENV_NAME.fullmatch(k) or ENV_DENY.search(k) or k == "PATH":
+            log(f"session_env: skipped {k!r}")
+            continue
+        env[k] = os.path.expanduser(str(v))
+    dirs = [os.path.expanduser(str(d)) for d in (path_prepend or []) if d]
+    if dirs:
+        env["PATH"] = os.pathsep.join(dirs + [env.get("PATH") or os.defpath])
+    return sorted(env.items())
+
+
+def plugin_text(path):
+    """A file shipped with the plugin (skill_file): relative paths are relative to the plugin dir."""
+    if not path:
+        return ""
+    p = Path(os.path.expanduser(str(path)))
+    p = p if p.is_absolute() else HERE / p
+    try:
+        return p.read_text(encoding="utf-8")
+    except OSError as e:
+        log(f"skill_file {p}: {type(e).__name__}")
+        return ""
+
+
+def prepare_workdir(work, repo):
+    """The room session's cwd. With workdir_repo, a clone of it inside the room's work dir (cloned
+    once; an existing clone is left as it is, so a resumed session finds its own branches)."""
+    if not repo or not repo.get("url"):
+        return Path(work)
+    url = str(repo["url"])
+    name = repo.get("dir") or slug(url.rstrip("/").rsplit("/", 1)[-1].removesuffix(".git"), 40)
+    dest = Path(work) / slug(name, 40)
+    if not (dest / ".git").exists():
+        argv = ["git", "clone", "-q"] + (["--branch", str(repo["branch"])] if repo.get("branch") else []) + [url, str(dest)]
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=300,
+                           env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+        if r.returncode != 0:
+            raise RuntimeError(f"git clone for the room work dir failed: {(r.stderr or r.stdout).strip()[-300:]}")
+        log(f"cloned {url} into {dest}")
+    return dest
 
 
 def registry_entry(sid):
@@ -417,6 +468,9 @@ class Watcher:
                  f"This session is the agent's session for the Switch room **{ctx.get('name') or room_id}** "
                  f"(room id `{room_id}`). People mention you as @{self.name}. Nobody is at a terminal: people reach you "
                  f"only through the room, and only what you post with switch_post_message reaches them."]
+        extra = plugin_text(self.cfg.get("skill_file"))
+        if extra.strip():
+            parts.append(extra.strip())
         if self.cfg.get("instructions"):
             parts.append("# Operator instructions\n\n" + self.cfg["instructions"].strip())
         room = [f"Name: {ctx.get('name')}", f"Description: {ctx.get('description') or '(none)'}"]
@@ -438,8 +492,11 @@ class Watcher:
         rname = ctx.get("name") or room_id
         work = state_dir() / "rooms" / f"{slug(self.name, 16)}-{slug(rname)}-{room_id[:8]}"
         work.mkdir(parents=True, exist_ok=True)
+        os.chmod(work, 0o700)
+        prev = (self.state["rooms"].get(room_id) or {}).get("cwd")
+        cwd = Path(prev) if resume and prev and Path(prev).is_dir() else prepare_workdir(work, self.cfg.get("workdir_repo"))
         name = f"sw-{slug(self.name, 12)}-{slug(rname, 18)}-{hashlib.sha1(room_id.encode()).hexdigest()[:4]}"[:40]
-        config = {"cwd": str(work), "keep_warm": True, "persist": True, "client_input": "shared",
+        config = {"cwd": str(cwd), "keep_warm": True, "persist": True, "client_input": "shared",
                   "await_extensions": True, "auto_compact": True}
         if self.cfg.get("model"):
             config["model_override"] = self.cfg["model"]
@@ -450,8 +507,8 @@ class Watcher:
         else:
             config["system"] = self.system_prompt(room_id, ctx)
             config["name"] = name
-        with DaemonClient(30.0, cwd=work) as c:
-            c.hello(env=session_env())
+        with DaemonClient(30.0, cwd=cwd) as c:
+            c.hello(env=session_env(self.cfg.get("session_env"), self.cfg.get("session_path")))
             meta = c.create(config)
         sid = meta.get("id")
         if not sid:
@@ -465,7 +522,7 @@ class Watcher:
         with self.lock:
             r = self.state["rooms"].setdefault(room_id, {})
             r.update({"session_id": sid, "session_name": meta.get("name") or name, "room_name": rname,
-                      "work_dir": str(work), "created_at": r.get("created_at") or now_iso()})
+                      "work_dir": str(work), "cwd": str(cwd), "created_at": r.get("created_at") or now_iso()})
             if resume:
                 r["resumed_at"] = now_iso()
             self.save()

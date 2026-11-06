@@ -1,0 +1,8 @@
+2026-11-06T01:54:58 [synaps-switch] [synaps-dev] created session 20261106-065458-3f5e (sw-synaps-dev-m12-dev-2e4e) for room m12-dev (5f2d0b41-c841-4658-8ffd-cff55f1d5e07), pinned
+2026-11-06T01:54:58 [synaps-switch] [synaps-dev] delivered sw_bf293a3a37734f1b89917ef43dd682f1 (thread sw_bf293a3a37734f1b89917ef43dd682f1) from m12-board to session 20261106-065458-3f5e
+2026-11-06T01:54:58 [synaps-switch] [synaps-dev] subscription_changed: {"rooms": ["5f2d0b41-c841-4658-8ffd-cff55f1d5e07"], "reason": "subscription updated"}
+2026-11-06T01:55:01 [synaps-switch] [synaps-dev] posted in room 5f2d0b41-c841-4658-8ffd-cff55f1d5e07 (thread sw_bf293a3a37734f1b89917ef43dd682f1): {'event_id': 'sw_76a5953e67d8436386f8e9e40e472485'}
+2026-11-06T01:55:51 [synaps-switch] [synaps-dev] posted in room 5f2d0b41-c841-4658-8ffd-cff55f1d5e07 (thread sw_bf293a3a37734f1b89917ef43dd682f1): {'event_id': 'sw_68efee2f1dcf41fea8a62145164f132c'}
+2026-11-06T01:58:34 [synaps-switch] [synaps-dev] delivered sw_d156f5603c4c4401b9d707d10094f307 (thread sw_d156f5603c4c4401b9d707d10094f307) from m12-board to session 20261106-065458-3f5e
+2026-11-06T01:58:36 [synaps-switch] [synaps-dev] posted in room 5f2d0b41-c841-4658-8ffd-cff55f1d5e07 (thread sw_d156f5603c4c4401b9d707d10094f307): {'event_id': 'sw_c01392ef53c3475298f60cfe337b2494'}
+2026-11-06T01:59:13 [synaps-switch] [synaps-dev] posted in room 5f2d0b41-c841-4658-8ffd-cff55f1d5e07 (thread sw_d156f5603c4c4401b9d707d10094f307): {'event_id': 'sw_bd1ddc1a16984727a2299956a50c4c65'}

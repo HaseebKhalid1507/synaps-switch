@@ -1,0 +1,95 @@
+diff --git a/shop/pricing.py b/shop/pricing.py
+index c884303..cfd172f 100644
+--- a/shop/pricing.py
++++ b/shop/pricing.py
+@@ -15,14 +15,13 @@ COUPONS: dict[str, float] = {
+ def apply_coupon(subtotal: float, code: str) -> tuple[float, float]:
+     """Return (discounted_subtotal, discount_amount).
+ 
+-    BUG-1 (sev1): empty string '' is not in COUPONS but the lookup
+-    falls through to returning (subtotal - subtotal * None) which raises
+-    TypeError — manifests as a crash / NaN in callers that don't guard.
+-    Actually implemented: empty code is treated as valid → KeyError
+-    propagates to cart.total(), crashing the whole request.
++    Raises ValueError for a blank or unrecognised coupon code (acme-shop#1).
+     """
+-    # intentional bug: no guard for empty/None code
+-    rate = COUPONS[code]           # KeyError on "" or unknown code
++    if not code or not code.strip():
++        raise ValueError("coupon code must not be empty")
++    if code not in COUPONS:
++        raise ValueError(f"unknown coupon code: {code!r}")
++    rate = COUPONS[code]
+     discount = subtotal * rate
+     return subtotal - discount, discount
+ 
+diff --git a/tests/test_issue_1.py b/tests/test_issue_1.py
+new file mode 100644
+index 0000000..2c1bfa0
+--- /dev/null
++++ b/tests/test_issue_1.py
+@@ -0,0 +1,64 @@
++"""Regression tests for acme-shop#1: empty/invalid coupon code crashes checkout.
++
++An empty string or unknown coupon code must raise ValueError, not KeyError.
++Cart.total() with a blank coupon must also raise ValueError.
++"""
++import pytest
++from shop.pricing import apply_coupon
++from shop.cart import Cart
++from shop.catalog import Catalog, Product
++
++
++# ---------------------------------------------------------------------------
++# pricing.apply_coupon
++# ---------------------------------------------------------------------------
++
++def test_apply_coupon_empty_string_raises_valueerror():
++    """Empty code must raise ValueError, not KeyError (acme-shop#1)."""
++    with pytest.raises(ValueError, match="coupon"):
++        apply_coupon(100.0, "")
++
++
++def test_apply_coupon_unknown_code_raises_valueerror():
++    """Unknown code must raise ValueError."""
++    with pytest.raises(ValueError, match="coupon"):
++        apply_coupon(100.0, "DOESNOTEXIST")
++
++
++def test_apply_coupon_whitespace_only_raises_valueerror():
++    """Whitespace-only code is treated as empty → ValueError."""
++    with pytest.raises(ValueError, match="coupon"):
++        apply_coupon(100.0, "   ")
++
++
++# ---------------------------------------------------------------------------
++# Cart.total() — the caller path that produced the SEV-1 500
++# ---------------------------------------------------------------------------
++
++@pytest.fixture()
++def cart():
++    catalog = Catalog([Product(id="p1", name="Widget", price=10.0, stock=100)])
++    c = Cart(catalog)
++    c.add("p1", qty=2)
++    return c
++
++
++def test_cart_total_with_empty_coupon_raises_valueerror(cart):
++    """Applying a blank coupon must raise ValueError, not crash with KeyError."""
++    cart.apply_coupon("")
++    with pytest.raises(ValueError, match="coupon"):
++        cart.total()
++
++
++def test_cart_total_with_unknown_coupon_raises_valueerror(cart):
++    """Applying an unknown coupon must raise ValueError."""
++    cart.apply_coupon("BOGUS99")
++    with pytest.raises(ValueError, match="coupon"):
++        cart.total()
++
++
++def test_cart_total_with_valid_coupon_still_works(cart):
++    """Sanity check: a real coupon still applies correctly after the fix."""
++    cart.apply_coupon("SAVE10")
++    breakdown = cart.total()
++    assert breakdown["discount"] == pytest.approx(2.0)   # 10% of 20.00

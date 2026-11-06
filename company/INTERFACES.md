@@ -108,14 +108,70 @@ Env overrides (defaults above): `COMPANY_SYNAPS_PROFILE` (the name the "company"
 
 ## company/devworker.py  (owner: B)
 
+The fallback when synaps-dev (the extension's room session, below) does not answer.
+
 ```python
-def work_issue(issue: int, kind: str, *, repo="adityapat958/acme-shop", workdir="company/state/work") -> dict
-    # clone/fetch acme-shop, branch issue-<n>, run `synaps chat --profile company-dev --no-extensions`
-    # in the checkout with a prompt to fix/implement the issue and run pytest; then commit, push,
-    # `gh pr create` with "Closes #n". Verify by running pytest itself.
+def work_issue(issue: int, kind: str, *, repo="adityapat958/acme-shop", workdir="company/state/work",
+               remote=None, base=None) -> dict
+    # clone/fetch the remote (ACME_REMOTE, default the GitHub repo) at base (default main), branch
+    # issue-<n> (or <base>-fix-<n> on a gen-k base), run `synaps chat --profile $COMPANY_DEV_PROFILE
+    # --no-extensions` with the whole prompt as ONE stdin line, pytest, commit, plain push,
+    # then the PR: `gh pr create` with "Closes #n", or a local PR ref in local mode.
     # returns {issue, pr_url, tests_passed, summary, cost_usd}
-def merge_pr(pr_url) -> bool          # gh pr merge --squash; called only after a human approves in #board
+def merge_pr(pr_url) -> bool          # called only after a human approves in #board (realwork.MergeGate)
+    # local PR ref: squash-merge into its base on the local remote; GitHub: gh pr merge --squash,
+    # refused unless ACME_ALLOW_GITHUB_WRITES=1
 ```
+Pushes are plain. Only a branch this process created may be rewritten, and then only with `--force-with-lease`.
+`python -m company.devworker setup` writes the `company-dev` profile (Sonnet, `max_session_cost`, broker only).
+
+## company/acme.py  (#12)
+
+The product repo: issues, the remote, PR refs, reset between trials. Config by env:
+`ACME_REPO` (issues, default `adityapat958/acme-shop`), `ACME_REMOTE` (where branches go; a `file://` bare repo =
+local mode), `ACME_ALLOW_GITHUB_WRITES=1` (without it every GitHub write is refused before git/gh runs).
+
+```python
+load_issues(repo=None, *, cache=None) -> {"incidents": [{issue, title, severity}], "features": [{issue, title, demand}]}
+    # read-only `gh issue list --label incident|feature --state all`; severity from the sevN label,
+    # demand from the body's **Priority:** (high .9, medium .6, low .3); cached so every trial sees the same set
+build_market(seed, company, *, issues=None) -> Market     # Market(seed, company, issues=load_issues())
+ensure_baseline(cfg) -> sha            # tag `baseline` on the remote at main, once
+start_generation(k, cfg) -> "gen-k"    # gen-k cut from baseline: env_k and env_k+1 face the same bugs
+work_branch(issue, base) -> "<base>-fix-<issue>"
+local_pr_ref(remote, head, base) / parse_pr_ref(ref)       # "file:///…/origin.git?head=gen-1-fix-1&base=gen-1"
+pr_diff(pr), pr_files(pr), run_tests_at(remote, ref), merge_local(pr), tests_after_merge(pr)
+```
+
+## company/realwork.py  (#12)
+
+#dev → synaps-dev → review → #board approval → merge, over the Transport contract.
+
+```python
+dispatch_text(DevTask) -> "@synaps-dev fix acme-shop#1 (base gen-1) ..."
+parse_result(text) -> {status: proposed|blocked|done, summary, evidence[], pr|None, valid} | None
+dispatch(transport, DevTask, waiter, *, timeout, fallback=devworker.work_issue) -> RESULT dict + via/thread
+review_pr(pr, *, issue, issue_text, tests=None) -> {verdict: PASS|NEEDS WORK, summary, concerns, tests, files, cost_usd}
+    # testing-reality-checker persona on Haiku; failing harness pytest or no tests/ file forces NEEDS WORK
+class MergeGate(transport, *, board, room, approvers, week)  # ask(MergeRequest) -> thread; handle(msg); wait(thread)
+apply_decision(req, text, *, sender, sender_is_agent, approvers, week) -> record | None   # for a LangGraph interrupt()
+record_into(quarter_log, record)       # merged incident -> fixes[{issue, week_fixed, pr_url, tests_passed}]
+```
+Only a person on `approvers` (`COMPANY_APPROVERS`, default haseeb,aditya) can approve; an agent never can.
+`week_fixed` is the week of the merge; `tests_passed` is pytest on the merged base.
+
+## synaps-dev (the extension's agent, #12)
+
+An agent entry in the extension config (`tools/synaps_dev.py setup` writes it): Sonnet with a `max_session_cost`,
+`skill_file: skill/synaps-dev.md` (the task procedure and the RESULT block), `workdir_repo` (each room session runs
+in its own clone), `session_env`/`session_path` (git identity, gh logged out and no ssh in local mode, a venv with pytest).
+Addressed with `@synaps-dev fix acme-shop#N (base gen-k)`, it reproduces with a failing test, fixes, runs the suite,
+commits on `gen-k-fix-N`, pushes, and replies in the thread with a summary, `@<asker>`, and
+
+    RESULT
+    ```json
+    {"status": "proposed", "summary": "...", "evidence": ["..."], "pr": "<PR ref or URL>"}
+    ```
 
 ## company/transport.py  (owner: C)
 
