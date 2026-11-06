@@ -3,6 +3,10 @@
 Personas sourced from https://github.com/msitarzewski/agency-agents (MIT).
 Each .md file has YAML frontmatter (name, description) and a markdown body.
 persona_id = "<division>/<filename-stem>", e.g. "support/support-infrastructure-maintainer".
+
+Where the roster lives: $COMPANY_ROSTER_DIR, default company/vendor/agency-agents (gitignored), a clone of
+agency-agents at PINNED made by `company/fetch_roster.sh` (the same pin as agency/build_plugin.py).
+`get_roster()` loads it once per process (module cache); an absent dir gives an empty roster.
 """
 from __future__ import annotations
 
@@ -10,6 +14,10 @@ import os
 import re
 from pathlib import Path
 from typing import Any
+
+REPO = "https://github.com/msitarzewski/agency-agents.git"
+PINNED = "b859c515d813efcfc4755d3471dd9e7686c7706d"   # keep in step with agency/build_plugin.py
+DEFAULT_ROSTER_DIR = Path(__file__).resolve().parent.parent / "vendor" / "agency-agents"
 
 # Divisions to include (excludes integrations, strategy, examples, scripts)
 _ALLOWED_DIVISIONS = {
@@ -70,6 +78,26 @@ def load_roster(root) -> dict[str, dict]:
             }
 
     return roster
+
+
+def roster_dir() -> Path:
+    """$COMPANY_ROSTER_DIR, else company/vendor/agency-agents (run company/fetch_roster.sh)."""
+    return Path(os.environ.get("COMPANY_ROSTER_DIR") or DEFAULT_ROSTER_DIR).expanduser()
+
+
+_CACHE: dict[str, dict] = {}
+
+
+def get_roster(root=None) -> dict[str, dict]:
+    """The roster at `root` (default roster_dir()), loaded once per dir. {} when the dir is missing."""
+    root = Path(root).expanduser() if root else roster_dir()
+    key = str(root.resolve()) if root.exists() else str(root)
+    if key not in _CACHE:
+        try:
+            _CACHE[key] = load_roster(root) if root.is_dir() else {}
+        except OSError:
+            _CACHE[key] = {}
+    return _CACHE[key]
 
 
 def search(roster: dict[str, dict], division: str | None = None, text: str | None = None) -> list[dict]:

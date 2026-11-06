@@ -19,7 +19,12 @@ The graph (one thread per quarter, SqliteSaver checkpoints after every node, thr
   into the QuarterLog, finance reviews). FakeTransport is synchronous; on Switch the week ends when the
   rooms have been quiet for `quiet_s`, or after `week_wall_s`.
 - work(w): `Departments.routes` to synaps-dev become the board's dev queue (deduped, incidents by severity
-  first, then features by demand; at most dev_per_week / dev_per_quarter). Each task goes through realwork
+  first, then features by demand; at most dev_per_week / dev_per_quarter, else x-company.dev_capacity). How a
+  route reaches #dev depends on the org (company/board/mechanics.py, #25): a sev1/sev2 incident from a room
+  linked to #dev is dispatched the week it was raised by the department agent itself (ops-maint addresses
+  synaps-dev in #dev; synaps-dev answers ops-maint); everything else waits for the board's weekly relay.
+  testing/* agents in #dev review each PR (regressions caught or reopened, extra rounds can slip a merge).
+  Each of these effects is a QuarterLog decision with a readable "what". Each task goes through realwork
   (#12): dispatch in #dev → synaps-dev's RESULT → review (testing-reality-checker on Haiku + harness pytest)
   → MergeGate in #board → a human's "approve" → merge on the local remote → QuarterLog.fixes / .features
   (week_fixed = the week of the merge). The board never approves: on FakeTransport a stub person answers,
@@ -57,6 +62,7 @@ from typing import Any, Callable, TypedDict
 import yaml
 
 from company import realwork as rw
+from company.board import mechanics as mech
 from company.board.stubs import StubApprover, StubDev, stub_llm, stub_merge, stub_review, stub_verify
 from company.board.wire import DEV, MARKET, CompanyTransport, company_rooms, extra_members
 from company.core.env import Env
@@ -254,6 +260,8 @@ class Runtime:
         self.work = copy.deepcopy(state.get("work") or {"queue": [], "done": {}, "tasks": [], "gate": {},
                                                           "routes_seen": 0, "review_usd": 0.0, "dev_usd": 0.0,
                                                           "dev_cost_seen": 0.0, "skipped": []})
+        for k, v in (("held", []), ("quality", {}), ("mech", {})):
+            self.work.setdefault(k, v)
         self.inbox = list(state.get("board_inbox") or [])
         self.waiter = rw.Waiter()
         merge = cfg.merge or (None if self.live else stub_merge)
@@ -266,6 +274,9 @@ class Runtime:
         for tid, req in (self.work.get("gate") or {}).items():
             self.gate.pending[tid] = rw.MergeRequest(**req)
         self.t.on_message(self.board, self.board_handler)
+        for n in self.dev_names:            # a direct line: synaps-dev answers the dept agent that asked
+            if n != self.board:
+                self.t.on_message(n, self.dev_reply)
         if not self.live:
             self.stub_dev = StubDev(self.t)
             self.stub_dev.spent = float(self.work.get("dev_cost_seen") or 0.0)   # cumulative, like a session
@@ -308,6 +319,21 @@ class Runtime:
             self.gate.handle(msg)
             return
         self.waiter.offer(msg)
+
+    def dev_reply(self, msg):
+        """synaps-dev's RESULT to a department agent that handed it work over a direct line: the board's
+        work loop is waiting for it (realwork.dispatch), exactly as for its own dispatches."""
+        if msg.sender == DEV:
+            self.waiter.offer(msg)
+
+    def mech_count(self, key, n=1):
+        m = self.work.setdefault("mech", {})
+        m[key] = m.get(key, 0) + n
+
+    def explain(self, type_, what, **kw):
+        """One mechanics decision, with the human-readable reason the board and the demo read back."""
+        self.deps.decide(type=type_, who=kw.pop("who", self.board), what=what, **kw)
+        self.log(f"week {self.week}: {what}")
 
     def post_board(self, text, thread=None):
         return self.t.post(self.board, self.hub, text, thread=thread)
@@ -378,10 +404,22 @@ class Runtime:
                 w["skipped"].append({"issue": n, "by": r.get("by"), "week": r.get("week"), "why": why})
                 self.deps.decide(type="route_skipped", issue=n, by=r.get("by"), to=r.get("to"), why=why)
                 continue
+            plan = mech.route_plan(self.env, r.get("by") or self.board, info, hub=self.hub, members=self.rooms)
+            ready = int(r["week"]) + plan["delay"]
             if n in queued:
+                q = next((x for x in w["queue"] if x["issue"] == n), None)
+                if q is not None and ready < q["ready"]:      # a second, faster route for the same issue
+                    q.update(ready=ready, path=plan["path"], asker=plan["asker"], by=r.get("by"),
+                             origin=plan["room"], msg=r.get("msg"))
                 continue
             queued.add(n)
-            w["queue"].append({"issue": n, "week": r["week"], "by": r.get("by"), "msg": r.get("msg"), **info})
+            w["queue"].append({"issue": n, "week": r["week"], "by": r.get("by"), "msg": r.get("msg"), **info,
+                               "ready": ready, "path": plan["path"], "asker": plan["asker"], "origin": plan["room"]})
+            tag = f"sev{info['severity']}" if info["kind"] == "incident" else f"demand {info['demand']:.1f}"
+            self.explain("route_direct" if plan["path"] == "direct" else "route_relay",
+                         f"#{n} ({tag}) raised wk{r['week']} by {r.get('by')} in #{plan['room']}: {plan['why']}"
+                         + ("" if plan["path"] == "direct" or not plan["delay"] else f" (wk{ready})"),
+                         issue=n, by=r.get("by"), path=plan["path"], ready_week=ready)
         w["routes_seen"] = len(routes)
 
         def prio(q):
@@ -389,26 +427,69 @@ class Runtime:
                 (1, -q.get("demand", 0), q["week"], q["issue"])
         w["queue"].sort(key=prio)
 
+    def caps(self):
+        return mech.capacity(self.env.company, self.cfg.dev_per_week, self.cfg.dev_per_quarter)
+
     def capacity(self, done_this_week):
         """synaps-dev's capacity: QuarterConfig.dev_per_week/_quarter, else x-company.dev_capacity
         {per_week, per_quarter}, else unlimited."""
-        env_cap = self.env.company.get("dev_capacity") or {}
-        per_week = self.cfg.dev_per_week if self.cfg.dev_per_week is not None else env_cap.get("per_week")
-        per_q = self.cfg.dev_per_quarter if self.cfg.dev_per_quarter is not None else env_cap.get("per_quarter")
+        per_week, per_q = self.caps()
         if per_week is not None and done_this_week >= int(per_week):
             return False
         if per_q is not None and len(self.work["tasks"]) >= int(per_q):
             return False
         return True
 
+    def dispatch_week(self, week) -> int:
+        """Dispatch what is ready this week (routed, relayed), in priority order, up to synaps-dev's capacity."""
+        n = 0
+        for q in list(self.work["queue"]):
+            if q.get("ready", q["week"]) > week:
+                continue
+            if not self.capacity(n):
+                break
+            self.work["queue"].remove(q)
+            self.run_task(q, week)
+            n += 1
+        return n
+
+    def dispatch_reason(self, q, week) -> str:
+        n, ready = q["issue"], q.get("ready", q["week"])
+        tag = f"sev{q['severity']}" if q["kind"] == "incident" else f"demand {q['demand']:.1f}"
+        relay, wait = ready - int(q["week"]), week - ready
+        if q.get("path") == "direct":
+            why = f"#{n} ({tag}) routed direct by {q['by']} (#{q.get('origin')} ↔ #dev): raised wk{q['week']}, " \
+                  f"dispatched wk{week}"
+        elif relay:
+            why = f"#{n} ({tag}) waited for board relay: raised wk{q['week']} by {q['by']} in #{q.get('origin')}, " \
+                  f"dispatched wk{week}"
+        else:
+            why = f"#{n} ({tag}) dispatched by the board: raised wk{q['week']}, dispatched wk{week}"
+        if wait > 0:
+            why += f" (+{wait} wk waiting for dev capacity, {mech.cap_text(*self.caps())})"
+        return why
+
     def run_task(self, q, week):
         n, kind = q["issue"], q["kind"]
         tag = f"sev{q['severity']}" if kind == "incident" else f"demand {q['demand']:.1f}"
-        self.post_board(f"Routing acme-shop#{n} ({kind}, {tag}: {q['title']}), raised by {q['by']} in week "
-                        f"{q['week']}, to synaps-dev in #dev.")
-        task = rw.DevTask(n, kind, base=self.base or f"gen-{self.k}", asker=self.board, dev=DEV, room="dev",
+        path, asker = q.get("path", "board_relay"), q.get("asker") or self.board
+        ready = q.get("ready", q["week"])
+        if path == "direct":
+            self.mech_count("direct")
+        else:
+            self.mech_count("relayed")
+            self.mech_count("relay_weeks", ready - int(q["week"]))
+        self.mech_count("capacity_weeks", week - ready)
+        self.explain("dispatch", self.dispatch_reason(q, week), who=asker, issue=n, kind=kind, path=path,
+                     raised_week=q["week"], ready_week=ready)
+        if path == "direct":
+            self.log(f"week {week}: {asker} hands acme-shop#{n} to synaps-dev in #dev over the direct line")
+        else:
+            self.post_board(f"Relaying acme-shop#{n} ({kind}, {tag}: {q['title']}), raised by {q['by']} in "
+                            f"#{q.get('origin') or self.hub} in week {q['week']}, to synaps-dev in #dev.")
+        task = rw.DevTask(n, kind, base=self.base or f"gen-{self.k}", asker=asker, dev=DEV, room="dev",
                           title=q["title"])
-        self.log(f"week {week}: dispatch acme-shop#{n} ({kind}) on {task.base}")
+        self.log(f"week {week}: dispatch acme-shop#{n} ({kind}) on {task.base} as {asker}")
         fallback = self.cfg.fallback
         if fallback is None:
             from company.board.live import no_fallback
@@ -422,7 +503,7 @@ class Runtime:
             self.book(DEV, res.get("cost_usd", 0.0), "dev_usd")
         rec = {"issue": n, "kind": kind, "week": week, "by": q["by"], "status": res["status"], "via": res.get("via"),
                "pr": res.get("pr"), "summary": res.get("summary", "")[:300], "thread": res.get("thread"),
-               "seconds": res.get("seconds")}
+               "seconds": res.get("seconds"), "path": path, "asker": asker}
         self.work["tasks"].append(rec)
         self.work["done"][str(n)] = rec
         self.log(f"week {week}: RESULT acme-shop#{n} via {res.get('via')} after {res.get('seconds')}s: "
@@ -448,7 +529,48 @@ class Runtime:
         text = rw.review_text(review, res["pr"], board=self.board, dev=DEV)
         text = "\n".join(l for l in text.splitlines() if not l.startswith(f"@{DEV} "))   # no rework loop
         self.t.post("reviewer" if self.has_reviewer else self.board, "dev", text, thread=res.get("thread"))
+        review = self.review_rounds(q, res, review, review_fn, week)
         req = rw.MergeRequest(n, kind, res["pr"], res.get("summary", ""), review, res.get("evidence") or [])
+        slip = (self.work["quality"].get(str(n)) or {}).get("slip", 0)
+        if slip:
+            self.work["held"].append({"req": asdict(req), "week": week + slip})
+            rec["outcome"] = "extra_review"
+            self.mech_count("slipped")
+            self.explain("review_slip", f"#{n}: another review round in #dev; the merge slips to wk{week + slip}",
+                         who=", ".join(self.work["quality"][str(n)]["testers"][1:]), issue=n, merge_week=week + slip)
+            return rec
+        return self.ask_merge(req, rec, week)
+
+    def review_rounds(self, q, res, review, review_fn, week):
+        """Testers in #dev (mechanics.quality): latent regression caught or not, extra review rounds.
+        Returns the review the merge request carries (the worst verdict of all rounds)."""
+        n, kind = q["issue"], q["kind"]
+        ql = mech.quality(self.env, self.seed, n, kind)
+        self.work["quality"][str(n)] = ql
+        tst = ql["testers"]
+        for t in tst[1:]:                         # every tester beyond the first: another real review round
+            try:
+                extra = review_fn(res["pr"], issue=n, issue_text=q["title"])
+            except Exception as e:  # noqa: BLE001
+                self.book(t, getattr(e, "cost_usd", 0.0), "review_usd")
+                extra = {"verdict": "NEEDS WORK", "summary": f"review failed: {type(e).__name__}"[:200],
+                         "tests": {"passed": False, "summary": "not run"}, "cost_usd": 0.0}
+            self.book(t, extra.get("cost_usd", 0.0), "review_usd")
+            self.mech_count("review_rounds")
+            if t in self.rooms.get("dev", ()):
+                self.t.post(t, "dev", f"{t} review of {res['pr']}: {extra.get('verdict')} — "
+                                      f"{str(extra.get('summary', ''))[:200]}", thread=res.get("thread"))
+            if extra.get("verdict") != "PASS" and review.get("verdict") == "PASS":
+                review = {**extra, "files": review.get("files"), "concerns": extra.get("concerns") or [f"{t}: NEEDS WORK"]}
+        if ql["caught_by"]:
+            self.mech_count("caught")
+            self.explain("regression_caught", f"#{n}: {ql['caught_by']} caught a regression in review before the "
+                         f"merge (synaps-dev fixed it on the branch)", who=ql["caught_by"], issue=n)
+        return review
+
+    def ask_merge(self, req, rec, week):
+        """#board's merge gate for a reviewed PR: ask, let the person decide, book the decision."""
+        n = req.issue
         tid = self.gate.ask(req)
         self.gate_asked[tid] = time.time()
         self.work["gate"][tid] = asdict(req)
@@ -471,9 +593,43 @@ class Runtime:
             self.log(f"week {week}: acme-shop#{n} awaits a #board decision")
         return rec
 
+    def release_held(self, week):
+        """PRs whose extra review round ends this week go to the #board merge gate now."""
+        for h in list(self.work.get("held") or []):
+            if h["week"] <= week:
+                self.work["held"].remove(h)
+                req = rw.MergeRequest(**h["req"])
+                rec = self.work["done"].get(str(req.issue)) or {"issue": req.issue}
+                rec["outcome"] = None
+                self.ask_merge(req, rec, week)
+
+    def regress(self, dec):
+        """A merged incident fix whose latent regression nobody caught: customers hit it again, the incident
+        reopens, and the re-fix lands REOPEN_WEEKS later (past the quarter: still open at quarter end)."""
+        n = dec["issue"]
+        ql = self.work["quality"].get(str(n)) or {}
+        if dec.get("kind") != "incident" or not dec.get("merged") or not ql.get("latent") or ql.get("caught_by"):
+            return
+        fix = next((f for f in self.qlog.fixes if f["issue"] == n), None)
+        if fix is None:
+            return
+        merged, refix = fix["week_fixed"], fix["week_fixed"] + mech.REOPEN_WEEKS
+        self.mech_count("reopened")
+        who = ", ".join(ql.get("testers") or []) or "nobody"
+        if refix > self.weeks:
+            self.qlog.fixes.remove(fix)
+            what = (f"#{n}: fix regressed after the wk{merged} merge (review by {who} missed it); reopened, "
+                    f"not re-fixed this quarter")
+        else:
+            fix["week_fixed"] = refix
+            what = (f"#{n}: fix regressed after the wk{merged} merge (review by {who} missed it); reopened, "
+                    f"re-fix lands wk{refix}")
+        self.explain("regression", what, who="market", issue=n, merged_week=merged, refix_week=refix)
+
     def book_decision(self, tid, dec):
         req = self.work["gate"].pop(tid, None)
-        rw.record_into(self.qlog, dec)
+        with self.deps.lock:
+            rw.record_into(self.qlog, dec)
         rec = self.work["done"].get(str(dec["issue"]))
         outcome = "merged" if dec.get("merged") else ("rejected" if dec["decision"] != "approve" else "merge_failed")
         if rec is not None:
@@ -488,7 +644,29 @@ class Runtime:
                          pr=dec.get("pr_url"))
         self.log(f"merge decision acme-shop#{dec['issue']}: {dec['decision']} by {dec.get('approver')}, "
                  f"merged={dec.get('merged')} tests_passed={dec.get('tests_passed')}")
+        self.regress(dec)
         return req
+
+    def market_inputs(self):
+        """What the policies and budgets let through to Market.settle, as one readable line."""
+        lg = self.qlog
+        camps = lg.campaigns
+        spent = {}
+        for x in lg.spend:
+            if x.get("approved", True):
+                spent[x.get("dept", "?")] = spent.get(x.get("dept", "?"), 0.0) + float(x.get("usd") or 0)
+        verdicts = [d for d in lg.decisions if d.get("type") == "verdict"]
+        denied = sum(1 for d in verdicts if d.get("status") == "denied")
+        price = lg.price_changes[-1]["price"] if lg.price_changes else self.env.company.get("price")
+        q = sum(float(c.get("quality", 0.5)) for c in camps) / len(camps) if camps else 0.0
+        what = (f"to the market: {len(camps)} campaign(s), ${sum(float(c.get('spend') or 0) for c in camps):,.0f} "
+                f"spend, mean quality {q:.2f}, {sum(1 for c in camps if c.get('cites_feature'))} citing a shipped "
+                f"feature; approved spend " + (", ".join(f"{k} ${v:,.0f}" for k, v in sorted(spent.items())) or "none")
+                + f"; {len(verdicts) - denied} item(s) approved, {denied} denied by finance/policy; "
+                f"price ${float(price or 0):.2f}; "
+                f"fixes {sorted((f['issue'], f['week_fixed']) for f in lg.fixes)}, "
+                f"features {sorted((f['issue'], f['week_shipped']) for f in lg.features)}")
+        self.explain("market_inputs", what, who="policy")
 
     def collect_gate(self):
         for tid in list(self.work.get("gate") or {}):
@@ -519,9 +697,22 @@ class Runtime:
                     t["outcome"] = "not_approved"
             out.append({"what": "merge", "issue": req["issue"], "pr": req["pr"], "was": "awaiting approval"})
         self.work["gate"] = {}
+        for h in self.work.get("held") or []:
+            req = h["req"]
+            d.decide(type="merge_not_approved", issue=req["issue"], kind=req["kind"], pr=req["pr"],
+                     why="its extra review round ran past the quarter", who="qa",
+                     what=f"#{req['issue']}: the extra review round ran past the quarter (merge wk{h['week']}): not merged")
+            out.append({"what": "merge", "issue": req["issue"], "pr": req["pr"], "was": "in review"})
+        self.work["held"] = []
         for q in self.work.get("queue") or []:
+            ready = q.get("ready", q["week"])
+            how = (f"board relay → wk{ready}" if q.get("path") == "board_relay" and ready > int(q["week"])
+                   else "routed direct" if q.get("path") == "direct" else "queued")
             d.decide(type="route_not_dispatched", issue=q["issue"], kind=q["kind"], by=q["by"],
-                     why="the dev queue did not reach it this quarter")
+                     why="the dev queue did not reach it this quarter", who=self.board,
+                     what=f"#{q['issue']} ({q['kind']}) never reached synaps-dev: raised wk{q['week']} by {q['by']}, "
+                          f"{how}, then dev capacity ({mech.cap_text(*self.caps())}) ran out")
+            self.mech_count("not_dispatched")
             out.append({"what": "route", "issue": q["issue"], "kind": q["kind"], "was": "queued"})
         return out
 
@@ -586,6 +777,8 @@ def build_graph(rt: Runtime):
             rt.base = setup["base"]
         rt.post_board(f"Quarter {rt.cfg.quarter_label or 1} opens: {rt.env.name} generation {rt.k}, seed {rt.seed}, "
                       f"{rt.weeks} weeks. Engineering base branch {rt.base}. The Handbook and the Ledger are in this room.")
+        if not state.get("setup"):
+            rt.explain("org", mech.org_text(rt.env, *rt.caps(), hub=rt.hub))
         rt.log(f"open_quarter: {rt.env.name} g{rt.k} seed {rt.seed}, {rt.weeks} weeks, base {rt.base}")
         return {**rt.snapshot(), "setup": setup, "week": state.get("week") or 1}
 
@@ -615,12 +808,9 @@ def build_graph(rt: Runtime):
         rt.ensure(state)
         rt.week = rt.deps.week = w
         rt.collect_gate()
+        rt.release_held(w)
         rt.queue_routes()
-        n = 0
-        while rt.work["queue"] and rt.capacity(n):
-            q = rt.work["queue"].pop(0)
-            rt.run_task(q, w)
-            n += 1
+        n = rt.dispatch_week(w)
         cur = dict(state.get("current") or {})
         cur["dispatched"] = n
         return {**rt.snapshot(), "current": cur}
@@ -658,6 +848,10 @@ def build_graph(rt: Runtime):
                 if not rt.book_dev_cost():
                     break
         rt.book_dev_cost()
+        stats = {k: rt.work["mech"].get(k, 0) for k in mech.STATS}
+        rt.explain("mechanics", "quarter mechanics: " + (mech.stats_text(stats) or "nothing waited, nothing reopened"),
+                   stats=stats, labels=dict(mech.STATS))
+        rt.market_inputs()
         m = rt.market.settle(rt.qlog)
         fit = fitness_of(m, rt.cfg.weights or load_weights())
         rt.log(f"settle: {m}; fitness {fit:.4f}; not approved at quarter end: {len(pending)}")
@@ -766,6 +960,7 @@ def fingerprint(env: Env, seed, generation, cfg: QuarterConfig, issues) -> str:
                        "llm": cfg.llm_label or ("stub" if (cfg.llm is None and cfg.transport == "fake") else "custom"),
                        "issues": issues, "agent_prefix": cfg.agent_prefix, "room_prefix": cfg.room_prefix,
                        "acme_prefix": cfg.acme_prefix, "caps": [cfg.dev_per_week, cfg.dev_per_quarter],
+                       "mechanics": mech.MECHANICS_VERSION,
                        "label": cfg.quarter_label}, sort_keys=True, default=str)
     return hashlib.sha256(blob.encode()).hexdigest()[:16]
 

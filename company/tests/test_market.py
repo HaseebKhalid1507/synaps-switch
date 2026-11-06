@@ -44,6 +44,75 @@ def _bad_log() -> QuarterLog:
     return log
 
 
+def _ok_log() -> QuarterLog:
+    """Middling: incidents fixed in weeks 2-3, one feature shipped late, two generic campaigns."""
+    log = QuarterLog()
+    log.fixes = [{"issue": 3, "week_fixed": 2}, {"issue": 7, "week_fixed": 2},
+                 {"issue": 11, "week_fixed": 3}, {"issue": 15, "week_fixed": 3}]
+    log.features = [{"issue": 20, "week_shipped": 3}]
+    log.campaigns = [{"week": w, "text": "Spring sale", "spend": 2000, "cites_feature": False, "quality": 0.6}
+                     for w in (2, 3)]
+    log.spend = [{"week": 2, "dept": "marketing", "usd": 4000, "approved": True}]
+    log.llm_cost_usd = 6.2
+    return log
+
+
+# ------------------------------------------------------------------
+# Calibration (#16): GOOD > OK > BAD on profit AND growth, not only fitness
+# ------------------------------------------------------------------
+
+@pytest.mark.parametrize("seed", [1, 2, 7, 42, 99, 123, 299])
+def test_good_ok_bad_order_on_profit_growth_fitness(seed):
+    from company.core.fitness import fitness
+    from company.board.quarter import load_weights
+    w = load_weights()
+    g, o, b = (Market(seed, COMPANY, ISSUES).settle(f()) for f in (_good_log, _ok_log, _bad_log))
+    assert g.profit > o.profit > b.profit
+    assert g.growth > o.growth > b.growth
+    assert fitness(g, w) > fitness(o, w) > fitness(b, w)
+    assert g.growth > 0, "a good quarter grows the customer base"
+
+
+def _with_campaign(week, cites, quality, spend=2000):
+    base = QuarterLog()
+    base.fixes = [{"issue": i["issue"], "week_fixed": 1} for i in ISSUES["incidents"]]
+    base.features = [{"issue": f["issue"], "week_shipped": 1} for f in ISSUES["features"]]
+    camp = QuarterLog(fixes=list(base.fixes), features=list(base.features))
+    camp.campaigns = [{"week": week, "spend": spend, "cites_feature": cites, "quality": quality}]
+    camp.spend = [{"week": week, "dept": "marketing", "usd": spend, "approved": True}]
+    return camp, base
+
+
+@pytest.mark.parametrize("seed", [1, 2, 42])
+def test_good_campaign_pays_back_weak_one_does_not(seed):
+    good, base = _with_campaign(1, True, 0.9)
+    weak, _ = _with_campaign(1, False, 0.2)
+    m0 = Market(seed, COMPANY, ISSUES).settle(base)
+    assert Market(seed, COMPANY, ISSUES).settle(good).profit > m0.profit
+    assert Market(seed, COMPANY, ISSUES).settle(weak).profit < m0.profit
+
+
+@pytest.mark.parametrize("seed", [1, 2, 42])
+def test_fixing_a_week_sooner_raises_profit_and_growth(seed):
+    def fixed_in(week):
+        log = QuarterLog()
+        log.fixes = [{"issue": i["issue"], "week_fixed": week} for i in ISSUES["incidents"]]
+        return Market(seed, COMPANY, ISSUES).settle(log)
+    early, late = fixed_in(1), fixed_in(2)
+    assert early.profit > late.profit + 1000
+    assert early.growth > late.growth
+    assert early.mean_fix_weeks < late.mean_fix_weeks
+
+
+def test_feature_raises_conversion_from_its_ship_week():
+    def shipped_in(week):
+        log = QuarterLog()
+        log.features = [{"issue": 20, "week_shipped": week}]
+        log.campaigns = [{"week": 2, "spend": 2000, "cites_feature": False, "quality": 0.5}]
+        return Market(42, COMPANY, ISSUES).settle(log)
+    assert shipped_in(1).customers > shipped_in(3).customers
+
+
 # ------------------------------------------------------------------
 # Determinism
 # ------------------------------------------------------------------
