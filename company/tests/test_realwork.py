@@ -239,3 +239,131 @@ def test_apply_decision_for_a_langgraph_board():
 def test_approvers_from_env(monkeypatch):
     monkeypatch.setenv("COMPANY_APPROVERS", "@Haseeb, aditya ,")
     assert rw.approvers_from_env() == ("haseeb", "aditya")
+
+
+# ───────── #26: the session pushes a branch; this process opens the PR ─────────
+
+def _res(pr, status="proposed"):
+    return {"status": status, "summary": "Inventory released on payment failure", "evidence": ["pytest -q: 40 passed"],
+            "pr": pr, "valid": True, "via": "synaps-dev"}
+
+
+def _opener(calls, url="https://github.com/HaseebKhalid1507/acme-shop/pull/7"):
+    def open_pr(cfg, head, base, *, issue, title, body):
+        calls.append({"head": head, "base": base, "issue": issue, "title": title, "body": body})
+        return url
+    return open_pr
+
+
+def test_land_pr_opens_the_pr_from_the_expected_branch():
+    task = rw.DevTask(3, "incident", base="m26-gen-1", title="Inventory not released")
+    calls = []
+    out = rw.land_pr(_res("m26-gen-1-fix-3"), task, cfg=object(), open_pr=_opener(calls))
+    assert out["pr"].endswith("/pull/7") and out["pr_opened_by"] == "company" and out["branch"] == "m26-gen-1-fix-3"
+    assert calls == [{"head": "m26-gen-1-fix-3", "base": "m26-gen-1", "issue": 3, "title": "Fix #3: Inventory not released",
+                      "body": calls[0]["body"]}]
+    assert "Refs #3" in calls[0]["body"] and "not by the session" in calls[0]["body"]
+    calls.clear()                      # "origin/<branch>" or "refs/heads/<branch>" are the same branch
+    assert rw.land_pr(_res("origin/m26-gen-1-fix-3"), task, cfg=object(), open_pr=_opener(calls))["status"] == "proposed"
+    assert calls[0]["head"] == "m26-gen-1-fix-3"
+
+
+def test_land_pr_takes_done_with_the_pushed_branch_as_proposed():
+    task = rw.DevTask(3, "incident", base="m26-gen-1")
+    calls = []
+    out = rw.land_pr(_res("m26-gen-1-fix-3", "done"), task, cfg=object(), open_pr=_opener(calls))
+    assert out["status"] == "proposed" and out["status_reported"] == "done" and calls[0]["head"] == "m26-gen-1-fix-3"
+    assert rw.land_pr(_res(None, "done"), task, open_pr=lambda *a, **k: 1 / 0)["status"] == "done"
+    assert rw.land_pr(_res("main", "done"), task, open_pr=lambda *a, **k: 1 / 0)["status"] == "done"
+
+
+def test_land_pr_refuses_other_branches_and_rederives_urls():
+    task = rw.DevTask(3, "incident", base="gen-1")
+    calls = []
+    for wrong in ("main", "gen-1", "gen-1-fix-4", "evil"):
+        out = rw.land_pr(_res(wrong), task, cfg=object(), open_pr=_opener(calls))
+        assert out["status"] == "blocked" and out["pr"] is None and out["reported_pr"] == wrong
+    assert calls == []
+    # a URL the session reports (it can't have opened one) is ignored: the PR comes from the expected branch
+    out = rw.land_pr(_res("https://github.com/mallory/acme-shop/pull/1"), task, cfg=object(), open_pr=_opener(calls))
+    assert calls[0]["head"] == "gen-1-fix-3" and out["pr"].startswith("https://github.com/HaseebKhalid1507/")
+
+
+def test_land_pr_passes_local_and_stub_refs_and_blocks_on_failure():
+    task = rw.DevTask(1, "incident", base="gen-1")
+    for ref in (PR, "stub://acme-shop?head=gen-1-fix-1&base=gen-1"):
+        assert rw.land_pr(_res(ref), task, open_pr=lambda *a, **k: 1 / 0)["pr"] == ref
+    assert rw.land_pr(_res(None, "blocked"), task, open_pr=lambda *a, **k: 1 / 0)["status"] == "blocked"
+
+    def refuse(*a, **k):
+        raise rw.acme.AcmeError("gen-1-fix-1 is not on the remote")
+    out = rw.land_pr(_res("gen-1-fix-1"), task, cfg=object(), open_pr=refuse)
+    assert out["status"] == "blocked" and "not on the remote" in out["summary"]
+
+
+def test_dispatch_opens_the_pr_outside_the_session():
+    t = FakeTransport(rooms=rooms())
+    waiter = rw.Waiter()
+    t.on_message("board", waiter.offer)
+    reply = REPLY.replace(PR, "gen-1-fix-1")
+    t.on_message("synaps-dev", lambda m: t.post("synaps-dev", m.room, reply, thread=m.thread or m.id))
+    t.start()
+    calls = []
+    text = rw.dispatch_text(rw.DevTask(1, "incident", base="gen-1"))
+    assert "push gen-1-fix-1" in text and "opened for you" in text and "open the PR" not in text
+    res = rw.dispatch(t, rw.DevTask(1, "incident", base="gen-1"), waiter, timeout=1, open_pr=_opener(calls))
+    assert res["pr"].endswith("/pull/7") and res["reported_pr"] == "gen-1-fix-1" and calls[0]["base"] == "gen-1"
+
+
+def test_dispatch_opens_the_pr_whoever_asked():
+    """ops-maint asks over the direct line (#28): the PR is opened the same way, by this process."""
+    t = FakeTransport(rooms={"dev": ["ops-maint", "synaps-dev", "board"]})
+    waiter = rw.Waiter()
+    t.on_message("ops-maint", waiter.offer)
+    reply = REPLY.replace(PR, "gen-2-fix-3").replace("@board", "@ops-maint").replace("acme-shop#1", "acme-shop#3")
+    t.on_message("synaps-dev", lambda m: t.post("synaps-dev", m.room, reply, thread=m.thread or m.id))
+    t.start()
+    calls = []
+    task = rw.DevTask(3, "incident", base="gen-2", asker="ops-maint")
+    assert rw.dispatch_text(task).startswith("@synaps-dev fix acme-shop#3 (base gen-2)")
+    res = rw.dispatch(t, task, waiter, timeout=1, open_pr=_opener(calls))
+    assert res["via"] == "synaps-dev" and res["reported_pr"] == "gen-2-fix-3" and res["pr"].endswith("/pull/7")
+    assert calls == [{**calls[0], "head": "gen-2-fix-3", "base": "gen-2", "issue": 3}]
+
+
+def test_default_merge_is_pinned_to_the_reviewed_commit(monkeypatch):
+    import company.devworker as dw
+    seen = {}
+
+    def merge_pr(pr, head_sha=None):
+        seen.update(pr=pr, head_sha=head_sha)
+        return True
+    monkeypatch.setattr(dw, "merge_pr", merge_pr)
+    r = rw.MergeRequest(3, "incident", "https://github.com/HaseebKhalid1507/acme-shop/pull/7", "s",
+                        {"verdict": "PASS", "tests": {"passed": True, "sha": "c0ffee"}})
+    rec = rw.decide(r, "approve", approver="user", week=2,
+                    verify=lambda pr: {"passed": True, "summary": "40 passed", "sha": "d00d"})
+    assert rec["merged"] and seen == {"pr": r.pr, "head_sha": "c0ffee"}
+
+
+def test_live_merge_and_review_take_fork_prs_only_in_github_mode(monkeypatch):
+    from company.board import live
+    import company.devworker as dw
+    fork = "https://github.com/HaseebKhalid1507/acme-shop/pull/9"
+    seen = []
+    monkeypatch.setattr(dw, "merge_pr", lambda pr, head_sha=None: seen.append((pr, head_sha)) or True)
+    for k in ("ACME_REPO", "ACME_REMOTE", "ACME_ALLOW_GITHUB_WRITES"):
+        monkeypatch.delenv(k, raising=False)
+    with pytest.raises(rw.acme.GitHubWriteRefused):           # not in GitHub mode: local only
+        live.local_merge(fork)
+    monkeypatch.setenv("ACME_REPO", "HaseebKhalid1507/acme-shop")
+    monkeypatch.setenv("ACME_ALLOW_GITHUB_WRITES", "1")
+    assert live.local_merge(fork, head_sha="abc") and seen == [(fork, "abc")]
+    for other in ("https://github.com/adityapat958/acme-shop/pull/1", "https://github.com/mallory/acme-shop/pull/2"):
+        with pytest.raises(rw.acme.GitHubWriteRefused):
+            live.local_merge(other)
+    # the gate hands the reviewed sha to a merge that takes it
+    r = rw.MergeRequest(9, "incident", fork, "s", {"verdict": "PASS", "tests": {"passed": True, "sha": "c0ffee"}})
+    rec = rw.decide(r, "approve", approver="user", week=1, merge=live.local_merge,
+                    verify=lambda pr: {"passed": True, "summary": "ok", "sha": "m"})
+    assert rec["merged"] and seen[-1] == (fork, "c0ffee")

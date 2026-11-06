@@ -18,7 +18,10 @@ instructions, rooms (optional allowlist of room ids), and for a working agent su
   skill_file     markdown appended to the room session's system prompt (path, relative to the plugin dir)
   workdir_repo   {"url": git URL, "dir": "acme-shop", "branch": optional}: each new room session gets its
                  own clone in its room work dir and runs in it (a resumed session keeps its clone)
-  session_env    {"NAME": "value"} extra environment for the session's tools (e.g. GH_CONFIG_DIR, GIT_AUTHOR_*)
+  session_env    {"NAME": "value"} extra environment for the session's tools (e.g. GH_CONFIG_DIR, GIT_AUTHOR_*,
+                 GIT_SSH_COMMAND with a deploy key). Credential-looking names and SSH_AUTH_SOCK are refused:
+                 a room session never gets the operator's ssh agent or tokens. The workdir_repo clone
+                 runs with this same environment, so it uses the session's credentials, nothing more.
   session_path   [dirs] prepended to the session's PATH (e.g. a venv with pytest)
 
 stdout is JSON-RPC only. Logs go to stderr and <state_dir>/extension.log, never a credential.
@@ -219,7 +222,7 @@ def daemon_sessions():
 
 
 ENV_NAME = re.compile(r"[A-Z_][A-Z0-9_]{0,63}")
-ENV_DENY = re.compile(r"TOKEN|SECRET|PASSWORD|API_KEY|^SYNAPS_|^LD_", re.I)
+ENV_DENY = re.compile(r"TOKEN|SECRET|PASSWORD|API_KEY|^SYNAPS_|^LD_|^SSH_AUTH_SOCK$|^SSH_AGENT_PID$|^GPG_AGENT", re.I)
 
 
 def session_env(extra=None, path_prepend=None):
@@ -252,9 +255,11 @@ def plugin_text(path):
         return ""
 
 
-def prepare_workdir(work, repo):
+def prepare_workdir(work, repo, env=None):
     """The room session's cwd. With workdir_repo, a clone of it inside the room's work dir (cloned
-    once; an existing clone is left as it is, so a resumed session finds its own branches)."""
+    once; an existing clone is left as it is, so a resumed session finds its own branches).
+    env: the session's environment (session_env()), so the clone uses the session's credentials
+    (e.g. its deploy key) and never the extension's own."""
     if not repo or not repo.get("url"):
         return Path(work)
     url = str(repo["url"])
@@ -262,8 +267,9 @@ def prepare_workdir(work, repo):
     dest = Path(work) / slug(name, 40)
     if not (dest / ".git").exists():
         argv = ["git", "clone", "-q"] + (["--branch", str(repo["branch"])] if repo.get("branch") else []) + [url, str(dest)]
+        base_env = dict(env) if env is not None else dict(session_env())
         r = subprocess.run(argv, capture_output=True, text=True, timeout=300,
-                           env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+                           env={**base_env, "GIT_TERMINAL_PROMPT": "0"})
         if r.returncode != 0:
             raise RuntimeError(f"git clone for the room work dir failed: {(r.stderr or r.stdout).strip()[-300:]}")
         log(f"cloned {url} into {dest}")
@@ -494,7 +500,9 @@ class Watcher:
         work.mkdir(parents=True, exist_ok=True)
         os.chmod(work, 0o700)
         prev = (self.state["rooms"].get(room_id) or {}).get("cwd")
-        cwd = Path(prev) if resume and prev and Path(prev).is_dir() else prepare_workdir(work, self.cfg.get("workdir_repo"))
+        senv = session_env(self.cfg.get("session_env"), self.cfg.get("session_path"))
+        cwd = Path(prev) if resume and prev and Path(prev).is_dir() else \
+            prepare_workdir(work, self.cfg.get("workdir_repo"), senv)
         name = f"sw-{slug(self.name, 12)}-{slug(rname, 18)}-{hashlib.sha1(room_id.encode()).hexdigest()[:4]}"[:40]
         config = {"cwd": str(cwd), "keep_warm": True, "persist": True, "client_input": "shared",
                   "await_extensions": True, "auto_compact": True}
@@ -508,7 +516,7 @@ class Watcher:
             config["system"] = self.system_prompt(room_id, ctx)
             config["name"] = name
         with DaemonClient(30.0, cwd=cwd) as c:
-            c.hello(env=session_env(self.cfg.get("session_env"), self.cfg.get("session_path")))
+            c.hello(env=senv)
             meta = c.create(config)
         sid = meta.get("id")
         if not sid:

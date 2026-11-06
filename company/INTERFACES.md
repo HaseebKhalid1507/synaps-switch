@@ -118,10 +118,13 @@ def work_issue(issue: int, kind: str, *, repo="adityapat958/acme-shop", workdir=
     # --no-extensions` with the whole prompt as ONE stdin line, pytest, commit, plain push,
     # then the PR: `gh pr create` with "Closes #n", or a local PR ref in local mode.
     # returns {issue, pr_url, tests_passed, summary, cost_usd}
-def merge_pr(pr_url) -> bool          # called only after a human approves in #board (realwork.MergeGate)
-    # local PR ref: squash-merge into its base on the local remote; GitHub: gh pr merge --squash,
-    # refused unless ACME_ALLOW_GITHUB_WRITES=1
+def merge_pr(pr_url, *, head_sha=None) -> bool   # only after a human approves in #board (realwork.MergeGate)
+    # local PR ref: squash-merge into its base on the local remote; GitHub: gh pr merge --squash
+    # [--match-head-commit head_sha], refused unless ACME_ALLOW_GITHUB_WRITES=1 and acme.check_mergeable
+    # (on ACME_REPO, open, same repo, <gen-k>-fix-N into gen-k)
 ```
+Machine settings, the company/llm.py scheme (#6, #16): `COMPANY_DEV_PROFILE`, `COMPANY_BROKER_TOKEN_FILE`,
+`COMPANY_BROKER_URL`, `COMPANY_SYNAPS_BASE_DIR`, `COMPANY_SYNAPS_BIN`; nothing machine-specific in the code.
 Pushes are plain. Only a branch this process created may be rewritten, and then only with `--force-with-lease`.
 `python -m company.devworker setup` writes the `company-dev` profile (Sonnet, `max_session_cost`, broker only).
 
@@ -129,7 +132,10 @@ Pushes are plain. Only a branch this process created may be rewritten, and then 
 
 The product repo: issues, the remote, PR refs, reset between trials. Config by env:
 `ACME_REPO` (issues, default `adityapat958/acme-shop`), `ACME_REMOTE` (where branches go; a `file://` bare repo =
-local mode), `ACME_ALLOW_GITHUB_WRITES=1` (without it every GitHub write is refused before git/gh runs).
+local mode), `ACME_ALLOW_GITHUB_WRITES=1` (without it every GitHub write is refused before git/gh runs; the upstream
+`adityapat958/acme-shop` and any remote that is not `ACME_REPO` are refused always), `ACME_DEPLOY_KEY` (git uses only
+that key, no ssh agent), `ACME_ISSUE_AUTHORS` (issue authors the market reads; default `HaseebKhalid1507,adityapat958`).
+GitHub mode (#26) = `tools/synaps_dev.py setup --github`, which writes these for the fork.
 
 ```python
 load_issues(repo=None, *, cache=None) -> {"incidents": [{issue, title, severity}], "features": [{issue, title, demand}]}
@@ -140,7 +146,9 @@ ensure_baseline(cfg) -> sha            # tag `baseline` on the remote at main, o
 start_generation(k, cfg) -> "gen-k"    # gen-k cut from baseline: env_k and env_k+1 face the same bugs
 work_branch(issue, base) -> "<base>-fix-<issue>"
 local_pr_ref(remote, head, base) / parse_pr_ref(ref)       # "file:///…/origin.git?head=gen-1-fix-1&base=gen-1"
-pr_diff(pr), pr_files(pr), run_tests_at(remote, ref), merge_local(pr), tests_after_merge(pr)
+pr_diff(pr), pr_files(pr), run_tests_at(remote, ref), merge_local(pr, head_sha=None), tests_after_merge(pr)
+open_pr(cfg, head, base, *, issue, title, body) -> ref|url  # gh pr create -R <repo> --base gen-k --head gen-k-fix-N
+check_mergeable(pr, cfg) / pr_info(pr) / fetch_issue(repo, n)   # fetch_issue refuses a non-allowlisted author
 ```
 
 ## company/realwork.py  (#12)
@@ -151,6 +159,8 @@ pr_diff(pr), pr_files(pr), run_tests_at(remote, ref), merge_local(pr), tests_aft
 dispatch_text(DevTask) -> "@synaps-dev fix acme-shop#1 (base gen-1) ..."
 parse_result(text) -> {status: proposed|blocked|done, summary, evidence[], pr|None, valid} | None
 dispatch(transport, DevTask, waiter, *, timeout, fallback=devworker.work_issue) -> RESULT dict + via/thread
+land_pr(res, DevTask) -> res            # (inside dispatch) RESULT pr = the pushed branch -> acme.open_pr, here, never
+                                        # in the room session; any asker (board or ops-maint), keyed on issue + base
 review_pr(pr, *, issue, issue_text, tests=None) -> {verdict: PASS|NEEDS WORK, summary, concerns, tests, files, cost_usd}
     # testing-reality-checker persona on Haiku; failing harness pytest or no tests/ file forces NEEDS WORK
 class MergeGate(transport, *, board, room, approvers, week)  # ask(MergeRequest) -> thread; handle(msg); wait(thread)

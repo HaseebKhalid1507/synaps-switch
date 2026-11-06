@@ -1,0 +1,17 @@
+# session 20261106-082735-aecb (sw-synaps-dev-m26-dev-a161), room m26-dev, cwd ~/.synaps-switch-dev/synaps-switch/rooms/synaps-dev-m26-dev-c5993816/acme-shop
+# env the daemon gives this session's tools (names): GH_CONFIG_DIR GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME GIT_COMMITTER_EMAIL GIT_COMMITTER_NAME GIT_SSH_COMMAND HOME LANG PATH PYTHONDONTWRITEBYTECODE TERM
+# SSH_AUTH_SOCK in it: False
+
+GH_CONFIG_DIR=~/.synaps-switch-dev/m12/gh-none (files: 0)
+SSH_AUTH_SOCK=<unset>
+GIT_SSH_COMMAND=ssh -i ~/.synaps-switch-dev/m12/deploy/acme-shop -o IdentitiesOnly=yes -o IdentityAgent=none -F /dev/null -o BatchMode=yes
+credential-like env names: <end>
+You are not logged into any GitHub hosts. To log in, run: gh auth login
+gh auth status exit=1
+gh api user exit=4
+ssh-add -l exit=2 (2 = no agent)
+origin: git@github.com:HaseebKhalid1507/acme-shop.git
+ls-remote origin exit=0
+ERROR: Permission to HaseebKhalid1507/synaps-switch.git denied to deploy key
+fatal: Could not read from remote repository.
+push other repo exit=128

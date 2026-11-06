@@ -1,19 +1,38 @@
 """company/devworker.py — engineering agent worker (the fallback when synaps-dev is not up).
 
 Clones/fetches acme-shop, creates a branch, invokes
-`synaps chat --profile company-dev --no-extensions` with a prompt to fix or
+`synaps chat --profile $COMPANY_DEV_PROFILE --no-extensions` with a prompt to fix or
 implement a GitHub issue, then commits, pushes, and opens a PR.
 
 Contracts (from INTERFACES.md):
     work_issue(issue, kind, *, repo, workdir, remote=None, base=None) -> dict
         {issue, pr_url, tests_passed, summary, cost_usd}
-    merge_pr(pr_url) -> bool
+    merge_pr(pr_url, *, head_sha=None) -> bool
 
 Where the work goes is company/acme.py's config: ACME_REMOTE (a file:// bare clone = local mode,
-PRs are local refs and merges are local squash merges) and ACME_ALLOW_GITHUB_WRITES (the GitHub
-path refuses without it). Credentials come only from the private auth-broker, configured the same
-way as company/llm.py (COMPANY_BROKER_TOKEN_FILE, COMPANY_BROKER_URL, COMPANY_SYNAPS_BASE_DIR);
-the profile is $COMPANY_DEV_PROFILE (default company-dev; `python -m company.devworker setup` writes it).
+PRs are local refs and merges are local squash merges), ACME_ALLOW_GITHUB_WRITES (the GitHub
+path refuses without it), ACME_REPO (the fork; the upstream is never written) and ACME_DEPLOY_KEY
+(git pushes use only that key). On GitHub a PR targets a gen-k branch, never main, and a merge
+first checks the PR is on ACME_REPO, from the same repo (not another fork) and, with head_sha,
+that its head is still the reviewed commit.
+
+Nothing here is machine-specific. Credentials come only from a private auth-broker, configured
+exactly like company/llm.py (#6), read at call time:
+
+    COMPANY_DEV_PROFILE         the profile name                   (default company-dev)
+    COMPANY_BROKER_TOKEN_FILE   broker machine-token file          (default: llm.py's)
+    COMPANY_BROKER_URL          broker base URL                    (default: llm.py's)
+    COMPANY_SYNAPS_BASE_DIR     SYNAPS_BASE_DIR the profile is in  (default: synaps's own)
+    COMPANY_SYNAPS_BIN          synaps binary                      (default: `synaps` on PATH)
+
+On bella (Haseeb's box) that is devstack/synapsdev.py's private broker and base dir, never
+~/.synaps-cli and never another machine's broker:
+
+    python3 devstack/synapsdev.py broker start            # 127.0.0.1:18191, token 0600
+    export COMPANY_SYNAPS_BASE_DIR=~/.synaps-switch-dev/company-llm
+    export COMPANY_BROKER_TOKEN_FILE=~/.synaps-switch-dev/broker/machine.token
+    export COMPANY_BROKER_URL=http://127.0.0.1:18191
+    python -m company.devworker setup                    # writes <base>/company-dev/{config,system.md,mcp.json}
 
 Headless `synaps chat` takes every stdin line as its own turn, so the prompt goes in as ONE line
 (company.llm._one_line). Pushes are plain; only a branch this run created may be force-updated
@@ -21,10 +40,12 @@ Headless `synaps chat` takes every stdin line as its own turn, so the prompt goe
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from company import acme
@@ -61,11 +82,25 @@ def _dev_profile() -> str:
 
 def _read_token() -> str:
     """The private broker's machine token (COMPANY_BROKER_TOKEN_FILE, as company/llm.py)."""
-    return llm._read_token(llm._cfg()["token_file"])
+    return llm._read_token(_dev_cfg()["token_file"])
+
+
+def _dev_cfg() -> dict:
+    """company/llm.py's config (#6 scheme) for the dev profile: token file, broker, base dir, binary."""
+    return llm._cfg(_dev_profile())
+
+
+def _git_env() -> dict:
+    """The env git runs in: with ACME_DEPLOY_KEY, ssh offers only that key (no agent)."""
+    extra = acme.git_env()
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", **extra}
+    if extra:
+        env.pop("SSH_AUTH_SOCK", None)
+    return env
 
 
 def _agent_env(token: str) -> dict:
-    cfg = llm._cfg(_dev_profile())
+    cfg = _dev_cfg()
     env = llm._env(cfg, token)
     env.pop("NO_COLOR", None)
     return env
@@ -86,15 +121,22 @@ def _run(cmd: list[str], *, cwd: str | None = None,
 
 
 def _fetch_issue(issue: int, repo: str) -> tuple[str, str]:
-    """Return (title, body) of a GitHub issue via gh (read-only)."""
+    """Return (title, body) of a GitHub issue via gh (read-only). An issue whose author is not in
+    ACME_ISSUE_AUTHORS is refused before its text reaches the agent (the fork is public)."""
     result = _run(["gh", "issue", "view", str(issue),
                    "--repo", repo,
-                   "--json", "title,body",
-                   "-q", ".title,.body"],
+                   "--json", "title,body,author"],
                   timeout=30)
     if result.returncode != 0:
         raise RuntimeError(f"gh issue view failed: {result.stderr}")
-    out = result.stdout.strip()
+    try:
+        meta = json.loads(result.stdout or "{}")
+    except ValueError:
+        raise RuntimeError("gh issue view returned no JSON") from None
+    if not acme.allowed_author(meta):
+        raise RuntimeError(f"{repo}#{issue} is by {acme.author_of(meta) or 'nobody'!r}, not an allowed "
+                           "issue author (ACME_ISSUE_AUTHORS): not worked on")
+    out = f"{meta.get('title') or ''}\n{meta.get('body') or ''}".strip()
     full = _run(["gh", "issue", "view", str(issue), "--repo", repo], timeout=30)
     return out, full.stdout.strip()
 
@@ -107,13 +149,14 @@ def _clone_or_update(repo: str, workdir: str, remote: str | None = None, base: s
     Path(workdir).mkdir(parents=True, exist_ok=True)
     url = remote or f"git@github.com:{repo}.git"
 
+    genv = _git_env()
     if Path(checkout).exists():
         _run(["git", "remote", "set-url", "origin", url], cwd=checkout, timeout=30)
-        _run(["git", "fetch", "origin"], cwd=checkout, timeout=60)
+        _run(["git", "fetch", "origin"], cwd=checkout, env=genv, timeout=60)
         _run(["git", "checkout", "-B", base, f"origin/{base}"], cwd=checkout, timeout=30)
         _run(["git", "reset", "--hard", f"origin/{base}"], cwd=checkout, timeout=30)
     else:
-        _run(["git", "clone", "--branch", base, url, checkout], timeout=120)
+        _run(["git", "clone", "--branch", base, url, checkout], env=genv, timeout=120)
 
     return checkout
 
@@ -160,9 +203,10 @@ def _push(branch: str, checkout: str, cfg: acme.AcmeConfig | None = None) -> str
     """Plain push. Only a branch this run created may be rewritten, and only with --force-with-lease."""
     cfg = cfg or acme.config()
     acme.guard_write(cfg, f"git push {branch}")
-    listed = _run(["git", "ls-remote", "--heads", "origin", branch], cwd=checkout, timeout=60)
+    genv = _git_env()
+    listed = _run(["git", "ls-remote", "--heads", "origin", branch], cwd=checkout, env=genv, timeout=60)
     existed = bool((listed.stdout or "").strip())
-    r = _run(["git", "push", "-u", "origin", branch], cwd=checkout, timeout=60)
+    r = _run(["git", "push", "-u", "origin", branch], cwd=checkout, env=genv, timeout=60)
     if r.returncode == 0:
         if not existed:
             acme.CREATED_THIS_RUN.add((cfg.remote_url, branch))
@@ -170,7 +214,7 @@ def _push(branch: str, checkout: str, cfg: acme.AcmeConfig | None = None) -> str
     if (cfg.remote_url, branch) not in acme.CREATED_THIS_RUN:
         raise RuntimeError(f"git push of {branch} was rejected and this run did not create that branch; "
                            f"not forcing: {(r.stderr or r.stdout).strip()[-300:]}")
-    r = _run(["git", "push", "--force-with-lease", "-u", "origin", branch], cwd=checkout, timeout=60)
+    r = _run(["git", "push", "--force-with-lease", "-u", "origin", branch], cwd=checkout, env=genv, timeout=60)
     if r.returncode != 0:
         raise RuntimeError(f"git push --force-with-lease {branch} failed: {(r.stderr or r.stdout).strip()[-300:]}")
     return "forced"
@@ -192,6 +236,8 @@ def _open_pr(issue: int, branch: str, checkout: str, repo: str, summary: str,
     if cfg.local:
         return acme.local_pr_ref(cfg.remote_url, branch, base)
     acme.guard_write(cfg, "gh pr create")
+    if not acme.is_gen_branch(base):
+        raise RuntimeError(f"refusing a PR into {base!r}: PRs target gen-k branches only, never main")
     body = (
         f"Closes #{issue}\n\n"
         f"## Summary\n{summary}\n\n"
@@ -261,7 +307,7 @@ def work_issue(
 
         # 4. Run the coding agent: the whole prompt is ONE stdin line (one turn)
         agent_result = subprocess.run(
-            ["synaps", "chat", "--profile", _dev_profile(), "--no-extensions"],
+            [_dev_cfg()["bin"], "chat", "--profile", _dev_profile(), "--no-extensions"],
             cwd=checkout,
             env=env,
             input=llm._one_line(prompt) + "\n",
@@ -309,24 +355,29 @@ def work_issue(
         }
 
 
-def merge_pr(pr_url: str) -> bool:
-    """Squash-merge a PR. Called only after a #board human approves (company/realwork.MergeGate).
+def merge_pr(pr_url: str, *, head_sha: str | None = None) -> bool:
+    """Squash-merge a PR. Called only after a #board human approves (company/realwork.MergeGate),
+    by the company process with the operator's gh, never from a room session.
 
-    A local PR ref (file://…?head=…&base=…) is squash-merged into its base on the local remote;
-    a GitHub PR needs ACME_ALLOW_GITHUB_WRITES=1."""
+    A local PR ref (file://…?head=…&base=…) is squash-merged into its base on the local remote.
+    A GitHub PR needs ACME_ALLOW_GITHUB_WRITES=1 and must pass acme.check_mergeable (on ACME_REPO,
+    open, not from another fork, <gen-k>-fix-N into gen-k); with head_sha, gh merges only if the head
+    is still that commit (--match-head-commit)."""
     if acme.is_local_remote(pr_url):
         try:
-            return bool(acme.merge_local(pr_url).get("merged"))
+            return bool(acme.merge_local(pr_url, head_sha=head_sha).get("merged"))
         except acme.AcmeError:
             return False
+    cfg = acme.config()
     try:
-        acme.guard_write(acme.config(), "gh pr merge")
-    except acme.GitHubWriteRefused:
+        acme.guard_write(cfg, "gh pr merge")
+        acme.check_mergeable(pr_url, cfg, run=lambda argv, **kw: _run(argv, timeout=kw.get("timeout", 60)))
+    except acme.AcmeError:
         return False
-    result = _run(
-        ["gh", "pr", "merge", pr_url, "--squash", "--delete-branch"],
-        timeout=60,
-    )
+    argv = ["gh", "pr", "merge", pr_url, "--squash"]      # the fix branch stays (evidence); no local checkout touched
+    if head_sha:
+        argv += ["--match-head-commit", head_sha]
+    result = _run(argv, cwd=tempfile.gettempdir(), timeout=90)
     return result.returncode == 0
 
 

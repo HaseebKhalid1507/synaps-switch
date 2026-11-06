@@ -2,10 +2,15 @@
 
     #dev    board       "@synaps-dev fix acme-shop#1 (base gen-1)"            dispatch_text() / dispatch()
             synaps-dev  "<summary> @board RESULT ```json {...}```"            parse_result()
+                        pr = the branch it pushed (gen-1-fix-1); this process opens the PR   land_pr()
             reviewer    testing-reality-checker verdict on the diff + pytest  review_pr() / review_text()
     #board  board       "@haseeb @aditya merge acme-shop#1? ..."              MergeGate.ask() / approval_text()
             a human     "@board approve"                                      MergeGate.handle() → decide():
                         merge_pr, then pytest on the merged base → a QuarterLog record (week_fixed = week of merge)
+
+The room session never opens or merges a PR (it has no GitHub login; it pushes with a deploy key).
+land_pr() opens it here, as the orchestrating process, with the operator's gh (acme.open_pr):
+`gh pr create -R <ACME_REPO> --base gen-k --head gen-k-fix-N`, or the local PR ref in local mode.
 
 Everything talks through the Transport contract (company/transport.py: post / on_message / Msg). The
 board's router hands every message addressed to the board agent to `Waiter.offer` (replies it waits on,
@@ -20,6 +25,7 @@ For a LangGraph board (#10/#11) the gate is two calls around interrupt():
 """
 from __future__ import annotations
 
+import inspect
 import json
 import os
 import re
@@ -114,7 +120,8 @@ class DevTask:
 def dispatch_text(task: DevTask) -> str:
     what = f" ({task.title})" if task.title else ""
     return (f"@{task.dev} fix acme-shop#{task.issue} (base {task.base}){what}. Branch off {task.base}, "
-            f"push your branch, open the PR into {task.base}, and reply here with the RESULT block.")
+            f"push {acme.work_branch(task.issue, task.base) if task.base != 'main' else 'your branch'}, "
+            f"and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).")
 
 
 _FENCED = re.compile(r"```(?:json|JSON)?\s*\n?(.*?)```", re.S)
@@ -151,9 +158,45 @@ def parse_result(text: str) -> dict | None:
     return None
 
 
-def dispatch(transport, task: DevTask, waiter: Waiter, *, timeout=900.0, fallback=None) -> dict:
-    """Post the task in #dev and wait for synaps-dev's RESULT in its thread. When synaps-dev does not
-    answer in time, fallback (default company.devworker.work_issue) does the work instead."""
+def land_pr(res: dict, task: DevTask, *, cfg=None, open_pr: Callable | None = None) -> dict:
+    """synaps-dev reported a pushed branch; open its PR from this process (never from the room session).
+
+    `pr` a bare branch name, or a GitHub URL (the session can't have opened it: re-derived from the
+    expected branch) → acme.open_pr(<base>-fix-<N> into <base>). Other refs (a local file:// ref, a stub)
+    pass through as before. A different branch than <base>-fix-<N>, a missing branch or a refused PR →
+    status "blocked" with the reason; no PR."""
+    pr = res.get("pr")
+    if res.get("status") == "done" and pr and pr.strip().strip("`'\"").endswith(acme.work_branch(task.issue, task.base)):
+        res = {**res, "status": "proposed", "status_reported": "done"}    # pushed the fix, called it "done"
+    if res.get("status") != "proposed" or not pr:
+        return res
+    is_url = pr.startswith("https://")
+    if "://" in pr and not is_url:
+        return res
+    want = acme.work_branch(task.issue, task.base)
+    branch = re.sub(r"^(?:refs/heads/|origin/)", "", pr.strip().strip("`'\""))
+    if not is_url and branch != want:
+        return {**res, "status": "blocked", "pr": None, "reported_pr": pr,
+                "summary": f"{res.get('summary', '')} [not opened: reported branch {pr!r}, expected {want!r}]".strip()}
+    cfg = cfg or acme.config()
+    body = (f"Refs #{task.issue}. Fix pushed by {task.dev} (Switch room session, deploy key) to `{want}`; this PR was "
+            f"opened by the company process, not by the session. Merged only after a human approves in #board.\n\n"
+            f"{res.get('summary', '')}\n\nEvidence (from the RESULT block):\n"
+            + "\n".join(f"- {e}" for e in res.get("evidence") or []))
+    title = f"Fix #{task.issue}: {task.title}" if task.title else f"Fix #{task.issue}"
+    try:
+        url = (open_pr or acme.open_pr)(cfg, want, task.base, issue=task.issue, title=title[:200], body=body)
+    except acme.AcmeError as e:
+        return {**res, "status": "blocked", "pr": None, "reported_pr": pr,
+                "summary": f"{res.get('summary', '')} [PR not opened: {e}]".strip()}
+    return {**res, "pr": url, "branch": want, "reported_pr": pr, "pr_opened_by": "company"}
+
+
+def dispatch(transport, task: DevTask, waiter: Waiter, *, timeout=900.0, fallback=None,
+             open_pr: Callable | None = None) -> dict:
+    """Post the task in #dev and wait for synaps-dev's RESULT in its thread, then land_pr (the PR is
+    opened here). When synaps-dev does not answer in time, fallback (default
+    company.devworker.work_issue) does the work instead."""
     t0 = time.time()
     mid = transport.post(task.asker, task.room, dispatch_text(task))
     slot = waiter.expect(room=task.room, thread=mid, sender=task.dev, predicate=lambda m: parse_result(m.text))
@@ -161,7 +204,7 @@ def dispatch(transport, task: DevTask, waiter: Waiter, *, timeout=900.0, fallbac
     if msg is not None:
         res = parse_result(msg.text)
         res.update(via=task.dev, message_id=msg.id, thread=mid, seconds=round(time.time() - t0, 1))
-        return res
+        return land_pr(res, task, open_pr=open_pr)
     if fallback is None:
         from company.devworker import work_issue as fallback
     r = fallback(task.issue, task.kind, base=task.base)
@@ -207,7 +250,11 @@ def review_pr(pr: str, *, issue: int, issue_text: str = "", tests: dict | None =
     diff = acme.pr_diff(pr)
     files = acme.pr_files(pr)
     if tests is None:
-        tests = acme.run_tests_at(p["remote"], p["head"]) if p["local"] else {"passed": None, "summary": "not run"}
+        if p["local"]:
+            tests = acme.run_tests_at(p["remote"], p["head"])
+        else:                                    # GitHub: the head branch, cloned read-only, tested here
+            info = acme.pr_info(pr)
+            tests = acme.run_tests_at(acme.read_url(p["repo"]), info["head"])
     prompt = (f"ISSUE acme-shop#{issue}\n{issue_text.strip()[:4000]}\n\n"
               f"FILES CHANGED: {', '.join(files) or '(none)'}\n\n"
               f"DIFF (base...head):\n{diff[:max_diff]}{' [truncated]' if len(diff) > max_diff else ''}\n\n"
@@ -292,7 +339,12 @@ def decide(req: MergeRequest, decision: str, *, approver: str, week: int,
         return rec
     if merge is None:
         from company.devworker import merge_pr as merge
-    rec["merged"] = bool(merge(req.pr))
+    sha = ((req.review or {}).get("tests") or {}).get("sha")
+    try:                                          # merge exactly the commit that was reviewed, when merge can
+        pinned = "head_sha" in inspect.signature(merge).parameters
+    except (TypeError, ValueError):
+        pinned = False
+    rec["merged"] = bool(merge(req.pr, head_sha=sha) if pinned and sha else merge(req.pr))
     if rec["merged"]:
         t = (verify or acme.tests_after_merge)(req.pr)
         rec.update(tests_passed=bool(t.get("passed")), tests=t.get("summary"), merged_sha=t.get("sha"))
