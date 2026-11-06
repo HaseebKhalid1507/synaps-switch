@@ -34,6 +34,18 @@ reviewed (harness pytest + testing-reality-checker on Haiku), approved by a huma
 - Test agents/rooms: `synaps-dev`, `m12-board`, `m12-reviewer`; rooms `m12-dev`, `m12-board`. The private plugin link
   `~/.synaps-switch-dev/plugins/synaps-switch` pointed at the #12 worktree for the run.
 
+## M4 #11: the board's outer loop (reflect → propose → human gate → trial → keep/revert)
+
+`company/board/evolve.py`: one LangGraph graph, SqliteSaver-checkpointed (`evolve:<env>:<seeds>`), resumable also
+while paused at the human gate. The board persona proposes ONE mutation (Haiku, or a stub), validated by applying
+it, re-asked once; the env_diff + rationale go to #board; only a person on the approvers list resumes it; approved
+changes are trialed on the same seeds and kept only if mean fitness improves. `company/board/stub_quarter.py` is a
+deterministic quarter for offline runs/tests (settled by the real market); #10's `quarter.run_quarter` plugs in
+via `load_quarter_runner("quarter", ...)`. `company/lineage_report.py` renders the lineage table.
+Evidence: `evidence/m4/evolve/` (offline 3 generations: kept, reverted, rejected; live gate on Switch: an agent's
+approve ignored, killed + resumed at the gate, a person's Mattermost reply decides).
+Test agents/rooms: `m4v-board`, `m4v-peer`, room `m4v-board`; private state `~/.synaps-switch-dev/m4v/`.
+
 ## What works
 
 - `devstack/up.sh` / `down.sh`: compose file fetched at the pinned tag and sha256-checked; refuses to start with < 4 GB available.
