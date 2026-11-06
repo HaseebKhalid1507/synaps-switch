@@ -1,0 +1,17 @@
+# Fitness weights for env selection.
+# fitness = profit * w_profit
+#         + revenue_growth * w_growth
+#         - open_incident_severity * w_incident
+#         - llm_cost_usd * w_llm_cost
+#
+# Tuned so that:
+#   - A bad quarter (open sev1s, no growth) scores negative
+#   - A good quarter (profit $8k, 12% growth, no open incidents) scores ~12
+#   - LLM cost is a small but real penalty (~$6 costs ~6 points)
+#   - Matches the worked example in DESIGN-company.md
+
+weights:
+  profit: 0.001          # $1000 profit ≈ 1 point; $8k profit ≈ 8 points
+  growth: 0.5            # 10% revenue growth ≈ 0.5 points (bounded contribution)
+  incident_penalty: 2.0  # each point of open incident severity costs 2 points
+  llm_cost: 1.0          # $1 of LLM spend costs 1 point; ~$6/quarter ≈ 6 points

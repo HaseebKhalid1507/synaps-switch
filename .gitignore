@@ -10,3 +10,6 @@ state/
 *.key
 secrets/
 .pytest_cache/
+vendor/
+company/.venv/
+company/state/

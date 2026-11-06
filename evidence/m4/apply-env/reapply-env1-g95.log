@@ -1,0 +1,17 @@
+$ python -m company.switch_env apply company/envs/env1.yaml --gen 95 --stand-in-synaps --agent-prefix m4e- --room-prefix m4e- --trace reapply-env1-g95.trace.jsonl
+
+# stderr
+01:58:15 switch ops: all 22 ops apply/teardown use are present (53 in the registry)
+01:58:16 connect_to_room db64d6d2-a03f-4610-a17b-e4982175938b: You evicted another session of this agent from room db64d6d2-a03f-4610-a17b-e4982175938b (connection be6dbcd2-d5dc-4b76-86e2-e8c4b183bff4). Only one session of an agent may act in a room, so that session has been disconnected from it and will stop receiving its events. If that session was doing work here, it no longer is.
+01:58:16 applied env1 generation 95: 6 rooms, 5 links, documents ['Handbook', 'Ledger']
+
+# stdout
+{
+ "board": "db64d6d2-a03f-4610-a17b-e4982175938b",
+ "dev": "a1c19a49-3bf1-44da-9dde-eef7d5111862",
+ "maintenance": "719e20f8-0e71-4f9a-9193-5b0a4a0e80bb",
+ "growth": "7b4c2b0b-4e83-40c9-98c6-c31c321081c7",
+ "marketing": "ea3e0c13-d41f-4ca1-a4c5-3f9b18b9fd48",
+ "finance": "4407fb84-ace9-42bf-956b-a413c1ee8dfd"
+}
+# exit 0

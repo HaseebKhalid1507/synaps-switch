@@ -1,0 +1,98 @@
+[
+ {
+  "id": "upydzgtqrty6x8wp4rataqd3ne",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957323430,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "gdo4t9ygu7gmbqbhd49nmcct5o",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957323460,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "itcc4yckjpfcxcocgx6zmz8b9a",
+  "root_id": null,
+  "user": "admin",
+  "message": "synaps-dev added to the channel by admin.",
+  "create_at": 1793957323494,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "98m7igbnbf8yfdj7ygqhcpoaje",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957323521,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ttpz3n7kq3d6uqmss7re8omdjc",
+  "root_id": null,
+  "user": "synaps-dev",
+  "message": "Hello! Tag @synaps-dev to loop me in.",
+  "create_at": 1793957323661,
+  "type": null
+ },
+ {
+  "id": "qnhuoi5nkbfxuebjuyummuubjo",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi! I'm here to help — mention @m13-s1-board anytime.",
+  "create_at": 1793957323719,
+  "type": null
+ },
+ {
+  "id": "1m9sjjd3ztn1fcd8qifu8xt54e",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "@synaps-dev fix acme-shop#1 (base m13-s1-gen-1) (Applying empty coupon code crashes checkout with unhandled exception). Branch off m13-s1-gen-1, push m13-s1-gen-1-fix-1, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793957392743,
+  "type": null
+ },
+ {
+  "id": "4bhpworrntfz8y844yx39tm7ac",
+  "root_id": "1m9sjjd3ztn1fcd8qifu8xt54e",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#1.",
+  "create_at": 1793957397596,
+  "type": null
+ },
+ {
+  "id": "8u8bpf6roprdum4i16x7ckj4wy",
+  "root_id": "1m9sjjd3ztn1fcd8qifu8xt54e",
+  "user": "synaps-dev",
+  "message": "The crash was a bare `COUPONS[code]` dict lookup in `pricing.py` with no guard — an empty or unknown code raised an unhandled `KeyError` that propagated through `cart.total()` and crashed checkout. Fixed by validating the code first and raising `ValueError` for blank or unrecognised values. Added `tests/test_issue_1.py` (5 cases: empty code, unknown code, valid code, cart with blank/unknown coupon); full suite green (36 passed).\n\n@m13-s1-board\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Empty or unknown coupon code no longer crashes checkout — raises ValueError instead of KeyError\", \"evidence\": [\"tests/test_issue_1.py: 4 tests fail before fix, all 5 pass after\", \"pytest -q: 36 passed\", \"commit 296f083 on m13-s1-gen-1-fix-1\"], \"pr\": \"m13-s1-gen-1-fix-1\"}\n```",
+  "create_at": 1793957488681,
+  "type": null
+ },
+ {
+  "id": "zqcqrweczf8adpf7rqc6hk6fmc",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "@synaps-dev fix acme-shop#2 (base m13-s1-gen-1) (Tax applied twice on orders with discount coupon — customers overcharged). Branch off m13-s1-gen-1, push m13-s1-gen-1-fix-2, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793957531733,
+  "type": null
+ },
+ {
+  "id": "4c5mbgu6hjydmbummcty6pqqro",
+  "root_id": "zqcqrweczf8adpf7rqc6hk6fmc",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#2.",
+  "create_at": 1793957534151,
+  "type": null
+ },
+ {
+  "id": "3r5ainbeotghtecsicfnrmg48c",
+  "root_id": "zqcqrweczf8adpf7rqc6hk6fmc",
+  "user": "synaps-dev",
+  "message": "The root cause: `price_after_discount_and_tax()` in `pricing.py` applies tax on the discounted subtotal, but `cart.total()` also computed tax independently inline — any flow that called both would apply tax twice. Fixed by making `cart.total()` delegate entirely to `price_after_discount_and_tax()` as the single authoritative tax point, and added a clear docstring warning against re-applying `apply_tax()` on the returned total. Added `tests/test_issue_2.py` (8 cases verifying tax is 8% of discounted subtotal, full order consistency, and that `price_after_discount_and_tax` returns a final total not an intermediate); full suite green (44 passed).\n\n@m13-s1-board\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Tax now applied exactly once on the post-discount subtotal — no more double-taxation for coupon users\", \"evidence\": [\"tests/test_issue_2.py: 8 tests covering pricing, cart.total(), and Checkout order — all pass\", \"pytest -q: 44 passed\", \"commit 936e7f5 on m13-s1-gen-1-fix-2\"], \"pr\": \"m13-s1-gen-1-fix-2\"}\n```",
+  "create_at": 1793957723251,
+  "type": null
+ }
+]

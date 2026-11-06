@@ -1,0 +1,82 @@
+[
+ {
+  "id": "ghz8hxkaxi8h3nd8cec7akmy5w",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956380158,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "sns47676n78o5ydnyyfeafjimc",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956380175,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "i9ak3w9xk3f43d94g6qqiiipqw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-finance added to the channel by admin.",
+  "create_at": 1793956380217,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "genxjixjypye981tg4muiyngwc",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956380235,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "uknixour77n3389m8eb1hsrtdr",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956380248,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ts9wg9stjprqmpm4j6zk5ox8fy",
+  "root_id": null,
+  "user": "m13-finance",
+  "message": "Hey! I'm on standby — @m13-finance to get started.",
+  "create_at": 1793956380301,
+  "type": null
+ },
+ {
+  "id": "a5zh87qsbjnp9npbj93iw1jh9y",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hello! I'm ready — just tag @m13-board when you need me.",
+  "create_at": 1793956380352,
+  "type": null
+ },
+ {
+  "id": "n87egs3jntrgzrtaosz3wr4yuc",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hi! I'm here to help — mention @m13-market anytime.",
+  "create_at": 1793956380373,
+  "type": null
+ },
+ {
+  "id": "yf7f7wxdqjnhtezxozsy5t8m8o",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unusual, otherwise no action.",
+  "create_at": 1793956728451,
+  "type": null
+ },
+ {
+  "id": "ecojanphbfnojjnb8a6wz7fw6e",
+  "root_id": "yf7f7wxdqjnhtezxozsy5t8m8o",
+  "user": "m13-finance",
+  "message": "Infrastructure invoice $5,000 received and confirmed as fixed cost—booked automatically per policy. No variance or anomalies flagged. Q3 infrastructure ledger now complete.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793956730294,
+  "type": null
+ }
+]

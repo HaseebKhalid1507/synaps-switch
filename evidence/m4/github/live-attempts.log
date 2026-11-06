@@ -1,0 +1,62 @@
+## /tmp/m26-live.out
+03:27:31 config: ACME_REPO=HaseebKhalid1507/acme-shop ACME_REMOTE=git@github.com:HaseebKhalid1507/acme-shop.git writes=True deploy key ~/.synaps-switch-dev/m12/deploy/acme-shop authors=['HaseebKhalid1507', 'adityapat958']
+03:27:32 market: 4 incidents + 4 features from HaseebKhalid1507/acme-shop (authors ['HaseebKhalid1507', 'adityapat958'])
+03:27:33 same fork with ACME_ISSUE_AUTHORS=adityapat958: 0 incidents, 0 features
+03:27:34 fork: m26-gen-1 at 05e9e6bd2e, baseline 05e9e6bd2e, main 05e9e6bd2e
+03:27:34 dispatch: '@synaps-dev fix acme-shop#3 (base m26-gen-1) (Inventory not released when payment fails — stock drifts negative). Branch off m26-gen-1, push m26-gen-1-fix-3, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).'
+## /tmp/m26-live2.out
+03:28:50 config: ACME_REPO=HaseebKhalid1507/acme-shop ACME_REMOTE=git@github.com:HaseebKhalid1507/acme-shop.git writes=True deploy key ~/.synaps-switch-dev/m12/deploy/acme-shop authors=['HaseebKhalid1507', 'adityapat958']
+03:28:51 market: 4 incidents + 4 features from HaseebKhalid1507/acme-shop (authors ['HaseebKhalid1507', 'adityapat958'])
+03:28:53 same fork with ACME_ISSUE_AUTHORS=adityapat958: 0 incidents, 0 features
+03:28:54 fork: m26-gen-1 at 05e9e6bd2e, baseline 05e9e6bd2e, main 05e9e6bd2e
+03:28:54 resume: waiting on the dispatch already in #m26-dev, thread sw_a53c77fcca774660bb14679e07c540db
+## /tmp/m26-live3.out
+03:34:32 config: ACME_REPO=HaseebKhalid1507/acme-shop ACME_REMOTE=git@github.com:HaseebKhalid1507/acme-shop.git writes=True deploy key ~/.synaps-switch-dev/m12/deploy/acme-shop authors=['HaseebKhalid1507', 'adityapat958']
+03:34:35 market: 4 incidents + 4 features from HaseebKhalid1507/acme-shop (authors ['HaseebKhalid1507', 'adityapat958'])
+03:34:36 same fork with ACME_ISSUE_AUTHORS=adityapat958: 0 incidents, 0 features
+03:34:38 fork: m26-gen-1 at 05e9e6bd2e, baseline 05e9e6bd2e, main 05e9e6bd2e
+03:34:39 resume: waiting on the dispatch already in #m26-dev, thread sw_a53c77fcca774660bb14679e07c540db
+03:34:39 nudge in the thread: "@synaps-dev your last turn hit the daemon's per-turn round limit (24, now raised) before you pushed and reported. Continue acme-shop#3 from where you are: finish, push m26-gen-1-fix-3, and reply here with the RESULT block."
+## /tmp/m26-live4.out
+03:36:15 config: ACME_REPO=HaseebKhalid1507/acme-shop ACME_REMOTE=git@github.com:HaseebKhalid1507/acme-shop.git writes=True deploy key ~/.synaps-switch-dev/m12/deploy/acme-shop authors=['HaseebKhalid1507', 'adityapat958']
+03:36:16 market: 4 incidents + 4 features from HaseebKhalid1507/acme-shop (authors ['HaseebKhalid1507', 'adityapat958'])
+03:36:17 same fork with ACME_ISSUE_AUTHORS=adityapat958: 0 incidents, 0 features
+03:36:18 fork: m26-gen-1 at 05e9e6bd2e, baseline 05e9e6bd2e, main 05e9e6bd2e
+03:36:18 resume: waiting on the dispatch already in #m26-dev, thread sw_a53c77fcca774660bb14679e07c540db
+03:36:18 nudge in the thread: '@synaps-dev thanks. The board can\'t parse that reply: re-post it exactly in your skill\'s format, a one-line summary, then @m26-board, then RESULT and the fenced json block with status, summary, evidence and pr (pr = "m26-gen-1-fix-3"). Don\'t change or push anything.'
+03:36:25 m26-board <- synaps-dev (agent=True) in m26-dev thread=sw_a53c77fcca774660bb14679e07c540db: 'Fix: release reserved inventory when payment fails so stock no longer drifts negative.\n\n@m26-board\n\n'
+03:36:25 RESULT via synaps-dev after Nones: {"status": "done", "summary": "Called self._release() in the except PaymentError handler of place_order() so reserved stock is restored on a declined payment. Added regression tests confirming stock returns to its pre-checkout level after a failed payment.", "evidence": ["All 32 tests pass on m26-gen-1-fix-3, including two new tests in tests/test_issue_3.py: test_stock_restored_after_payment_failure (was failing before fix) and test_stock_decremented_after_successful_order (control)."], "reported_pr": null, "pr": "m26-gen-1-fix-3", "pr_opened_by": null}
+03:36:29 PASS: market built from the fork's 8 issues
+03:36:29 PASS: the author allowlist filters live issues
+03:36:29 PASS: m26-gen-1 starts at baseline
+03:36:29 PASS: synaps-dev replied with a valid RESULT block
+03:36:29 FAIL: RESULT pr = the pushed branch (the session opened no PR)
+03:36:29 4/5 PASS; review spend $0.0000; synaps-dev session None $None
+03:37:59 config: ACME_REPO=HaseebKhalid1507/acme-shop ACME_REMOTE=git@github.com:HaseebKhalid1507/acme-shop.git writes=True deploy key ~/.synaps-switch-dev/m12/deploy/acme-shop authors=['HaseebKhalid1507', 'adityapat958']
+03:38:00 market: 4 incidents + 4 features from HaseebKhalid1507/acme-shop (authors ['HaseebKhalid1507', 'adityapat958'])
+03:38:02 same fork with ACME_ISSUE_AUTHORS=adityapat958: 0 incidents, 0 features
+03:38:04 fork: m26-gen-1 at 05e9e6bd2e, baseline 05e9e6bd2e, main 05e9e6bd2e
+03:38:05 resume: waiting on the dispatch already in #m26-dev, thread sw_a53c77fcca774660bb14679e07c540db
+03:38:17 RESULT as reported: status=done pr=m26-gen-1-fix-3
+03:38:22 RESULT via synaps-dev after Nones: {"status": "proposed", "summary": "Called self._release() in the except PaymentError handler of place_order() so reserved stock is restored on a declined payment. Added regression tests confirming stock returns to its pre-checkout level after a failed payment.", "evidence": ["All 32 tests pass on m26-gen-1-fix-3, including two new tests in tests/test_issue_3.py: test_stock_restored_after_payment_failure (was failing before fix) and test_stock_decremented_after_successful_order (control)."], "reported_pr": "m26-gen-1-fix-3", "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/9", "pr_opened_by": "company"}
+03:38:23 PR https://github.com/HaseebKhalid1507/acme-shop/pull/9: m26-gen-1-fix-3 -> m26-gen-1 by HaseebKhalid1507, head b82cfc7778
+03:38:27 harness pytest on m26-gen-1-fix-3 (b82cfc7778): green: 32 passed, 13 warnings in 0.05s
+Traceback (most recent call last):
+  File "~/Projects/.worktrees/ss-m4-github-fork/evidence/m4/github/live_github.py", line 345, in <module>
+    sys.exit(register() if a.cmd == "register" else run(a))
+                                                    ~~~^^^
+  File "~/Projects/.worktrees/ss-m4-github-fork/evidence/m4/github/live_github.py", line 248, in run
+    review = rw.review_pr(pr, issue=a.issue, issue_text=f"{title}\n\n{issue['body']}", tests=tests)
+  File "~/Projects/.worktrees/ss-m4-github-fork/company/realwork.py", line 264, in review_pr
+    obj, cost = complete_json(system, prompt)
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "~/Projects/.worktrees/ss-m4-github-fork/company/llm.py", line 233, in complete_json
+    text, cost = complete(sys_prompt, ask, **kw)
+                 ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/Projects/.worktrees/ss-m4-github-fork/company/llm.py", line 194, in complete
+    env = _env(cfg, _read_token(cfg["token_file"]))
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "~/Projects/.worktrees/ss-m4-github-fork/company/llm.py", line 121, in _read_token
+    raise LLMError(f"no broker machine token at {path} ({type(exc).__name__}); "
+                   "start the private broker or set COMPANY_BROKER_TOKEN_FILE") from None
+company.llm.LLMError: no broker machine token at ~/.synaps-cli/company/broker/token (FileNotFoundError); start the private broker or set COMPANY_BROKER_TOKEN_FILE

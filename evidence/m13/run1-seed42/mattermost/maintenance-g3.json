@@ -1,0 +1,218 @@
+[
+ {
+  "id": "a8noaqdpkbdrjjoy9sfhe44fih",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956786689,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "1ty4ohfpkfbhdnyyduyq8tydxh",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956786717,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "hjn3ptami3b4xd7cha5hrtqr4c",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-ops-maint added to the channel by admin.",
+  "create_at": 1793956786762,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "qi6rf95edtno5mh68rwmoefnry",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956786770,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "fcofuqq4ajyujgquxhqs76w19a",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-reviewer added to the channel by admin.",
+  "create_at": 1793956786779,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "pu1oc4sx938tuqx779feq58ixc",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-incident-commander added to the channel by admin.",
+  "create_at": 1793956786788,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "oxd1qqtgy7b43k3od6g5djz1mw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956786821,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "eppbuottkbgozghsharhrzcp4h",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "Hello! Tag @m13-ops-maint to loop me in.",
+  "create_at": 1793956786922,
+  "type": null
+ },
+ {
+  "id": "czduk9enkpympdx4ooe7odkfyw",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hello! Tag @m13-board to loop me in.",
+  "create_at": 1793956786963,
+  "type": null
+ },
+ {
+  "id": "m57fzxxxhpnm585sz7d8mokkye",
+  "root_id": null,
+  "user": "m13-reviewer",
+  "message": "Hey there! Tag @m13-reviewer if you need me.",
+  "create_at": 1793956786981,
+  "type": null
+ },
+ {
+  "id": "6qwnk5afnigg8c5a4h6c8xkaec",
+  "root_id": null,
+  "user": "m13-incident-commander",
+  "message": "Hello! Tag @m13-incident-commander to loop me in.",
+  "create_at": 1793956787014,
+  "type": null
+ },
+ {
+  "id": "iqk98nkdgtg58gsmdjjhebwxey",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hello! Tag @m13-market to loop me in.",
+  "create_at": 1793956787051,
+  "type": null
+ },
+ {
+  "id": "qrchj8kr8jrzuyusrio9r7tnwy",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 90 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, issue #1) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956792845,
+  "type": null
+ },
+ {
+  "id": "75zpor8643gejyxkzygyga6eze",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2, issue #2) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956792899,
+  "type": null
+ },
+ {
+  "id": "tpe9awmpxffw8kqxgzihzzcm8y",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue #3) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956792968,
+  "type": null
+ },
+ {
+  "id": "sygjts9kw7bypbdpmahejd9ose",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-ops-maint 30 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results (sev3, issue #4) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793956792999,
+  "type": null
+ },
+ {
+  "id": "fx4ne49xq7fp5mw9sfr8k7dgze",
+  "root_id": "qrchj8kr8jrzuyusrio9r7tnwy",
+  "user": "m13-ops-maint",
+  "message": "@synaps-dev SEV1: Empty coupon crashes checkout, 90 customers blocked. Unhandled exception in validation. Fix urgent. @m13-board cc'd for visibility.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956796782,
+  "type": null
+ },
+ {
+  "id": "1fmyjsuy87g37fywgkf685gyee",
+  "root_id": null,
+  "user": "admin",
+  "message": "switch-admin added to the channel by admin.",
+  "create_at": 1793956796975,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "9kdn3nkbi7gftyehosx5efyhyy",
+  "root_id": "qrchj8kr8jrzuyusrio9r7tnwy",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956796984,
+  "type": null
+ },
+ {
+  "id": "iwf3jqcoq3gf7846uo9oe4tcww",
+  "root_id": "75zpor8643gejyxkzygyga6eze",
+  "user": "m13-ops-maint",
+  "message": "Sev2 confirmed: tax doubled on discount orders, customers overcharged. Routing to @synaps-dev for immediate fix. Impact: revenue leak + churn risk. Assigning @m13-incident-commander for coordination.\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956798294,
+  "type": null
+ },
+ {
+  "id": "4mjrqxnd9b8qmehsppfcggnnha",
+  "root_id": "75zpor8643gejyxkzygyga6eze",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956798351,
+  "type": null
+ },
+ {
+  "id": "jweyoqixoj8bbjpfbp7op5xaua",
+  "root_id": "tpe9awmpxffw8kqxgzihzzcm8y",
+  "user": "m13-ops-maint",
+  "message": "Sev2 confirmed: 60 customers impacted, inventory drift on failed payments. Routing to @synaps-dev for immediate fix. This breaks order integrity and customer trust—needs priority over features.\n\n```json\n{\"type\": \"route\", \"issue\": 3, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956799865,
+  "type": null
+ },
+ {
+  "id": "pus1fzbe6pgcu8pnyfkuyzwi7o",
+  "root_id": "tpe9awmpxffw8kqxgzihzzcm8y",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956799886,
+  "type": null
+ },
+ {
+  "id": "yt1pqeu9jffo8ry6fo4no7fp4o",
+  "root_id": "75zpor8643gejyxkzygyga6eze",
+  "user": "m13-incident-commander",
+  "message": "Incident #2 (sev2) acknowledged. @synaps-dev, investigate tax calculation logic on discount orders—likely applying tax before discount instead of after. Need root cause + fix ETA within 30min. @m13-ops-maint, prepare customer communication (refund plan). I'm tracking.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793956800491,
+  "type": null
+ },
+ {
+  "id": "5qtaza4ffi8ztr3x6aof6cg8fe",
+  "root_id": "75zpor8643gejyxkzygyga6eze",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-incident-commander **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956800553,
+  "type": null
+ },
+ {
+  "id": "jkrtwzjebjg4f896yhz6o57efa",
+  "root_id": "sygjts9kw7bypbdpmahejd9ose",
+  "user": "m13-ops-maint",
+  "message": "Sev3 confirmed: sort-by-price string ordering bug affects 30 customers. Routing to @synaps-dev for fix. Low severity but visible UX issue—prioritize after sev1/sev2 production incidents.\n\n```json\n{\"type\": \"route\", \"issue\": 4, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793956801457,
+  "type": null
+ },
+ {
+  "id": "xbesfj4g6pro5b71j3jhswkd5y",
+  "root_id": "sygjts9kw7bypbdpmahejd9ose",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956801483,
+  "type": null
+ }
+]

@@ -1,0 +1,21 @@
+$ python -m company.switch_env teardown evidence/m4/apply-env/env2-link.yaml --gen 96 --agent-prefix m4e- --room-prefix m4e- --trace teardown-env2-g96.trace.jsonl
+
+# stderr
+01:58:24 switch ops: all 22 ops apply/teardown use are present (53 in the registry)
+01:58:24 archived m4e-board-g96
+01:58:24 archived m4e-dev-g96
+01:58:24 archived m4e-maintenance-g96
+01:58:24 archived m4e-growth-g96
+01:58:24 archived m4e-marketing-g96
+01:58:24 archived m4e-finance-g96
+
+# stdout
+{
+ "board": "46a335ad-9b2d-4591-b1ae-f6c9b9ee9905",
+ "dev": "1a571a9d-2104-48a3-9d38-d2ea6dc13a44",
+ "maintenance": "93450a2f-163d-4a0c-8c31-adeb1211cd80",
+ "growth": "b06da0c0-8c0e-4c6d-bb98-6807e2473a11",
+ "marketing": "73710876-507a-49cb-bb41-59f7b0f249d6",
+ "finance": "bf182f0c-7a6a-4f74-9502-1d8283db2e6a"
+}
+# exit 0

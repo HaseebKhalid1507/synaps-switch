@@ -1,0 +1,20 @@
+gen 0: env1 fitness 11.684 on seeds [1, 2] (quarters $4.4700)
+gen 1: reflect on env1 (fitness 11.684)
+gen 1: propose link #maintenance ↔ #dev  ($0.0000)
+gen 1: asked #board (thread script-evolve:env1:1-2-g1), waiting up to 3600s
+gen 1: gate ignored 'ops-maint' (agent=True): sender is an agent
+gen 1: gate approve by Haseeb
+gen 1: trial env2 fitness 15.680 (quarters $4.3100)
+gen 1: kept — fitness 15.680 > parent 11.684 on seeds [1, 2] (Δ +3.996)
+gen 2: reflect on env2 (fitness 15.680)
+gen 2: propose hire qa (testing/testing-test-automation-engineer) into #dev  ($0.0000)
+gen 2: asked #board (thread script-evolve:env1:1-2-g2), waiting up to 3600s
+gen 2: gate approve by Haseeb
+gen 2: trial env3 fitness 15.326 (quarters $4.6400)
+gen 2: reverted — fitness 15.326 <= parent 15.680 on seeds [1, 2] (Δ -0.354)
+gen 3: reflect on env2 (fitness 15.680)
+gen 3: propose policy finance_veto_usd: 5000 → 2000  ($0.0000)
+gen 3: asked #board (thread script-evolve:env1:1-2-g3), waiting up to 3600s
+gen 3: gate reject by Haseeb that puts every weekly campaign on our desk in #board
+gen 3: rejected — rejected by Haseeb: that puts every weekly campaign on our desk in #board
+stop: 3 generations done; best env2 fitness 15.680, spent $13.4200

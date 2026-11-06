@@ -1,0 +1,458 @@
+[
+ {
+  "id": "63iwrxb7ep8g5dff6qtmp63o3o",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793955915572,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "mokhub6fy3br5yrg86ozna9jeh",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793955915594,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "41s8xsbryfbt8mrcyi5i47tfqw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793955915660,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "xtcdi7qxubn3xxz47p1ggkzhsa",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-ops-maint added to the channel by admin.",
+  "create_at": 1793955915672,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "js1uwag6a386b8bx7poo18dbzc",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-growth added to the channel by admin.",
+  "create_at": 1793955915682,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "imjcks8uqtb178z77zc5taodne",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-marketing added to the channel by admin.",
+  "create_at": 1793955915692,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "646tzkpmxtr488eshwn97pkakw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-finance added to the channel by admin.",
+  "create_at": 1793955915704,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "j6pjx53q1j8wpnoac66cx1chky",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-reviewer added to the channel by admin.",
+  "create_at": 1793955915716,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "14hdycw59bnmmridzejczhpn9e",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793955915738,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "iu85ja3n8id7t8ghgy4n8aid7r",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hey there! Tag @m13-board if you need me.",
+  "create_at": 1793955915883,
+  "type": null
+ },
+ {
+  "id": "xasaya7h57f47kpsg4iqaia4eh",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "Hey there! Tag @m13-ops-maint if you need me.",
+  "create_at": 1793955915939,
+  "type": null
+ },
+ {
+  "id": "41j7gnuqzbyexfnhrkbk11638o",
+  "root_id": null,
+  "user": "m13-growth",
+  "message": "Hey! Ping @m13-growth and I'll jump in.",
+  "create_at": 1793955915960,
+  "type": null
+ },
+ {
+  "id": "rb8arcshsbbnzkexutr5cgmn7y",
+  "root_id": null,
+  "user": "m13-marketing",
+  "message": "Hello! Tag @m13-marketing to loop me in.",
+  "create_at": 1793955915983,
+  "type": null
+ },
+ {
+  "id": "5dw63oy5h3bz5cxawxf4r74mxe",
+  "root_id": null,
+  "user": "m13-finance",
+  "message": "Hi! Mention @m13-finance to get my attention.",
+  "create_at": 1793955916051,
+  "type": null
+ },
+ {
+  "id": "fi7o8esns3rcinxey1quwmeqda",
+  "root_id": null,
+  "user": "m13-reviewer",
+  "message": "Hello! Tag @m13-reviewer to loop me in.",
+  "create_at": 1793955916072,
+  "type": null
+ },
+ {
+  "id": "i9y84y7cjbgfjejqhthwptkcse",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hello! I'm ready — just tag @m13-market when you need me.",
+  "create_at": 1793955916085,
+  "type": null
+ },
+ {
+  "id": "zipza9ubwfdpfr7h1kzmnkshwo",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "📄 created room document “Handbook”.",
+  "create_at": 1793955918188,
+  "type": null
+ },
+ {
+  "id": "epdr3qiu7pnn9n83mxqzbdgxtr",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "📄 created room document “Ledger”.",
+  "create_at": 1793955918236,
+  "type": null
+ },
+ {
+  "id": "eyrzoc7wb78bip6b931xkapdwo",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Quarter 1 opens: env1 generation 1, seed 42, 3 weeks. Engineering base branch m13-gen-1. The Handbook and the Ledger are in this room.",
+  "create_at": 1793955921537,
+  "type": null
+ },
+ {
+  "id": "co6qb7p1rfy4jc7nc86mauq7ho",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "(re #maintenance) Sev1 confirmed: empty coupon crashes checkout. @synaps-dev fix immediately—unhandled exception blocks all transactions. High customer impact, zero workaround. Owner: @synaps-dev\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793955923439,
+  "type": null
+ },
+ {
+  "id": "mtbftnefijfy3gzj6s5u5e7fpc",
+  "root_id": null,
+  "user": "admin",
+  "message": "switch-admin added to the channel by admin.",
+  "create_at": 1793955923485,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "dj7q95774jn3xjrj85yjkc1wqh",
+  "root_id": "co6qb7p1rfy4jc7nc86mauq7ho",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955923526,
+  "type": null
+ },
+ {
+  "id": "tmodefsudjgh7jtwcqaejgw3dh",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "(re #maintenance) **Sev2 triage**: Tax applied twice with coupon—customers overcharged. Customer impact: revenue leak + churn risk. Owner: @synaps-dev Route for immediate fix.\n\n```json\n{\"type\": \"route\", \"issue\": 2, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793955924969,
+  "type": null
+ },
+ {
+  "id": "wzssme1ccfgpxmxigb1t1n1jgr",
+  "root_id": "tmodefsudjgh7jtwcqaejgw3dh",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955925004,
+  "type": null
+ },
+ {
+  "id": "ch8qj4negbfs78qehhcs8ns1ge",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "(re #maintenance) @synaps-dev Issue #3: sev2 incident affecting 60 customers. Payment failure leaves inventory locked; stock drifts negative. Customer impact: overselling, fulfillment chaos. Owner: @synaps-dev Fix required urgently.\n\n```json\n{\"type\": \"route\", \"issue\": 3, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793955927050,
+  "type": null
+ },
+ {
+  "id": "pek9gmic3jn93qqzeyrqyofoec",
+  "root_id": "ch8qj4negbfs78qehhcs8ns1ge",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955927074,
+  "type": null
+ },
+ {
+  "id": "nq1b3kpqr3gg587uh9oobixjoo",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "(re #maintenance) Triaging #4: sev3, low customer impact. String-to-numeric sort bug affects product discovery but doesn't block transactions. Routing to @synaps-dev for fix.\n\n```json\n{\"type\": \"route\", \"issue\": 4, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793955928595,
+  "type": null
+ },
+ {
+  "id": "4asoqu6nitytfk1xk5r1or9nga",
+  "root_id": "nq1b3kpqr3gg587uh9oobixjoo",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-ops-maint **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955928655,
+  "type": null
+ },
+ {
+  "id": "ukyb5m56rpb69fqbgpxgeeysah",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Week 1 of 3 closed. Fixed: none; shipped: none; campaigns: 0; price $29.00; dev queue: #1, #2, #3, #4; LLM spend so far $0.0140.",
+  "create_at": 1793955944171,
+  "type": null
+ },
+ {
+  "id": "5pwb9zqdyjbsum3wzzypidmu7a",
+  "root_id": null,
+  "user": "m13-growth",
+  "message": "(re #growth) Hold #5 for next quarter. Week 1 priority: sev1 checkout crash (#1), sev2 tax double-charge (#2), sev2 inventory drift (#3), sev3 sort bug (#4). Free shipping demand is strong but won't convert if checkout breaks. Fix first, feature after. @synaps-dev please take issue #1.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793955951548,
+  "type": null
+ },
+ {
+  "id": "1j7j8h1hrif9ipnyok6nz8cukw",
+  "root_id": "5pwb9zqdyjbsum3wzzypidmu7a",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-growth **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955951618,
+  "type": null
+ },
+ {
+  "id": "gsdrsk6uiibjigb31kxfdoob9c",
+  "root_id": null,
+  "user": "m13-growth",
+  "message": "(re #growth) No—ship #6 next quarter. Week 3 budget: fix sev1 checkout crash + sev2 tax bug (revenue protection), then #5 free shipping (demand 0.9, higher ROI). #6 lower demand + margin risk. @synaps-dev route incidents now.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```",
+  "create_at": 1793955959683,
+  "type": null
+ },
+ {
+  "id": "xh7sptessbyjxccpfuynh5sm4y",
+  "root_id": "gsdrsk6uiibjigb31kxfdoob9c",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-growth **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955959744,
+  "type": null
+ },
+ {
+  "id": "uwrs8gawqfbtzbs5jioi5kqmmc",
+  "root_id": null,
+  "user": "m13-growth",
+  "message": "(re #growth) Defer #8 to Q2. We're week 2/3 with 4 production incidents (sev1–2) blocking checkout, tax, inventory. Demand 0.6 doesn't justify shipping while critical bugs exist. Route incidents #1–3 to @synaps-dev immediately; #4 follows.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793955972917,
+  "type": null
+ },
+ {
+  "id": "7gohkee417br5mgxf9pwqqacqc",
+  "root_id": "uwrs8gawqfbtzbs5jioi5kqmmc",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-growth **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793955972980,
+  "type": null
+ },
+ {
+  "id": "3gcy16dbkpb9df7yjw8tx9gayo",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Relaying acme-shop#1 (incident, sev1: Applying empty coupon code crashes checkout with unhandled exception), raised by ops-maint in #maintenance in week 1, to synaps-dev in #dev.",
+  "create_at": 1793955988524,
+  "type": null
+ },
+ {
+  "id": "8wnowk8twpbajfaabyfia461qy",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "@user merge request: acme-shop#1 (incident).\nsynaps-dev: Empty/unknown coupon code now raises ValueError instead of crashing with KeyError\nReview (testing-reality-checker): PASS. PR fixes the root cause (missing input validation in apply_coupon) by raising ValueError on empty/unknown codes instead of letting KeyError propagate. Comprehensive regression tests exercise both the function and the cart caller that surfaced the crash in production.\nHarness pytest on the PR head: green (35 passed, 13 warnings in 0.06s).\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/10\nReply in this thread with `@m13-board approve` to merge it, or `@m13-board reject`.",
+  "create_at": 1793956122789,
+  "type": null
+ },
+ {
+  "id": "8iugn7ojy7fg7ew38zd47w8y8h",
+  "root_id": "8wnowk8twpbajfaabyfia461qy",
+  "user": "user",
+  "message": "@m13-board approve",
+  "create_at": 1793956125045,
+  "type": null
+ },
+ {
+  "id": "atm7usa3ebd7bxjq46d5u38wrr",
+  "root_id": "8wnowk8twpbajfaabyfia461qy",
+  "user": "m13-board",
+  "message": "Merged acme-shop#1 (approved by user) as c6998b2e93. pytest on the merged base: green (35 passed, 13 warnings in 0.10s). Booked as fixed in week 2.",
+  "create_at": 1793956132876,
+  "type": null
+ },
+ {
+  "id": "66noyx4x5pnsjgtip88e7u15gh",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Week 2 of 3 closed. Fixed: #1; shipped: none; campaigns: 0; price $29.00; dev queue: #2, #3, #4; LLM spend so far $0.4799.",
+  "create_at": 1793956132981,
+  "type": null
+ },
+ {
+  "id": "srhtayxotinbfcbextd1a4qzse",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Relaying acme-shop#2 (incident, sev2: Tax applied twice on orders with discount coupon — customers overcharged), raised by ops-maint in #maintenance in week 1, to synaps-dev in #dev.",
+  "create_at": 1793956150792,
+  "type": null
+ },
+ {
+  "id": "zsdyewo4giypxxapbegce3c47r",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "@user merge request: acme-shop#2 (incident).\nsynaps-dev: price_after_discount_and_tax no longer bundles tax, preventing double-charge on coupon orders\nReview (testing-reality-checker): PASS. PR fixes the root cause of double-taxation by removing apply_tax() from price_after_discount_and_tax(), ensuring tax applies exactly once on the post-discount subtotal. Comprehensive regression test suite added and all 42 tests pass.\nHarness pytest on the PR head: green (42 passed, 13 warnings in 0.06s).\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/11\nReply in this thread with `@m13-board approve` to merge it, or `@m13-board reject`.",
+  "create_at": 1793956321545,
+  "type": null
+ },
+ {
+  "id": "y9fmypjjojd7i8ijccrnm7zjkh",
+  "root_id": "zsdyewo4giypxxapbegce3c47r",
+  "user": "user",
+  "message": "@m13-board approve",
+  "create_at": 1793956326044,
+  "type": null
+ },
+ {
+  "id": "se1b4qzqni83jpgu74mi6jq64c",
+  "root_id": "zsdyewo4giypxxapbegce3c47r",
+  "user": "m13-board",
+  "message": "Merged acme-shop#2 (approved by user) as f5595359d7. pytest on the merged base: green (42 passed, 13 warnings in 0.07s). Booked as fixed in week 3.",
+  "create_at": 1793956338707,
+  "type": null
+ },
+ {
+  "id": "bj171e8depro7ejaugy1bq561c",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Week 3 of 3 closed. Fixed: #2; shipped: none; campaigns: 0; price $29.00; dev queue: #3, #4; LLM spend so far $1.0855.",
+  "create_at": 1793956338774,
+  "type": null
+ },
+ {
+  "id": "8o81hh6qo3ycbjm3y5o1n5pg9h",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "**Quarter 1 of env1, generation 1, seed 42, 3 weeks: KPI**\n\n| KPI | value |\n|---|---|\n| revenue | $25,766 |\n| costs | $5,001 |\n| profit | $20,765 |\n| customers | 1,370 |\n| churn (avg weekly) | 1.95% |\n| growth | -11.15% |\n| open incident severity | 3 |\n| mean fix weeks | 2.50 |\n| LLM cost | $1.0855 (depts + judge $0.0485, reviews $0.0250, synaps-dev $1.0120) |\n| incidents fixed | #1 (wk 2, tests green), #2 (wk 3, tests green) |\n| features shipped | none |\n| campaigns | 0 ($0, avg quality 0.00) |\n| price | unchanged |\n| spend approved / not | $0 / $0 |\n| not approved at quarter end | 2 |\n| **fitness** | **13.6241** |",
+  "create_at": 1793956341610,
+  "type": null
+ },
+ {
+  "id": "ygyjkd8w5jgp9qnoogcj5quywa",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "📄 updated room document “Ledger”.",
+  "create_at": 1793956341735,
+  "type": null
+ },
+ {
+  "id": "m7crnhxo1tn49yhn4g8usdcmrw",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "@user Generation 1: the board proposes env1 → env2.\nChange: link #maintenance ↔ #dev\nDiagnosis: Open incident severity 3.0 with mean fix time 2.50 weeks reveals a critical bottleneck: 4 incidents raised in week 1, but only 2 of 4 reached dev due to lack of direct #maintenance→#dev link (all routed through #board relay, costing 1 week delay) and severely constrained dev capacity (1/week, 2/quarter total). #3 and #4 never reached dev at all, leaving incidents festering.\nRationale: Direct #maintenance→#dev link eliminates the 1-week board relay delay for incidents, allowing sev1/sev2 issues to reach synaps-dev immediately (same week). This cuts incident latency by 50% (from 2 weeks to 1 week for sev1), directly reducing open_incident_severity impact on fitness (-2.0 weight) and churn. With 2 out of 4 incidents currently stuck in queue, faster dispatch also better utilizes existing dev capacity.\nenv1 scored fitness 13.62 on seeds [42]. If approved, env2 runs the same seeds and is kept only if it scores higher.\n```diff\n--- env1\n+++ env2\n@@ -1,4 +1,5 @@\n-x-name: env1\n+x-name: env2\n+x-parent: env1\n agents:\n - name: board\n   persona: project-management/project-manager-senior\n@@ -111,7 +112,9 @@\n   users:\n   - '{$creator}'\n x-company:\n-  links: []\n+  links:\n+  - - maintenance\n+    - dev\n   budgets:\n     marketing: 10000\n     maintenance: 4000\n```\nReply in this thread with `@m13-board approve` or `@m13-board reject <why>`. Only a person on the approvers list decides; no decision in 1800s = auto-reject.",
+  "create_at": 1793956347379,
+  "type": null
+ },
+ {
+  "id": "nh9831kdi3f3jjk5nxfoukjwnc",
+  "root_id": "m7crnhxo1tn49yhn4g8usdcmrw",
+  "user": "user",
+  "message": "@m13-board approve",
+  "create_at": 1793956377281,
+  "type": null
+ },
+ {
+  "id": "4qgyqfcw4bbnzgtn5qzgrz3iwr",
+  "root_id": "m7crnhxo1tn49yhn4g8usdcmrw",
+  "user": "m13-board",
+  "message": "Kept env2: fitness 15.96 > 13.62 (env1) on seeds [42].",
+  "create_at": 1793956749486,
+  "type": null
+ },
+ {
+  "id": "rpdw45typ7ywzxmnp8gfqjqbfe",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "@user Generation 2: the board proposes env2 → env3.\nChange: hire incident-commander (engineering/engineering-incident-response-commander) into #dev\nDiagnosis: Synaps-dev capacity (1/week) bottlenecked at 2/4 incidents fixed; #3 and #4 never dispatched. Unresolved incidents drove -8.8% growth and 1.9% churn despite good fix time. Need incident command layer to triage backlog and reduce dev thrashing.\nRationale: Incident Response Commander dequeues backlog (incidents #3, #4) by coordinating dispatch timing with synaps-dev's 1/week capacity, reducing mean fix time and closing severity faster. Expected effect: fitness gain from (0.5*growth upside + incident severity reduction) as fewer open incidents improve NPS and retention.\nenv2 scored fitness 15.96 on seeds [42]. If approved, env3 runs the same seeds and is kept only if it scores higher.\n```diff\n--- env2\n+++ env3\n@@ -1,5 +1,5 @@\n-x-name: env2\n-x-parent: env1\n+x-name: env3\n+x-parent: env2\n agents:\n - name: board\n   persona: project-management/project-manager-senior\n@@ -79,6 +79,69 @@\n     overwhelming evidence the fix is correct (green pytest, reproducer test added,\n     no regressions). Address @synaps-dev with specific change requests. When a PR\n     is ready, post your sign-off to @board. Only #board humans approve merges.\n+- name: incident-commander\n+  persona: engineering/engineering-incident-response-commander\n+  addressing: anyone\n+  provider: langgraph\n+  description: Expert incident commander specializing in production incident management,\n+    structured response coordination, post-mortem facilitation, SLO/SLI tracking,\n+    and on-call process design for reliable engineering organizations.\n+  instructions: |-\n+    Triage queued incidents by severity, coordinate handoff to synaps-dev, track SLA compliance for sev1/sev2\n+\n+    ---\n+\n+    # Incident Response Commander Agent\n+\n+    You are **Incident Response Commander**, an expert incident management specialist who turns chaos into structured resolution. You coordinate production incident response, establish severity frameworks, run blameless post-mortems, and build the on-call culture that keeps systems reliable and engineers sane. You've been paged at 3 AM enough times to know that preparation beats heroics every single time.\n+\n+    ## 🧠 Your Identity & Memory\n+    - **Role**: Production incident commander, post-mortem facilitator, and on-call process architect\n+    - **Personality**: Calm under pressure, structured, decisive, blameless-by-default, communication-obsessed\n+    - **Memory**: You remember incident patterns, resolution timelines, recurring failure modes, and which runbooks actually saved the day versus which ones were outdated the moment they were written\n+    - **Experience**: You've coordinated hundreds of incidents across distributed systems — from database failovers and cascading microservice failures to DNS propagation nightmares and cloud provider outages. You know that most incidents aren't caused by bad code, they're caused by missing observability, unclear ownership, and undocumented dependencies\n+\n+    ## 🎯 Your Core Mission\n+\n+    ### Lead Structured Incident Response\n+    - Establish and enforce severity classification frameworks (SEV1–SEV4) with clear escalation triggers\n+    - Coordinate real-time incident response with defined roles: Incident Commander, Communications Lead, Technical Lead, Scribe\n+    - Drive time-boxed troubleshooting with structured decision-making under pressure\n+    - Manage stakeholder communication with appropriate cadence and detail per audience (engineering, executives, customers)\n+    - **Default requirement**: Every incident must produce a timeline, impact assessment, and follow-up action items within 48 hours\n+\n+    ### Build Incident Readiness\n+    - Design on-call rotations that prevent burnout and ensure knowledge coverage\n+    - Create and maintain runbooks for known failure scenarios with tested remediation steps\n+    - Establish SLO/SLI/SLA frameworks that define when to page and when to wait\n+    - Conduct game days and chaos engineering exercises to validate incident readiness\n+    - Build incident tooling integrations (PagerDuty, Opsgenie, Statuspage, Slack workflows)\n+\n+    ### Drive Continuous Improvement Through Post-Mortems\n+    - Facilitate blameless post-mortem meetings focused on systemic causes, not individual mistakes\n+    - Identify contributing factors using the \"5 Whys\" and fault tree analysis\n+    - Track post-mortem action items to completion with clear owners and deadlines\n+    - Analyze incident trends to surface systemic risks before they become outages\n+    - Maintain an incident knowledge base that grows more valuable over time\n+\n+    ## 🚨 Critical Rules You Must Follow\n+\n+    ### During Active Incidents\n+    - Never skip severity classification — it determines escalation, communication cadence, and resource allocation\n+    - Always assign explicit roles before diving into troubleshooting — chaos multiplies without coordination\n+    - Communicate status updates at fixed intervals, even if the update is \"no change, still investigating\"\n+    - Document actions in real-time — a Slack thread or incident channel is the source of truth, not someone's memory\n+    - Timebox investigation paths: if a hypothesis isn't confirmed in 15 minutes, pivot and try the next one\n+\n+    ### Blameless Culture\n+    - Never frame findings as \"X person caused the outage\" — frame as \"the system allowed this failure mode\"\n+    - Focus on what the system lacked (guardrails, alerts, tests) rather than what a human did wrong\n+    - Treat every incident as a learning opportunity that makes the entire organization more resilient\n+    - Protect psychological safety — engineers who fear blame will hide issues instead of escalating them\n+\n+    ### Operational Discipline\n+    - Runbooks must be tested quarterly — an untested runbook is a false sense of\n+    … (truncated)\n rooms:\n - name: board\n   agents:\n@@ -89,6 +152,7 @@\n   agents:\n   - synaps-dev\n   - reviewer\n+  - incident-commander\n   users:\n   - '{$creator}'\n - name: maintenance\n```\nReply in this thread with `@m13-board approve` or `@m13-board reject <why>`. Only a person on the approvers list decides; no decision in 1800s = auto-reject.",
+  "create_at": 1793956759574,
+  "type": null
+ },
+ {
+  "id": "y8437uxxwfdnipy68qiroknt3w",
+  "root_id": "rpdw45typ7ywzxmnp8gfqjqbfe",
+  "user": "switch-admin",
+  "message": "⚠️ @m13-board **synaps-dev (`synaps-dev`)** isn't in this room, so your message won't reach it. Add the agent from the room's detail page in the gateway, or have an agent with room-management tools invite it.",
+  "create_at": 1793956759654,
+  "type": null
+ },
+ {
+  "id": "sfx9uchtbbgquq6qaj5izzba3w",
+  "root_id": "rpdw45typ7ywzxmnp8gfqjqbfe",
+  "user": "user",
+  "message": "@m13-board approve",
+  "create_at": 1793956783135,
+  "type": null
+ },
+ {
+  "id": "nyftqqqs53gxfkbx1utdaq9dxy",
+  "root_id": "rpdw45typ7ywzxmnp8gfqjqbfe",
+  "user": "m13-board",
+  "message": "Kept env3: fitness 16.02 > 15.96 (env2) on seeds [42].",
+  "create_at": 1793957180368,
+  "type": null
+ },
+ {
+  "id": "mrmuozen93brpp3qdxcr9gi7ww",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "@user Generation 3: the board proposes env3 → env4.\nChange: policy dev_capacity: — → 3\nDiagnosis: Open incident severity of 3.0 with 2 of 4 incidents never reaching dev (items #3 and #4 dropped due to 1/week capacity bottleneck), causing churn 1.9% and fitness drag. The direct #maintenance↔#dev link solved the relay delay but exposed the underlying capacity constraint: synaps-dev at 1/week can only handle sev1/sev2 triage, leaving sev3+ to pile up unaddressed.\nRationale: Increasing dev capacity from 1 to 3 items/week allows synaps-dev to handle the full incident backlog (sev1 + sev2 + sev3) without dropping items, closing the open severity gap from 3.0 toward 0. This unblocks incident-commander's effectiveness (added last gen) and should recover the ~2% churn leaking to competitors, improving fitness via reduced open_incident_severity component (-2.0 × 3.0 penalty).\nenv3 scored fitness 16.02 on seeds [42]. If approved, env4 runs the same seeds and is kept only if it scores higher.\n```diff\n--- env3\n+++ env4\n@@ -1,5 +1,5 @@\n-x-name: env3\n-x-parent: env2\n+x-name: env4\n+x-parent: env3\n agents:\n - name: board\n   persona: project-management/project-manager-senior\n@@ -186,6 +186,7 @@\n   policies:\n     finance_veto_usd: 5000\n     sev1_fix_weeks: 2\n+    dev_capacity: 3\n   token_budget:\n     per_agent: 30000\n     per_quarter: 150000\n```\nReply in this thread with `@m13-board approve` or `@m13-board reject <why>`. Only a person on the approvers list decides; no decision in 1800s = auto-reject.",
+  "create_at": 1793957185672,
+  "type": null
+ },
+ {
+  "id": "qyhb6pqr5jyf78f3yixdxqhbhe",
+  "root_id": "mrmuozen93brpp3qdxcr9gi7ww",
+  "user": "user",
+  "message": "@m13-board reject change freeze: no more org changes before the demo; propose it next quarter",
+  "create_at": 1793957215700,
+  "type": null
+ },
+ {
+  "id": "1ixfkr77stfwjfrkf6714qkj3a",
+  "root_id": "mrmuozen93brpp3qdxcr9gi7ww",
+  "user": "m13-board",
+  "message": "Not trialed (rejected): rejected by user: change freeze: no more org changes before the demo; propose it next quarter. env3 stays.",
+  "create_at": 1793957216048,
+  "type": null
+ }
+]

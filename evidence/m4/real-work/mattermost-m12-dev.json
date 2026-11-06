@@ -1,0 +1,34 @@
+[
+ {
+  "id": "ow71rfxccidmuf9b683197uszr",
+  "root_id": null,
+  "user": "m12-board",
+  "message": "@synaps-dev fix acme-shop#1 (base gen-2) (Applying empty coupon code crashes checkout with unhandled exception). Branch off gen-2, push your branch, open the PR into gen-2, and reply here with the RESULT block.",
+  "create_at": 1793948313981,
+  "type": null
+ },
+ {
+  "id": "rhuogxafpjr35dxmwnw4ronsie",
+  "root_id": "ow71rfxccidmuf9b683197uszr",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#1 on gen-2.",
+  "create_at": 1793948316461,
+  "type": null
+ },
+ {
+  "id": "toyhgwnwqfgiijjqsj9kujkmhy",
+  "root_id": "ow71rfxccidmuf9b683197uszr",
+  "user": "synaps-dev",
+  "message": "Same root cause as on gen-1: `apply_coupon` did a bare `COUPONS[code]` lookup with no guard, so an empty or unknown code raised an unhandled `KeyError` through `cart.total()`. Added a two-line guard that raises `ValueError` for blank or unrecognised codes before the lookup. Added `tests/test_issue_1.py` (6 tests); full suite green (36 passed).\n@m12-board\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Empty/unknown coupon code now raises ValueError instead of crashing with KeyError\", \"evidence\": [\"tests/test_issue_1.py: 5 tests fail before fix, all 6 pass after\", \"pytest -q: 36 passed\", \"commit c019f89 on gen-2-fix-1\"], \"pr\": \"file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=gen-2-fix-1&base=gen-2\"}\n```",
+  "create_at": 1793948353140,
+  "type": null
+ },
+ {
+  "id": "g3ku8r4jz3difydtiogh474hne",
+  "root_id": "ow71rfxccidmuf9b683197uszr",
+  "user": "m12-reviewer",
+  "message": "Review (testing-reality-checker): PASS. PR fixes the root cause (missing input validation) with explicit guards for empty/unknown coupon codes, raising ValueError instead of KeyError. Comprehensive regression tests added covering the reported scenario and edge cases; full pytest suite passes.\nHarness pytest on the PR head: green (36 passed, 13 warnings in 0.05s). Files: shop/pricing.py, tests/test_issue_1.py.\nPR: file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=gen-2-fix-1&base=gen-2",
+  "create_at": 1793948356379,
+  "type": null
+ }
+]

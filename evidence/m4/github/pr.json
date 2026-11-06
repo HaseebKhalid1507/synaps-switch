@@ -1,0 +1,52 @@
+{
+ "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/9",
+ "info": {
+  "local": false,
+  "repo": "HaseebKhalid1507/acme-shop",
+  "number": 9,
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/9",
+  "state": "OPEN",
+  "head": "m26-gen-1-fix-3",
+  "base": "m26-gen-1",
+  "head_sha": "b82cfc77786a03371013a5ef706e5752e7c55d42",
+  "cross_repo": false
+ },
+ "after": {
+  "baseRefName": "m26-gen-1",
+  "mergeCommit": {
+   "oid": "2fea4ca6e0d4b109591efbb08be37fd0d284c419"
+  },
+  "mergedBy": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "state": "MERGED"
+ },
+ "opened_as": {
+  "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+  "is_bot": false,
+  "login": "HaseebKhalid1507",
+  "name": "Haseeb Khalid"
+ },
+ "title": "Fix #3: Inventory not released when payment fails \u2014 stock drifts negative",
+ "body": "Refs #3. Fix pushed by synaps-dev (Switch room session, deploy key) to `m26-gen-1-fix-3`; this PR was opened by the company process, not by the session. Merged only after a human approves in #board.\n\nCalled self._release() in the except PaymentError handler of place_order() so reserved stock is restored on a declined payment. Added regression tests confirming stock returns to its pre-checkout level after a failed payment.\n\nEvidence (from the RESULT block):\n- All 32 tests pass on m26-gen-1-fix-3, including two new tests in tests/test_issue_3.py: test_stock_restored_after_payment_failure (was failing before fix) and test_stock_decremented_after_successful_order (control).",
+ "commits": [
+  {
+   "authoredDate": "2026-11-06T08:35:00Z",
+   "authors": [
+    {
+     "email": "HaseebKhalid1507@users.noreply.github.com",
+     "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+     "login": "HaseebKhalid1507",
+     "name": "Haseeb Khalid"
+    }
+   ],
+   "committedDate": "2026-11-06T08:35:00Z",
+   "messageBody": "_release() was never called on PaymentError in place_order(), leaving\nstock permanently decremented after a declined card. This caused item\ncounts to drift negative after repeated failed checkouts.\n\nFix: call self._release() in the except PaymentError handler so reserved\nstock is restored before re-raising the exception.\n\nAdds regression tests in tests/test_issue_3.py.",
+   "messageHeadline": "fix: release inventory when payment fails (closes #3)",
+   "oid": "b82cfc77786a03371013a5ef706e5752e7c55d42"
+  }
+ ]
+}

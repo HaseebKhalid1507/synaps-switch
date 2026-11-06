@@ -1,0 +1,17 @@
+01:58:27 template: group 'm4e-env1-g97', 6 rooms
+01:58:27 applied env1 generation 97: 6 rooms, 5 links, documents ['Handbook', 'Ledger']
+01:58:27 pinned: {"board": "6292d564-3b04-468b-af33-604fa7ef4e41", "dev": "fd56e185-6b40-4606-a74f-6b3466ab89ed", "maintenance": "1f75ab87-9c68-420b-bcce-eeccfcc4ba6e", "growth": "af8e219b-c962-4d46-86d1-37dd2bd536c8", "marketing": "b0d7be6d-6261-4f24-a4ab-27e0989ccfd0", "finance": "b56abb16-1bbc-4698-a0c9-91f32c5cd3c9"}
+01:58:28 board got: room='maintenance' sender='m4e-ops-maint' agent=True text='@m4e-board sev1: checkout returns 500 (g97 smoke)'
+01:58:28 ops-maint got: room='maintenance' thread='sw_5d25176886c94fd5b2916cc76541a336' sender='m4e-board' text='@m4e-ops-maint ack, routing to dev'
+01:58:28 update_ledger through the board's transport link: ok
+01:58:28 archived m4e-board-g97
+01:58:28 archived m4e-dev-g97
+01:58:28 archived m4e-maintenance-g97
+01:58:28 archived m4e-growth-g97
+01:58:28 archived m4e-marketing-g97
+01:58:28 archived m4e-finance-g97
+01:58:28 PASS apply through the board's transport link returns all six env rooms
+01:58:28 PASS a post to env room 'maintenance' reaches @board, room reported as 'maintenance'
+01:58:28 PASS sender is ops-maint, flagged as an agent
+01:58:28 PASS board's reply lands in the same thread
+01:58:28 PASS teardown archived the six rooms

@@ -1,0 +1,15 @@
+01:39:29 started: m4t-alpha, m4t-beta; room m4t-room = 54d051fa-f82c-4c9e-a3d8-6eaced6b6536
+01:39:30 m4t-alpha posted root sw_1b2999638f1448d28bfe407686e05627
+01:39:30   m4t-beta <- id=sw_1b2999638f1448d28bfe407686e05627 room=m4t-room thread=None sender=m4t-alpha sender_is_agent=True mentions=['m4t-beta'] text='@m4t-beta live transport test [bd13eb]: please ack in this thread'
+01:39:30   m4t-alpha <- id=sw_ad5b91da2aa945beb5185808ad549713 room=m4t-room thread=sw_1b2999638f1448d28bfe407686e05627 sender=m4t-beta sender_is_agent=True mentions=['m4t-alpha'] text='@m4t-alpha ack from m4t-beta [bd13eb]'
+01:39:30 mattermost user posted ch3uud3zp3d1fki33b5bi8czzy
+01:39:31   m4t-alpha <- id=sw_1ae968fad6ec71be3ca1a5002e9a27f5 room=m4t-room thread=None sender=user sender_is_agent=False mentions=['m4t-alpha'] text='@m4t-alpha approve [bd13eb] (a human, top level)'
+01:39:31   m4t-alpha <- id=sw_5abc37b98bcec880c3abe78f87639acd room=m4t-room thread=sw_1b2999638f1448d28bfe407686e05627 sender=user sender_is_agent=False mentions=['m4t-alpha'] text='@m4t-alpha approve [bd13eb] (a human, in the thread)'
+01:39:32 transport stopped; mattermost user posted dt7o5njjdpgi5y8nsiadmm16ye to m4t-beta meanwhile; restarting
+01:39:37   m4t-beta <- id=sw_c18789859a836e7e2ac256702cd0cf29 room=m4t-room thread=None sender=user sender_is_agent=False mentions=['m4t-beta'] text='@m4t-beta sent while the transport was down [bd13eb]'
+01:39:37 PASS  agent->agent addressed delivery
+01:39:37 PASS  threaded reply delivered in root's thread
+01:39:37 PASS  human message flagged human
+01:39:37 PASS  human thread reply lands in the root's thread
+01:39:37 PASS  restart: no redelivery
+01:39:37 PASS  restart: message sent while down delivered once

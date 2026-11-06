@@ -1,0 +1,21 @@
+# git ls-remote git@github.com:HaseebKhalid1507/acme-shop.git after both runs: main and the baseline tag still 05e9e6b (untouched); every write went to m13-* branches
+f5595359d71004461699aceded72de8d7da9e524	refs/heads/m13-gen-1
+50cd49f5932ba3f91eb34c996058375ca77c7b36	refs/heads/m13-gen-1-fix-1
+ed5514ecf6b76d36330213a5d61b793c8ed954f7	refs/heads/m13-gen-1-fix-2
+b9a2a7491b2905d7bc45ac7f4bad7b89c5a6da8a	refs/heads/m13-gen-2
+9b3838ff842bca7a1947cd608a1499db4a7ae638	refs/heads/m13-gen-2-fix-1
+44015cfd864ca663c3ecf79d2f3e906c95205da6	refs/heads/m13-gen-2-fix-2
+41110fa605776160869d000324410ee0419f2678	refs/heads/m13-gen-3
+b19a774545168d9b517513dbdc2139904240d283	refs/heads/m13-gen-3-fix-1
+9deb6071bd4ea3bb4b1e9d28e312338da64498c3	refs/heads/m13-gen-3-fix-2
+d1af2c34b2ce84a36981e4ff115fb743977d51f6	refs/heads/m13-s1-gen-1
+296f08358776fe6e65444047edb342655ea34225	refs/heads/m13-s1-gen-1-fix-1
+936e7f527eaae8a9b101389f410905c0c1bfba80	refs/heads/m13-s1-gen-1-fix-2
+6cb5cd4f38a54733d63c6baa54d72b45a876d3a3	refs/heads/m13-s1-gen-2
+8b22532012cb38b874cad47a2d1ae00ca4808a31	refs/heads/m13-s1-gen-2-fix-1
+8d47124ea2ce7d93b5c1f6f345edda6f80547d9d	refs/heads/m13-s1-gen-2-fix-2
+aa01da290010eb1996cfaace0bde45c09ef86945	refs/heads/m13-s1-gen-3
+02d3d6d19efc78eef346410ea0968332e2c123d7	refs/heads/m13-s1-gen-3-fix-1
+499e22aca22cd3577b9fcad25ade92bf66e61266	refs/heads/m13-s1-gen-3-fix-2
+05e9e6bd2e28d3c13557bdb471b6b1e6ec34be48	refs/heads/main
+05e9e6bd2e28d3c13557bdb471b6b1e6ec34be48	refs/tags/baseline

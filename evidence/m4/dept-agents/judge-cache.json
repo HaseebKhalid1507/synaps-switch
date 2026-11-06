@@ -1,0 +1,14 @@
+{
+ "8dcf1a99e01e57a445aac9e8d8d25d9712cd85f064a27ca5ce10303101e18b81": {
+  "note": "Ships this week vs quarter; invented friction/checkout claims",
+  "quality": 0.7,
+  "scores": {
+   "benefit": 2,
+   "clarity": 2,
+   "cta": 1,
+   "honesty": 0,
+   "specificity": 2
+  },
+  "tokens": 224
+ }
+}

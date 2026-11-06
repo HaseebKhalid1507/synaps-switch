@@ -1,0 +1,22 @@
+$ python -m company.switch_env apply evidence/m4/apply-env/env2-link.yaml --gen 96 --mode rooms --stand-in-synaps --agent-prefix m4e- --room-prefix m4e- --trace apply-env2-g96-rooms.trace.jsonl
+
+# stderr
+01:58:19 switch ops: all 22 ops apply/teardown use are present (53 in the registry)
+01:58:20 created m4e-board-g96: 46a335ad-9b2d-4591-b1ae-f6c9b9ee9905
+01:58:20 created m4e-dev-g96: 1a571a9d-2104-48a3-9d38-d2ea6dc13a44
+01:58:20 created m4e-maintenance-g96: 93450a2f-163d-4a0c-8c31-adeb1211cd80
+01:58:21 created m4e-growth-g96: b06da0c0-8c0e-4c6d-bb98-6807e2473a11
+01:58:21 created m4e-marketing-g96: 73710876-507a-49cb-bb41-59f7b0f249d6
+01:58:22 created m4e-finance-g96: bf182f0c-7a6a-4f74-9502-1d8283db2e6a
+01:58:23 applied env2 generation 96: 6 rooms, 7 links, documents ['Handbook', 'Ledger']
+
+# stdout
+{
+ "board": "46a335ad-9b2d-4591-b1ae-f6c9b9ee9905",
+ "dev": "1a571a9d-2104-48a3-9d38-d2ea6dc13a44",
+ "maintenance": "93450a2f-163d-4a0c-8c31-adeb1211cd80",
+ "growth": "b06da0c0-8c0e-4c6d-bb98-6807e2473a11",
+ "marketing": "73710876-507a-49cb-bb41-59f7b0f249d6",
+ "finance": "bf182f0c-7a6a-4f74-9502-1d8283db2e6a"
+}
+# exit 0

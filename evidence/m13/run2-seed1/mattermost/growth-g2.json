@@ -1,0 +1,58 @@
+[
+ {
+  "id": "zkj4a85xp387fprqdhrp4qmjse",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957783071,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "eqeautz1j7naufu7ikjgmth78o",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957783087,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "pwebbadtnbnnbe6masackemqao",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-growth added to the channel by admin.",
+  "create_at": 1793957783152,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "776mrmfseig1jg3rkese8bx77y",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957783161,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "49oe4ymrqidemk1r6wiw36f6sw",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "Hey! I'm on standby — @m13-s1-growth to get started.",
+  "create_at": 1793957783258,
+  "type": null
+ },
+ {
+  "id": "xnn3g1x3ij85zx5b8f4ug9ug8r",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hello! I'm ready — just tag @m13-s1-board when you need me.",
+  "create_at": 1793957783280,
+  "type": null
+ },
+ {
+  "id": "4nwktx3rgjybjg1mxuh7sydf9o",
+  "root_id": null,
+  "user": "m13-s1-growth",
+  "message": "Demand 0.6 is moderate but lower than free shipping (#5: 0.9). With 3 critical incidents open and 1 week left, ship bug fixes first. Queue #8 for next quarter.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793957962848,
+  "type": null
+ }
+]

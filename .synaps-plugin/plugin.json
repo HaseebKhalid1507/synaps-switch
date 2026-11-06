@@ -1,0 +1,20 @@
+{
+  "name": "synaps-switch",
+  "version": "0.1.0",
+  "description": "Puts Synaps sessions into Switch rooms over the Switch agent protocol: one pinned session per room, addressed messages delivered as events, tools to post, read and call any Switch operation.",
+  "author": "Haseeb Khalid",
+  "license": "MIT",
+  "extension": {
+    "protocol_version": 1,
+    "runtime": "process",
+    "command": "python3",
+    "args": ["main.py"],
+    "permissions": ["tools.register"],
+    "hooks": [],
+    "config": [
+      {"key": "base_dir", "description": "The Synaps base dir of the daemon this runs in (its run/ and daemon socket). Extensions get no SYNAPS_BASE_DIR, so set it for any non-default base dir.", "default": ""},
+      {"key": "config_file", "description": "JSON file with {\"agents\": [...]} (default <state_dir>/agents.json)", "default": ""},
+      {"key": "state_dir", "description": "State: credentials (0600), cursor, room->session map (default <SYNAPS_BASE_DIR>/synaps-switch)", "default": ""}
+    ]
+  }
+}

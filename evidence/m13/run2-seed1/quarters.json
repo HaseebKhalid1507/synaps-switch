@@ -1,0 +1,1334 @@
+{
+ "env1:1": {
+  "env": "env1",
+  "generation": 1,
+  "seed": 1,
+  "weeks": 3,
+  "finished": true,
+  "metrics": {
+   "revenue": 25081.36,
+   "costs": 5001.18,
+   "profit": 20080.18,
+   "customers": 1333,
+   "churn_rate": 0.0195,
+   "growth": -0.1119,
+   "open_incident_severity": 3.0,
+   "mean_fix_weeks": 2.5,
+   "llm_cost_usd": 1.1785
+  },
+  "fitness": 12.845730000000003,
+  "setup": {
+   "rooms": {
+    "board": "10723623-7ba5-4331-b2bb-c204f1581a35",
+    "dev": "1632bda2-cd67-43ef-9e25-7ac4d35d37af",
+    "maintenance": "dcbdd3eb-0067-4692-9dcb-de09c914aa4a",
+    "growth": "a2148fbe-cf3a-49c9-8713-279fb5c32b49",
+    "marketing": "ccc381da-abfd-4433-b047-f12453079184",
+    "finance": "a491e775-ec03-4403-bb2e-0845b9314c0d"
+   },
+   "channels": {
+    "board": "m13-s1-board-g1",
+    "dev": "m13-s1-dev-g1",
+    "finance": "m13-s1-finance-g1",
+    "growth": "m13-s1-growth-g1",
+    "maintenance": "m13-s1-maintenance-g1",
+    "marketing": "m13-s1-marketing-g1"
+   },
+   "base": "m13-s1-gen-1",
+   "remote": "git@github.com:HaseebKhalid1507/acme-shop.git",
+   "dev_room_name": "m13-s1-dev-g1",
+   "agents": {
+    "board": "m13-s1-board",
+    "ops-maint": "m13-s1-ops-maint",
+    "growth": "m13-s1-growth",
+    "marketing": "m13-s1-marketing",
+    "finance": "m13-s1-finance",
+    "reviewer": "m13-s1-reviewer",
+    "market": "m13-s1-market"
+   },
+   "group": "m13-s1-env1-g1"
+  },
+  "dev_tasks": [
+   {
+    "issue": 1,
+    "kind": "incident",
+    "week": 2,
+    "by": "ops-maint",
+    "status": "proposed",
+    "via": "synaps-dev",
+    "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/16",
+    "summary": "Empty or unknown coupon code no longer crashes checkout — raises ValueError instead of KeyError",
+    "thread": "sw_5d4b70d3d267441284f03e77a0c4226a",
+    "seconds": 95.7,
+    "path": "board_relay",
+    "asker": "board",
+    "review": {
+     "verdict": "PASS",
+     "tests": "36 passed, 13 warnings in 0.07s",
+     "files": [
+      "shop/pricing.py",
+      "tests/test_issue_1.py"
+     ],
+     "concerns": []
+    },
+    "gate_thread": "sw_8dafe8754adc4342a23c918287cd0ef7",
+    "outcome": "merged",
+    "approver": "user",
+    "merged_week": 2,
+    "tests_passed": true
+   },
+   {
+    "issue": 2,
+    "kind": "incident",
+    "week": 3,
+    "by": "ops-maint",
+    "status": "proposed",
+    "via": "synaps-dev",
+    "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/17",
+    "summary": "Tax now applied exactly once on the post-discount subtotal — no more double-taxation for coupon users",
+    "thread": "sw_abdcff9ce9d5446a9f35d3e1b11191ec",
+    "seconds": 191.3,
+    "path": "board_relay",
+    "asker": "board",
+    "review": {
+     "verdict": "PASS",
+     "tests": "44 passed, 13 warnings in 0.04s",
+     "files": [
+      "shop/cart.py",
+      "shop/pricing.py",
+      "tests/test_issue_2.py"
+     ],
+     "concerns": []
+    },
+    "gate_thread": "sw_2c69b2b743ef4d58a385df134d1ad75e",
+    "outcome": "merged",
+    "approver": "user",
+    "merged_week": 3,
+    "tests_passed": true
+   }
+  ],
+  "mechanics": {
+   "relayed": 2,
+   "relay_weeks": 2,
+   "capacity_weeks": 1,
+   "not_dispatched": 2
+  },
+  "skipped_routes": [],
+  "pending_at_end": [
+   {
+    "what": "route",
+    "issue": 3,
+    "kind": "incident",
+    "was": "queued"
+   },
+   {
+    "what": "route",
+    "issue": 4,
+    "kind": "incident",
+    "was": "queued"
+   }
+  ],
+  "weeks_done": [
+   {
+    "week": 1,
+    "events": 4,
+    "dispatched": 0,
+    "fixed": [],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "llm_cost_usd": 0.0178
+   },
+   {
+    "week": 2,
+    "events": 4,
+    "dispatched": 1,
+    "fixed": [
+     "#1"
+    ],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     2,
+     3,
+     4
+    ],
+    "llm_cost_usd": 0.482655
+   },
+   {
+    "week": 3,
+    "events": 1,
+    "dispatched": 1,
+    "fixed": [
+     "#2"
+    ],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     3,
+     4
+    ],
+    "llm_cost_usd": 1.178512
+   }
+  ],
+  "quarter_log": {
+   "fixes": [
+    {
+     "issue": 1,
+     "week_fixed": 2,
+     "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/16",
+     "tests_passed": true
+    },
+    {
+     "issue": 2,
+     "week_fixed": 3,
+     "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/17",
+     "tests_passed": true
+    }
+   ],
+   "features": [],
+   "campaigns": [],
+   "price_changes": [],
+   "spend": [],
+   "llm_cost_usd": 1.178512,
+   "decisions": [
+    {
+     "week": 1,
+     "type": "org",
+     "who": "board",
+     "what": "org: direct lines none (every hand-off to #dev goes through #board); synaps-dev capacity 1/week, 2/quarter; PR reviewers in #dev: reviewer"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 1,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_cf16fb6cc512425c8d2aae9022a2e796"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_637ccb7c26a94b6bb184b9c94854853b"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 3,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_198166c707f94f9e8feb71c4988d4e22"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 4,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_cc402ffa16fa4845a095472c21482e6b"
+    },
+    {
+     "week": 1,
+     "type": "route_relay",
+     "who": "board",
+     "what": "#1 (sev1) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)",
+     "issue": 1,
+     "by": "ops-maint",
+     "path": "board_relay",
+     "ready_week": 2
+    },
+    {
+     "week": 1,
+     "type": "route_relay",
+     "who": "board",
+     "what": "#2 (sev2) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)",
+     "issue": 2,
+     "by": "ops-maint",
+     "path": "board_relay",
+     "ready_week": 2
+    },
+    {
+     "week": 1,
+     "type": "route_relay",
+     "who": "board",
+     "what": "#3 (sev2) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)",
+     "issue": 3,
+     "by": "ops-maint",
+     "path": "board_relay",
+     "ready_week": 2
+    },
+    {
+     "week": 1,
+     "type": "route_relay",
+     "who": "board",
+     "what": "#4 (sev3) raised wk1 by ops-maint in #maintenance: no #maintenance ↔ #dev link, so it waits for the board's relay (wk2)",
+     "issue": 4,
+     "by": "ops-maint",
+     "path": "board_relay",
+     "ready_week": 2
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 1,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_ecce679ec00b4843b196fc3b13f6dfed"
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 1,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_27e61b023ab14608af5e44d47f88f528"
+    },
+    {
+     "week": 2,
+     "type": "dispatch",
+     "who": "board",
+     "what": "#1 (sev1) waited for board relay: raised wk1 by ops-maint in #maintenance, dispatched wk2",
+     "issue": 1,
+     "kind": "incident",
+     "path": "board_relay",
+     "raised_week": 1,
+     "ready_week": 2
+    },
+    {
+     "week": 2,
+     "type": "merge",
+     "issue": 1,
+     "kind": "incident",
+     "decision": "approve",
+     "approver": "user",
+     "merged": true,
+     "tests_passed": true,
+     "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/16"
+    },
+    {
+     "week": 3,
+     "type": "dispatch",
+     "who": "board",
+     "what": "#2 (sev2) waited for board relay: raised wk1 by ops-maint in #maintenance, dispatched wk3 (+1 wk waiting for dev capacity, 1/week, 2/quarter)",
+     "issue": 2,
+     "kind": "incident",
+     "path": "board_relay",
+     "raised_week": 1,
+     "ready_week": 2
+    },
+    {
+     "week": 3,
+     "type": "merge",
+     "issue": 2,
+     "kind": "incident",
+     "decision": "approve",
+     "approver": "user",
+     "merged": true,
+     "tests_passed": true,
+     "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/17"
+    },
+    {
+     "week": 3,
+     "type": "route_not_dispatched",
+     "issue": 3,
+     "kind": "incident",
+     "by": "ops-maint",
+     "why": "the dev queue did not reach it this quarter",
+     "who": "board",
+     "what": "#3 (incident) never reached synaps-dev: raised wk1 by ops-maint, board relay → wk2, then dev capacity (1/week, 2/quarter) ran out"
+    },
+    {
+     "week": 3,
+     "type": "route_not_dispatched",
+     "issue": 4,
+     "kind": "incident",
+     "by": "ops-maint",
+     "why": "the dev queue did not reach it this quarter",
+     "who": "board",
+     "what": "#4 (incident) never reached synaps-dev: raised wk1 by ops-maint, board relay → wk2, then dev capacity (1/week, 2/quarter) ran out"
+    },
+    {
+     "week": 3,
+     "type": "mechanics",
+     "who": "board",
+     "what": "quarter mechanics: items relayed by the board: 2; weeks waited for the board's relay: 2; weeks waited for dev capacity: 1; routes never dispatched: 2",
+     "stats": {
+      "relayed": 2,
+      "relay_weeks": 2,
+      "direct": 0,
+      "capacity_weeks": 1,
+      "not_dispatched": 2,
+      "caught": 0,
+      "reopened": 0,
+      "review_rounds": 0,
+      "slipped": 0
+     },
+     "labels": {
+      "relayed": "items relayed by the board",
+      "relay_weeks": "weeks waited for the board's relay",
+      "direct": "items handed to synaps-dev directly",
+      "capacity_weeks": "weeks waited for dev capacity",
+      "not_dispatched": "routes never dispatched",
+      "caught": "regressions caught in review",
+      "reopened": "fixes reopened after a regression",
+      "review_rounds": "extra review rounds",
+      "slipped": "merges slipped a week by review"
+     }
+    },
+    {
+     "week": 3,
+     "type": "market_inputs",
+     "who": "policy",
+     "what": "to the market: 0 campaign(s), $0 spend, mean quality 0.00, 0 citing a shipped feature; approved spend none; 0 item(s) approved, 0 denied by finance/policy; price $29.00; fixes [(1, 2), (2, 3)], features []"
+    }
+   ]
+  },
+  "board_inbox": [
+   {
+    "week": 2,
+    "id": "sw_ff58dfdc5e434698a32a5109a97ed043",
+    "room": "dev",
+    "thread": "sw_5d4b70d3d267441284f03e77a0c4226a",
+    "sender": "synaps-dev",
+    "agent": true,
+    "text": "The crash was a bare `COUPONS[code]` dict lookup in `pricing.py` with no guard — an empty or unknown code raised an unhandled `KeyError` that propagated through `cart.total()` and crashed checkout. Fixed by validating the code first and raising `ValueError` for blank or unrecognised values. Added `t"
+   },
+   {
+    "week": 2,
+    "id": "sw_048d79ae4dcb1da3ec7ae0cac58a6b62",
+    "room": "board",
+    "thread": "sw_8dafe8754adc4342a23c918287cd0ef7",
+    "sender": "user",
+    "agent": false,
+    "text": "@board approve"
+   },
+   {
+    "week": 3,
+    "id": "sw_9deccae9797a4b1b89c526097928eafa",
+    "room": "dev",
+    "thread": "sw_abdcff9ce9d5446a9f35d3e1b11191ec",
+    "sender": "synaps-dev",
+    "agent": true,
+    "text": "The root cause: `price_after_discount_and_tax()` in `pricing.py` applies tax on the discounted subtotal, but `cart.total()` also computed tax independently inline — any flow that called both would apply tax twice. Fixed by making `cart.total()` delegate entirely to `price_after_discount_and_tax()` a"
+   },
+   {
+    "week": 3,
+    "id": "sw_27e67cb5fdb83227ed36eaa59562f770",
+    "room": "board",
+    "thread": "sw_2c69b2b743ef4d58a385df134d1ad75e",
+    "sender": "user",
+    "agent": false,
+    "text": "@board approve"
+   }
+  ],
+  "cost": {
+   "thread": "env1:1",
+   "env": "env1",
+   "generation": 1,
+   "total_usd": 1.178512,
+   "synaps_dev_usd": 1.098412,
+   "reviews_usd": 0.0257,
+   "dept_agents_and_judge_usd": 0.0544,
+   "synaps_dev_sessions": [
+    {
+     "name": "sw-synaps-dev-m13-s1-dev-g1-fdcb",
+     "cost": 1.0984116000000004,
+     "messages": 116
+    }
+   ]
+  }
+ },
+ "env2:1": {
+  "env": "env2",
+  "generation": 2,
+  "seed": 1,
+  "weeks": 3,
+  "finished": true,
+  "metrics": {
+   "revenue": 27215.05,
+   "costs": 5001.98,
+   "profit": 22213.07,
+   "customers": 1368,
+   "churn_rate": 0.0195,
+   "growth": -0.0886,
+   "open_incident_severity": 3.0,
+   "mean_fix_weeks": 1.5,
+   "llm_cost_usd": 1.978
+  },
+  "fitness": 14.190770000000002,
+  "setup": {
+   "rooms": {
+    "board": "28268f5f-c5ea-4916-9063-5a2ddbffd7b2",
+    "dev": "ddc50bdf-dfe0-4fcb-b1d9-0947ce6ade6b",
+    "maintenance": "b01dda2a-a8e5-499c-b2ff-1fd9fcc05cdd",
+    "growth": "1acd6f6e-772f-4544-9619-fa0a69b75e0a",
+    "marketing": "b12ef741-19b4-43cd-a760-d04b6dbbbcbd",
+    "finance": "0c693558-fc7e-4da8-a1c5-96feb0de4869"
+   },
+   "channels": {
+    "board": "m13-s1-board-g2",
+    "dev": "m13-s1-dev-g2",
+    "finance": "m13-s1-finance-g2",
+    "growth": "m13-s1-growth-g2",
+    "maintenance": "m13-s1-maintenance-g2",
+    "marketing": "m13-s1-marketing-g2"
+   },
+   "base": "m13-s1-gen-2",
+   "remote": "git@github.com:HaseebKhalid1507/acme-shop.git",
+   "dev_room_name": "m13-s1-dev-g2",
+   "agents": {
+    "board": "m13-s1-board",
+    "ops-maint": "m13-s1-ops-maint",
+    "growth": "m13-s1-growth",
+    "marketing": "m13-s1-marketing",
+    "finance": "m13-s1-finance",
+    "reviewer": "m13-s1-reviewer",
+    "market": "m13-s1-market"
+   },
+   "group": "m13-s1-env2-g2"
+  },
+  "dev_tasks": [
+   {
+    "issue": 1,
+    "kind": "incident",
+    "week": 1,
+    "by": "ops-maint",
+    "status": "proposed",
+    "via": "synaps-dev",
+    "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/18",
+    "summary": "Empty/unknown coupon code now raises ValueError instead of crashing with KeyError",
+    "thread": "sw_a4b1482fa8744b4fa64624236408f2ab",
+    "seconds": 105.3,
+    "path": "direct",
+    "asker": "ops-maint",
+    "review": {
+     "verdict": "PASS",
+     "tests": "35 passed, 13 warnings in 0.04s",
+     "files": [
+      "shop/pricing.py",
+      "tests/test_issue_1.py"
+     ],
+     "concerns": []
+    },
+    "gate_thread": "sw_c6129e627aa840cb981cfcfc5dcaa658",
+    "outcome": "merged",
+    "approver": "user",
+    "merged_week": 1,
+    "tests_passed": true
+   },
+   {
+    "issue": 2,
+    "kind": "incident",
+    "week": 2,
+    "by": "ops-maint",
+    "status": "proposed",
+    "via": "synaps-dev",
+    "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/19",
+    "summary": "Tax now applied exactly once via a single code path; preview price matches charge on all amounts",
+    "thread": "sw_fe58d25ca666444a84c87cbb2dbeca19",
+    "seconds": 370.5,
+    "path": "direct",
+    "asker": "ops-maint",
+    "review": {
+     "verdict": "PASS",
+     "tests": "46 passed, 13 warnings in 0.04s",
+     "files": [
+      "shop/cart.py",
+      "tests/test_issue_2.py"
+     ],
+     "concerns": []
+    },
+    "gate_thread": "sw_db8f390515d941f389d542488632394d",
+    "outcome": "merged",
+    "approver": "user",
+    "merged_week": 2,
+    "tests_passed": true
+   }
+  ],
+  "mechanics": {
+   "direct": 2,
+   "capacity_weeks": 1,
+   "not_dispatched": 2
+  },
+  "skipped_routes": [],
+  "pending_at_end": [
+   {
+    "what": "route",
+    "issue": 3,
+    "kind": "incident",
+    "was": "queued"
+   },
+   {
+    "what": "route",
+    "issue": 4,
+    "kind": "incident",
+    "was": "queued"
+   }
+  ],
+  "weeks_done": [
+   {
+    "week": 1,
+    "events": 4,
+    "dispatched": 1,
+    "fixed": [
+     "#1"
+    ],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     2,
+     3,
+     4
+    ],
+    "llm_cost_usd": 0.441575
+   },
+   {
+    "week": 2,
+    "events": 4,
+    "dispatched": 1,
+    "fixed": [
+     "#2"
+    ],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     3,
+     4
+    ],
+    "llm_cost_usd": 1.974585
+   },
+   {
+    "week": 3,
+    "events": 1,
+    "dispatched": 0,
+    "fixed": [],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     3,
+     4
+    ],
+    "llm_cost_usd": 1.977985
+   }
+  ],
+  "quarter_log": {
+   "fixes": [
+    {
+     "issue": 1,
+     "week_fixed": 1,
+     "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/18",
+     "tests_passed": true
+    },
+    {
+     "issue": 2,
+     "week_fixed": 2,
+     "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/19",
+     "tests_passed": true
+    }
+   ],
+   "features": [],
+   "campaigns": [],
+   "price_changes": [],
+   "spend": [],
+   "llm_cost_usd": 1.977985,
+   "decisions": [
+    {
+     "week": 1,
+     "type": "org",
+     "who": "board",
+     "what": "org: direct lines #maintenance ↔ #dev; synaps-dev capacity 1/week, 2/quarter; PR reviewers in #dev: reviewer"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 1,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_31de8e746f014da49c8140e3bf0dfe28"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_9c9b1539913541e987fece0cef27f59c"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 3,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_dbe6622c677b4dccb6f773a63da45695"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 4,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_7fff4522cc8e44d1adf0fb59dea7b8be"
+    },
+    {
+     "week": 1,
+     "type": "loop_guard",
+     "agent": "ops-maint",
+     "msg": "sw_934247102d6c4a0b9d35e37e60c3fe44",
+     "from": "finance",
+     "conv": "sw_c35e11a1380644ddbf23400f6a673c5b",
+     "hops": 3
+    },
+    {
+     "week": 1,
+     "type": "route_direct",
+     "who": "board",
+     "what": "#1 (sev1) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly",
+     "issue": 1,
+     "by": "ops-maint",
+     "path": "direct",
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "route_direct",
+     "who": "board",
+     "what": "#2 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly",
+     "issue": 2,
+     "by": "ops-maint",
+     "path": "direct",
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "route_direct",
+     "who": "board",
+     "what": "#3 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly",
+     "issue": 3,
+     "by": "ops-maint",
+     "path": "direct",
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "route_relay",
+     "who": "board",
+     "what": "#4 (sev3) raised wk1 by ops-maint in #maintenance: not urgent (sev1/sev2 only take the #maintenance ↔ #dev line), so it waits for the board's relay (wk2)",
+     "issue": 4,
+     "by": "ops-maint",
+     "path": "board_relay",
+     "ready_week": 2
+    },
+    {
+     "week": 1,
+     "type": "dispatch",
+     "who": "ops-maint",
+     "what": "#1 (sev1) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk1",
+     "issue": 1,
+     "kind": "incident",
+     "path": "direct",
+     "raised_week": 1,
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "merge",
+     "issue": 1,
+     "kind": "incident",
+     "decision": "approve",
+     "approver": "user",
+     "merged": true,
+     "tests_passed": true,
+     "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/18"
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_cdf81b2f38f24ed19a6ef885cc7d2952"
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_2835df889c9643c6906e856b89e4b6f1"
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_9c616363bbf0452eaa6d08fb3941be11"
+    },
+    {
+     "week": 2,
+     "type": "dispatch",
+     "who": "ops-maint",
+     "what": "#2 (sev2) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk2 (+1 wk waiting for dev capacity, 1/week, 2/quarter)",
+     "issue": 2,
+     "kind": "incident",
+     "path": "direct",
+     "raised_week": 1,
+     "ready_week": 1
+    },
+    {
+     "week": 2,
+     "type": "merge",
+     "issue": 2,
+     "kind": "incident",
+     "decision": "approve",
+     "approver": "user",
+     "merged": true,
+     "tests_passed": true,
+     "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/19"
+    },
+    {
+     "week": 3,
+     "type": "route_not_dispatched",
+     "issue": 3,
+     "kind": "incident",
+     "by": "ops-maint",
+     "why": "the dev queue did not reach it this quarter",
+     "who": "board",
+     "what": "#3 (incident) never reached synaps-dev: raised wk1 by ops-maint, routed direct, then dev capacity (1/week, 2/quarter) ran out"
+    },
+    {
+     "week": 3,
+     "type": "route_not_dispatched",
+     "issue": 4,
+     "kind": "incident",
+     "by": "ops-maint",
+     "why": "the dev queue did not reach it this quarter",
+     "who": "board",
+     "what": "#4 (incident) never reached synaps-dev: raised wk1 by ops-maint, board relay → wk2, then dev capacity (1/week, 2/quarter) ran out"
+    },
+    {
+     "week": 3,
+     "type": "mechanics",
+     "who": "board",
+     "what": "quarter mechanics: items handed to synaps-dev directly: 2; weeks waited for dev capacity: 1; routes never dispatched: 2",
+     "stats": {
+      "relayed": 0,
+      "relay_weeks": 0,
+      "direct": 2,
+      "capacity_weeks": 1,
+      "not_dispatched": 2,
+      "caught": 0,
+      "reopened": 0,
+      "review_rounds": 0,
+      "slipped": 0
+     },
+     "labels": {
+      "relayed": "items relayed by the board",
+      "relay_weeks": "weeks waited for the board's relay",
+      "direct": "items handed to synaps-dev directly",
+      "capacity_weeks": "weeks waited for dev capacity",
+      "not_dispatched": "routes never dispatched",
+      "caught": "regressions caught in review",
+      "reopened": "fixes reopened after a regression",
+      "review_rounds": "extra review rounds",
+      "slipped": "merges slipped a week by review"
+     }
+    },
+    {
+     "week": 3,
+     "type": "market_inputs",
+     "who": "policy",
+     "what": "to the market: 0 campaign(s), $0 spend, mean quality 0.00, 0 citing a shipped feature; approved spend none; 0 item(s) approved, 0 denied by finance/policy; price $29.00; fixes [(1, 1), (2, 2)], features []"
+    }
+   ]
+  },
+  "board_inbox": [
+   {
+    "week": 1,
+    "id": "sw_d1ae97e029d96bd1ad66a3d5dceb8dd0",
+    "room": "board",
+    "thread": "sw_c6129e627aa840cb981cfcfc5dcaa658",
+    "sender": "user",
+    "agent": false,
+    "text": "@board approve"
+   },
+   {
+    "week": 2,
+    "id": "sw_8c874267a3a4aa82ba66dd4f6dfc4cba",
+    "room": "board",
+    "thread": "sw_db8f390515d941f389d542488632394d",
+    "sender": "user",
+    "agent": false,
+    "text": "@board approve"
+   }
+  ],
+  "cost": {
+   "thread": "env2:1",
+   "env": "env2",
+   "generation": 2,
+   "total_usd": 1.977985,
+   "synaps_dev_usd": 1.893485,
+   "reviews_usd": 0.0254,
+   "dept_agents_and_judge_usd": 0.0591,
+   "synaps_dev_sessions": [
+    {
+     "name": "sw-synaps-dev-m13-s1-dev-g2-2592",
+     "cost": 1.8934854,
+     "messages": 166
+    }
+   ]
+  }
+ },
+ "env3:1": {
+  "env": "env3",
+  "generation": 3,
+  "seed": 1,
+  "weeks": 3,
+  "finished": true,
+  "metrics": {
+   "revenue": 27215.05,
+   "costs": 5001.05,
+   "profit": 22214.0,
+   "customers": 1368,
+   "churn_rate": 0.0195,
+   "growth": -0.0886,
+   "open_incident_severity": 3.0,
+   "mean_fix_weeks": 1.5,
+   "llm_cost_usd": 1.0517
+  },
+  "fitness": 15.118000000000002,
+  "setup": {
+   "rooms": {
+    "board": "0aa6a49a-8739-4767-99e9-2ad1024c18fe",
+    "dev": "d98a0caa-4cab-4120-b4b3-11950342c540",
+    "maintenance": "eda02e2d-98a5-45a9-8412-1f341f4f15e2",
+    "growth": "4a20102f-ef75-4f96-a0bd-6fed80a4f2c0",
+    "marketing": "4a81c88c-18a4-4663-acf2-6809b180d696",
+    "finance": "721a1cff-2ae3-4028-a229-74437edf1776"
+   },
+   "channels": {
+    "board": "m13-s1-board-g3",
+    "dev": "m13-s1-dev-g3",
+    "finance": "m13-s1-finance-g3",
+    "growth": "m13-s1-growth-g3",
+    "maintenance": "m13-s1-maintenance-g3",
+    "marketing": "m13-s1-marketing-g3"
+   },
+   "base": "m13-s1-gen-3",
+   "remote": "git@github.com:HaseebKhalid1507/acme-shop.git",
+   "dev_room_name": "m13-s1-dev-g3",
+   "agents": {
+    "board": "m13-s1-board",
+    "ops-maint": "m13-s1-ops-maint",
+    "growth": "m13-s1-growth",
+    "marketing": "m13-s1-marketing",
+    "finance": "m13-s1-finance",
+    "reviewer": "m13-s1-reviewer",
+    "market": "m13-s1-market"
+   },
+   "group": "m13-s1-env3-g3"
+  },
+  "dev_tasks": [
+   {
+    "issue": 1,
+    "kind": "incident",
+    "week": 1,
+    "by": "ops-maint",
+    "status": "proposed",
+    "via": "synaps-dev",
+    "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/20",
+    "summary": "Empty/unknown coupon code now raises ValueError instead of crashing with KeyError",
+    "thread": "sw_34abb545db5949b1a6b847a5f96ec91b",
+    "seconds": 56.8,
+    "path": "direct",
+    "asker": "ops-maint",
+    "review": {
+     "verdict": "PASS",
+     "tests": "34 passed, 13 warnings in 0.03s",
+     "files": [
+      "shop/pricing.py",
+      "tests/test_issue_1.py"
+     ],
+     "concerns": []
+    },
+    "gate_thread": "sw_ec3f40a106324ba585be332da24104ab",
+    "outcome": "merged",
+    "approver": "user",
+    "merged_week": 1,
+    "tests_passed": true
+   },
+   {
+    "issue": 2,
+    "kind": "incident",
+    "week": 2,
+    "by": "ops-maint",
+    "status": "proposed",
+    "via": "synaps-dev",
+    "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/21",
+    "summary": "Tax on discounted orders now applied exactly once — price_after_discount_and_tax no longer bakes in tax",
+    "thread": "sw_1433ac22269f468e8e44375b269a6e8c",
+    "seconds": 253.4,
+    "path": "direct",
+    "asker": "ops-maint",
+    "review": {
+     "verdict": "PASS",
+     "tests": "42 passed, 13 warnings in 0.08s",
+     "files": [
+      "shop/pricing.py",
+      "tests/test_issue_2.py"
+     ],
+     "concerns": []
+    },
+    "gate_thread": "sw_0fcc9e53529948c28b9dc526cf7f4be8",
+    "outcome": "merged",
+    "approver": "user",
+    "merged_week": 2,
+    "tests_passed": true
+   }
+  ],
+  "mechanics": {
+   "direct": 2,
+   "capacity_weeks": 1,
+   "not_dispatched": 2
+  },
+  "skipped_routes": [],
+  "pending_at_end": [
+   {
+    "what": "route",
+    "issue": 3,
+    "kind": "incident",
+    "was": "queued"
+   },
+   {
+    "what": "route",
+    "issue": 4,
+    "kind": "incident",
+    "was": "queued"
+   }
+  ],
+  "weeks_done": [
+   {
+    "week": 1,
+    "events": 4,
+    "dispatched": 1,
+    "fixed": [
+     "#1"
+    ],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     2,
+     3,
+     4
+    ],
+    "llm_cost_usd": 0.30398
+   },
+   {
+    "week": 2,
+    "events": 4,
+    "dispatched": 1,
+    "fixed": [
+     "#2"
+    ],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     3,
+     4
+    ],
+    "llm_cost_usd": 1.048223
+   },
+   {
+    "week": 3,
+    "events": 1,
+    "dispatched": 0,
+    "fixed": [],
+    "shipped": [],
+    "campaigns": 0,
+    "price": 29.0,
+    "queue": [
+     3,
+     4
+    ],
+    "llm_cost_usd": 1.051723
+   }
+  ],
+  "quarter_log": {
+   "fixes": [
+    {
+     "issue": 1,
+     "week_fixed": 1,
+     "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/20",
+     "tests_passed": true
+    },
+    {
+     "issue": 2,
+     "week_fixed": 2,
+     "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/21",
+     "tests_passed": true
+    }
+   ],
+   "features": [],
+   "campaigns": [],
+   "price_changes": [],
+   "spend": [],
+   "llm_cost_usd": 1.051723,
+   "decisions": [
+    {
+     "week": 1,
+     "type": "org",
+     "who": "board",
+     "what": "org: direct lines #maintenance ↔ #dev; synaps-dev capacity 1/week, 2/quarter; PR reviewers in #dev: reviewer"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 1,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_8cf14e32b49744b0813f586bc62f5812"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_e04bb0b2675742f89669d169300e7c6d"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 3,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_87345a1cb90b4ff4a7fe4867d8d3a456"
+    },
+    {
+     "week": 1,
+     "type": "route",
+     "issue": 4,
+     "to": "synaps-dev",
+     "by": "ops-maint",
+     "msg": "sw_b7c72d90cfb741548ef0f8fa52082e13"
+    },
+    {
+     "week": 1,
+     "type": "route_direct",
+     "who": "board",
+     "what": "#1 (sev1) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly",
+     "issue": 1,
+     "by": "ops-maint",
+     "path": "direct",
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "route_direct",
+     "who": "board",
+     "what": "#2 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly",
+     "issue": 2,
+     "by": "ops-maint",
+     "path": "direct",
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "route_direct",
+     "who": "board",
+     "what": "#3 (sev2) raised wk1 by ops-maint in #maintenance: #maintenance ↔ #dev is linked, so ops-maint hands it to synaps-dev directly",
+     "issue": 3,
+     "by": "ops-maint",
+     "path": "direct",
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "route_relay",
+     "who": "board",
+     "what": "#4 (sev3) raised wk1 by ops-maint in #maintenance: not urgent (sev1/sev2 only take the #maintenance ↔ #dev line), so it waits for the board's relay (wk2)",
+     "issue": 4,
+     "by": "ops-maint",
+     "path": "board_relay",
+     "ready_week": 2
+    },
+    {
+     "week": 1,
+     "type": "dispatch",
+     "who": "ops-maint",
+     "what": "#1 (sev1) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk1",
+     "issue": 1,
+     "kind": "incident",
+     "path": "direct",
+     "raised_week": 1,
+     "ready_week": 1
+    },
+    {
+     "week": 1,
+     "type": "merge",
+     "issue": 1,
+     "kind": "incident",
+     "decision": "approve",
+     "approver": "user",
+     "merged": true,
+     "tests_passed": true,
+     "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/20"
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_495d5edad23b4673b0124fea5eabfff1"
+    },
+    {
+     "week": 2,
+     "type": "route",
+     "issue": 2,
+     "to": "synaps-dev",
+     "by": "growth",
+     "msg": "sw_eb544af9b42b4310b2569aa0bdc6c5fd"
+    },
+    {
+     "week": 2,
+     "type": "dispatch",
+     "who": "ops-maint",
+     "what": "#2 (sev2) routed direct by ops-maint (#maintenance ↔ #dev): raised wk1, dispatched wk2 (+1 wk waiting for dev capacity, 1/week, 2/quarter)",
+     "issue": 2,
+     "kind": "incident",
+     "path": "direct",
+     "raised_week": 1,
+     "ready_week": 1
+    },
+    {
+     "week": 2,
+     "type": "merge",
+     "issue": 2,
+     "kind": "incident",
+     "decision": "approve",
+     "approver": "user",
+     "merged": true,
+     "tests_passed": true,
+     "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/21"
+    },
+    {
+     "week": 3,
+     "type": "route_not_dispatched",
+     "issue": 3,
+     "kind": "incident",
+     "by": "ops-maint",
+     "why": "the dev queue did not reach it this quarter",
+     "who": "board",
+     "what": "#3 (incident) never reached synaps-dev: raised wk1 by ops-maint, routed direct, then dev capacity (1/week, 2/quarter) ran out"
+    },
+    {
+     "week": 3,
+     "type": "route_not_dispatched",
+     "issue": 4,
+     "kind": "incident",
+     "by": "ops-maint",
+     "why": "the dev queue did not reach it this quarter",
+     "who": "board",
+     "what": "#4 (incident) never reached synaps-dev: raised wk1 by ops-maint, board relay → wk2, then dev capacity (1/week, 2/quarter) ran out"
+    },
+    {
+     "week": 3,
+     "type": "mechanics",
+     "who": "board",
+     "what": "quarter mechanics: items handed to synaps-dev directly: 2; weeks waited for dev capacity: 1; routes never dispatched: 2",
+     "stats": {
+      "relayed": 0,
+      "relay_weeks": 0,
+      "direct": 2,
+      "capacity_weeks": 1,
+      "not_dispatched": 2,
+      "caught": 0,
+      "reopened": 0,
+      "review_rounds": 0,
+      "slipped": 0
+     },
+     "labels": {
+      "relayed": "items relayed by the board",
+      "relay_weeks": "weeks waited for the board's relay",
+      "direct": "items handed to synaps-dev directly",
+      "capacity_weeks": "weeks waited for dev capacity",
+      "not_dispatched": "routes never dispatched",
+      "caught": "regressions caught in review",
+      "reopened": "fixes reopened after a regression",
+      "review_rounds": "extra review rounds",
+      "slipped": "merges slipped a week by review"
+     }
+    },
+    {
+     "week": 3,
+     "type": "market_inputs",
+     "who": "policy",
+     "what": "to the market: 0 campaign(s), $0 spend, mean quality 0.00, 0 citing a shipped feature; approved spend none; 0 item(s) approved, 0 denied by finance/policy; price $29.00; fixes [(1, 1), (2, 2)], features []"
+    }
+   ]
+  },
+  "board_inbox": [
+   {
+    "week": 1,
+    "id": "sw_8cf14e32b49744b0813f586bc62f5812",
+    "room": "maintenance",
+    "thread": "sw_d82f57514cfa4879a726c178eccd278b",
+    "sender": "ops-maint",
+    "agent": true,
+    "text": "**SEV1 INCIDENT TRIAGE**: Empty coupon crash blocks checkout—customer-facing revenue blocker. Routing to @synaps-dev for immediate fix. Will track resolution and escalate to @board if stuck.\n\n```json\n{\"type\": \"route\", \"issue\": 1, \"to\": \"synaps-dev\"}\n```"
+   },
+   {
+    "week": 1,
+    "id": "sw_11ec5c3cbc1ee38c1f2c07cd012fa5a1",
+    "room": "board",
+    "thread": "sw_ec3f40a106324ba585be332da24104ab",
+    "sender": "user",
+    "agent": false,
+    "text": "@board approve"
+   },
+   {
+    "week": 2,
+    "id": "sw_7622f8dafb14283d698658115fd7eb0c",
+    "room": "board",
+    "thread": "sw_0fcc9e53529948c28b9dc526cf7f4be8",
+    "sender": "user",
+    "agent": false,
+    "text": "@board approve"
+   }
+  ],
+  "cost": {
+   "thread": "env3:1",
+   "env": "env3",
+   "generation": 3,
+   "total_usd": 1.051723,
+   "synaps_dev_usd": 0.980223,
+   "reviews_usd": 0.0228,
+   "dept_agents_and_judge_usd": 0.0487,
+   "synaps_dev_sessions": [
+    {
+     "name": "sw-synaps-dev-m13-s1-dev-g3-327a",
+     "cost": 0.9802229999999997,
+     "messages": 88
+    }
+   ]
+  }
+ }
+}

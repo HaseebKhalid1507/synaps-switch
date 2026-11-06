@@ -1,0 +1,114 @@
+[
+ {
+  "id": "nn3cpeeaj3bu8j6mepkpaq43fw",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793958422306,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "o1m3hzwqttbd5njkt18a748yyo",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793958422327,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "webmsomg4tnmdb9afd91h9n6dr",
+  "root_id": null,
+  "user": "admin",
+  "message": "synaps-dev added to the channel by admin.",
+  "create_at": 1793958422374,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "o4rwh1to1b8z7pka79ko7g8t9h",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793958422387,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "ik368as5p3yu3qjd8yedqwjzch",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-ops-maint added to the channel by admin.",
+  "create_at": 1793958422398,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "grqiyei1djy5djpncw4if64d9o",
+  "root_id": null,
+  "user": "synaps-dev",
+  "message": "Hey there! Tag @synaps-dev if you need me.",
+  "create_at": 1793958422473,
+  "type": null
+ },
+ {
+  "id": "5gtk3mrpb3nsdrnd9ct9nwhc3a",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi there! Just @m13-s1-board me when you're ready.",
+  "create_at": 1793958422515,
+  "type": null
+ },
+ {
+  "id": "6n3hj81jifn7pq41mak6t556gc",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "Hey there! Tag @m13-s1-ops-maint if you need me.",
+  "create_at": 1793958422540,
+  "type": null
+ },
+ {
+  "id": "3rjhgipr9fn63enrq1d71nuwwy",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "@synaps-dev fix acme-shop#1 (base m13-s1-gen-3) (Applying empty coupon code crashes checkout with unhandled exception). Branch off m13-s1-gen-3, push m13-s1-gen-3-fix-1, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793958450237,
+  "type": null
+ },
+ {
+  "id": "7kpwt6oxgfbufbcinht1t1frco",
+  "root_id": "3rjhgipr9fn63enrq1d71nuwwy",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#1.",
+  "create_at": 1793958453354,
+  "type": null
+ },
+ {
+  "id": "7cie3indgbyzmne1pf4eumoo6c",
+  "root_id": "3rjhgipr9fn63enrq1d71nuwwy",
+  "user": "synaps-dev",
+  "message": "Empty coupon code (`\"\"`) caused `apply_coupon` to raise an unguarded `KeyError` from the COUPONS dict, crashing `cart.total()` and locking out the user's session. Added an explicit guard that raises `ValueError(\"Invalid coupon code\")` for blank or unknown codes — callers receive a clean, catchable error instead of a crash. Full suite green (34 passed).\n\n@m13-s1-ops-maint\n\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Empty/unknown coupon code now raises ValueError instead of crashing with KeyError\", \"evidence\": [\"tests/test_issue_1.py fails before the fix (KeyError), passes after\", \"pytest -q: 34 passed\", \"commit 02d3d6d on m13-s1-gen-3-fix-1\"], \"pr\": \"m13-s1-gen-3-fix-1\"}\n```",
+  "create_at": 1793958506983,
+  "type": null
+ },
+ {
+  "id": "st4138tit3gr58p6oyxjphfj6y",
+  "root_id": null,
+  "user": "m13-s1-ops-maint",
+  "message": "@synaps-dev fix acme-shop#2 (base m13-s1-gen-3) (Tax applied twice on orders with discount coupon — customers overcharged). Branch off m13-s1-gen-3, push m13-s1-gen-3-fix-2, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793958561369,
+  "type": null
+ },
+ {
+  "id": "s6pmq4rnupbt7fkpaezyj56wpo",
+  "root_id": "st4138tit3gr58p6oyxjphfj6y",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#2.",
+  "create_at": 1793958563886,
+  "type": null
+ },
+ {
+  "id": "p3nhmo4g9bdw8ka4gp14b4ks5o",
+  "root_id": "st4138tit3gr58p6oyxjphfj6y",
+  "user": "synaps-dev",
+  "message": "`price_after_discount_and_tax()` was calling `apply_tax()` internally, so any checkout or preview flow that also went through `cart.total()` (which applies tax on the post-discount subtotal) would tax the order twice — customers with coupons paid `(subtotal * (1-rate)) * 1.08 * 1.08` instead of the correct `(subtotal * (1-rate)) * 1.08`. Fixed by removing the `apply_tax()` call from `price_after_discount_and_tax`; tax is now applied exactly once in `cart.total()`. Full suite green (42 passed).\n\n@m13-s1-ops-maint\n\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Tax on discounted orders now applied exactly once — price_after_discount_and_tax no longer bakes in tax\", \"evidence\": [\"tests/test_issue_2.py: 3 price_after_discount_and_tax tests fail before fix (returns 108.0/97.2/108.0 instead of 100.0/90.0/100.0), pass after\", \"pytest -q: 42 passed\", \"commit 499e22a on m13-s1-gen-3-fix-2\"], \"pr\": \"m13-s1-gen-3-fix-2\"}\n```",
+  "create_at": 1793958815109,
+  "type": null
+ }
+]

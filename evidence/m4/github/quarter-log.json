@@ -1,0 +1,57 @@
+{
+ "fixes": [
+  {
+   "issue": 3,
+   "week_fixed": 2,
+   "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/9",
+   "tests_passed": true
+  }
+ ],
+ "features": [],
+ "decision": {
+  "issue": 3,
+  "kind": "incident",
+  "pr_url": "https://github.com/HaseebKhalid1507/acme-shop/pull/9",
+  "decision": "approve",
+  "approver": "user",
+  "week": 2,
+  "merged": true,
+  "tests_passed": true,
+  "tests": "32 passed, 13 warnings in 0.07s",
+  "merged_sha": "2fea4ca6e0d4b109591efbb08be37fd0d284c419",
+  "week_fixed": 2
+ },
+ "review": {
+  "verdict": "PASS",
+  "summary": "PR fixes the root cause (missing _release() call on PaymentError in place_order) with a focused, minimal change. New regression test exercises the exact reported scenario and validates both failure and success paths.",
+  "concerns": [],
+  "tests": {
+   "passed": true,
+   "summary": "32 passed, 13 warnings in 0.04s",
+   "sha": "b82cfc77786a03371013a5ef706e5752e7c55d42"
+  },
+  "files": [
+   "shop/checkout.py",
+   "tests/test_issue_3.py"
+  ],
+  "diff_lines": 78,
+  "cost_usd": 0.0114
+ },
+ "result": {
+  "status": "proposed",
+  "summary": "Called self._release() in the except PaymentError handler of place_order() so reserved stock is restored on a declined payment. Added regression tests confirming stock returns to its pre-checkout level after a failed payment.",
+  "evidence": [
+   "All 32 tests pass on m26-gen-1-fix-3, including two new tests in tests/test_issue_3.py: test_stock_restored_after_payment_failure (was failing before fix) and test_stock_decremented_after_successful_order (control)."
+  ],
+  "pr": "https://github.com/HaseebKhalid1507/acme-shop/pull/9",
+  "valid": true,
+  "via": "synaps-dev",
+  "message_id": "mm:kz9exep5k7rmdxemrpghf7zzph",
+  "thread": "sw_a53c77fcca774660bb14679e07c540db",
+  "seconds": null,
+  "status_reported": "done",
+  "branch": "m26-gen-1-fix-3",
+  "reported_pr": "m26-gen-1-fix-3",
+  "pr_opened_by": "company"
+ }
+}

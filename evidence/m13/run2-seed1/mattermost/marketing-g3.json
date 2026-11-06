@@ -1,0 +1,50 @@
+[
+ {
+  "id": "wsdx1gmgp7brtmriuoeocoydxe",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793958422980,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "mg7ifbijffy5ikzj79rku5h6fc",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793958422993,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "tskom8rbxtysf84mmpkx3398ao",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-marketing added to the channel by admin.",
+  "create_at": 1793958423025,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "runnigno9jrxzpyuuhc1mnzn9c",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793958423035,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "4myk3mx5d7gs8y5jck3cbsrpby",
+  "root_id": null,
+  "user": "m13-s1-marketing",
+  "message": "Hey! Ping @m13-s1-marketing and I'll jump in.",
+  "create_at": 1793958423100,
+  "type": null
+ },
+ {
+  "id": "ec8yzq9n3jfpjx6dqsoxhubyre",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi there! Just @m13-s1-board me when you're ready.",
+  "create_at": 1793958423124,
+  "type": null
+ }
+]

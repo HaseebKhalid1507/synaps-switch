@@ -1,0 +1,31 @@
+02:36:56 transport: registered m10-board: agent id 47212f06-8ade-4b04-a232-21dca5aedc3e
+02:36:57 transport: registered m10-ops-maint: agent id e3434b2b-63d5-4e62-ab56-de918d35af9a
+02:36:58 transport: registered m10-growth: agent id f5ed815d-f50f-478a-b6f5-bf9a525138c7
+02:36:58 transport: registered m10-marketing: agent id f23f379a-f319-4381-8176-2ba652ff0cb1
+02:36:59 transport: registered m10-finance: agent id 90c00436-83af-4632-ba97-cad9586b82ad
+02:36:59 transport: registered m10-reviewer: agent id 46aba25c-50aa-461c-a78d-d0bea412fdbf
+02:37:01 transport: registered m10-market: agent id 27e89ed4-e0f0-4302-b640-723f94587a2f
+02:37:04 apply: template: group 'm10-env1-g1', 6 rooms
+02:37:05 apply: applied env1 generation 1: 6 rooms, 5 links, documents ['Handbook', 'Ledger']
+02:37:06 apply: rooms {"board": "e8f7547a-5b64-4821-a1af-68d04435d5b9", "dev": "f51bba9c-38fa-447c-b549-5329e1d27570", "maintenance": "206322da-b6e7-438b-9a53-95c3f9d1660a", "growth": "d56f3a72-cd61-450f-986d-d24911e9b8c2", "marketing": "e10cba0a-db43-403b-864e-9047f89b6dc5", "finance": "b6996849-362a-40fe-867a-52ef5ea4cdd6"}; Mattermost {"board": "m10-board-g1", "dev": "m10-dev-g1", "finance": "m10-finance-g1", "growth": "m10-growth-g1", "maintenance": "m10-maintenance-g1", "marketing": "m10-marketing-g1"}; acme-shop base m10-gen-1 on file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git
+02:37:06 open_quarter: env1 g1 seed 42, 3 weeks, base m10-gen-1
+02:37:06 week 1: market -> #maintenance: @ops-maint 30 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, is
+02:37:06 week 1: market -> #maintenance: @ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2
+02:37:07 week 1: market -> #maintenance: @ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue
+02:37:07 week 1: market -> #maintenance: @ops-maint 90 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results 
+02:37:32 week 1: 4 events; rooms quiet after 25.2s; llm $0.0142; routes 4
+02:37:32 week 1: dispatch acme-shop#1 (incident) on m10-gen-1
+02:39:13 week 1: RESULT acme-shop#1 via synaps-dev after 101.3s: proposed pr=file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=m10-gen-1-fix-1&base=m10-gen-1
+02:39:20 approver (scripted human, user via dev.py mm-post): approve acme-shop#1
+02:39:21 merge decision acme-shop#1: approve by user, merged=True tests_passed=True
+02:39:21 week 2: market -> #growth: @growth Customer demand for 'Feature: free shipping on orders over 0' (issue #5, demand score 0.9) Decide now 
+02:39:21 week 2: market -> #growth: @growth Customer demand for 'Feature: 3-for-2 bundle discount (buy 3, pay for 2)' (issue #6, demand score 0.6)
+02:39:22 week 2: market -> #growth: @growth Customer demand for 'Feature: save cart for later and restore it' (issue #7, demand score 0.6) Decide 
+02:39:22 week 2: market -> #growth: @growth Customer demand for 'Feature: order history endpoint (GET /orders/<session>)' (issue #8, demand score 
+02:40:03 week 2: 4 events; rooms quiet after 41.6s; llm $0.4247; routes 6
+02:40:04 week 2: dispatch acme-shop#2 (incident) on m10-gen-1
+02:55:04 week 2: RESULT acme-shop#2 via devworker after 900.3s: blocked pr=None
+02:55:05 week 3: market -> #finance: @finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unu
+02:55:21 week 3: 1 events; rooms quiet after 16.8s; llm $1.0766; routes 6
+02:55:25 settle: Metrics(revenue=$30,295, costs=$5,001, profit=$25,294, customers=1322, churn=3.2%, growth=-14.3%, open_sev=7.0, mean_fix_wks=1.00, llm=$1.08); fitness 10.1460; not approved at quarter end: 2
+02:55:25 report: Ledger of m10-env1-g1 updated (1 row(s))

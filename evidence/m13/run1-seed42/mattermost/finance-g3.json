@@ -1,0 +1,82 @@
+[
+ {
+  "id": "o4osf4mnafrsikb584z4dhc54w",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956787668,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "sdei9ue6yjgm9nhnbbks5ctdsy",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956787684,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "rmzh99akx3yz5xaorwfutexhna",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-finance added to the channel by admin.",
+  "create_at": 1793956787740,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "35si3gqnoid88ewt6dacipe5nw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956787748,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "q67fa3zxg7rftxq4yz9ur4csze",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956787758,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "i63tqrw4x3rnmb94qcgestdn8e",
+  "root_id": null,
+  "user": "m13-finance",
+  "message": "Hi! Mention @m13-finance to get my attention.",
+  "create_at": 1793956787848,
+  "type": null
+ },
+ {
+  "id": "nwp576x6gjy8iqgjksgqcd69xo",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hello! I'm ready — just tag @m13-board when you need me.",
+  "create_at": 1793956787870,
+  "type": null
+ },
+ {
+  "id": "m3qssuncjt83tbiu6hprwuwqxe",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hi there! Just @m13-market me when you're ready.",
+  "create_at": 1793956787883,
+  "type": null
+ },
+ {
+  "id": "zdoiiis4sbnmtfs1nspqgbatjh",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-finance Quarterly infrastructure invoice: $5,000 due. Fixed costs are booked automatically; flag anything unusual, otherwise no action.",
+  "create_at": 1793957159211,
+  "type": null
+ },
+ {
+  "id": "4ogo464njtgudbnbycyoda9dbh",
+  "root_id": "zdoiiis4sbnmtfs1nspqgbatjh",
+  "user": "m13-finance",
+  "message": "Infrastructure invoice received: $5,000. Amount is at our veto threshold but within normal fixed-cost booking. No anomalies detected. Auto-booked to maintenance budget. Burn tracking: maintenance $5,000 of $4,000 — over by $1,000. Flagging to @m13-board for visibility.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793957161450,
+  "type": null
+ }
+]

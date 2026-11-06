@@ -1,0 +1,183 @@
+{
+ "group": "m4e-env2-g96",
+ "rooms": [
+  {
+   "env_room": "board",
+   "switch_room": "m4e-board-g96",
+   "room_id": "46a335ad-9b2d-4591-b1ae-f6c9b9ee9905",
+   "group": "m4e-env2-g96",
+   "archived": false,
+   "agents": [
+    "m4e-board"
+   ],
+   "users": [
+    "user"
+   ],
+   "links": [],
+   "mattermost": {
+    "channel": "m4e-board-g96",
+    "display_name": "m4e-board-g96",
+    "type": "O",
+    "members": [
+     "admin",
+     "m4e-board",
+     "user"
+    ]
+   }
+  },
+  {
+   "env_room": "dev",
+   "switch_room": "m4e-dev-g96",
+   "room_id": "1a571a9d-2104-48a3-9d38-d2ea6dc13a44",
+   "group": "m4e-env2-g96",
+   "archived": false,
+   "agents": [
+    "m4e-synaps-dev",
+    "m4e-reviewer",
+    "m4e-board"
+   ],
+   "users": [
+    "user"
+   ],
+   "links": [
+    "-> m4e-board-g96 (reports to, member)",
+    "-> m4e-maintenance-g96 (direct line, member)"
+   ],
+   "mattermost": {
+    "channel": "m4e-dev-g96",
+    "display_name": "m4e-dev-g96",
+    "type": "O",
+    "members": [
+     "admin",
+     "m4e-board",
+     "m4e-reviewer",
+     "m4e-synaps-dev",
+     "user"
+    ]
+   }
+  },
+  {
+   "env_room": "finance",
+   "switch_room": "m4e-finance-g96",
+   "room_id": "bf182f0c-7a6a-4f74-9502-1d8283db2e6a",
+   "group": "m4e-env2-g96",
+   "archived": false,
+   "agents": [
+    "m4e-finance",
+    "m4e-board"
+   ],
+   "users": [
+    "user"
+   ],
+   "links": [
+    "-> m4e-board-g96 (reports to, member)"
+   ],
+   "mattermost": {
+    "channel": "m4e-finance-g96",
+    "display_name": "m4e-finance-g96",
+    "type": "O",
+    "members": [
+     "admin",
+     "m4e-board",
+     "m4e-finance",
+     "user"
+    ]
+   }
+  },
+  {
+   "env_room": "growth",
+   "switch_room": "m4e-growth-g96",
+   "room_id": "b06da0c0-8c0e-4c6d-bb98-6807e2473a11",
+   "group": "m4e-env2-g96",
+   "archived": false,
+   "agents": [
+    "m4e-growth",
+    "m4e-board"
+   ],
+   "users": [
+    "user"
+   ],
+   "links": [
+    "-> m4e-board-g96 (reports to, member)"
+   ],
+   "mattermost": {
+    "channel": "m4e-growth-g96",
+    "display_name": "m4e-growth-g96",
+    "type": "O",
+    "members": [
+     "admin",
+     "m4e-board",
+     "m4e-growth",
+     "user"
+    ]
+   }
+  },
+  {
+   "env_room": "maintenance",
+   "switch_room": "m4e-maintenance-g96",
+   "room_id": "93450a2f-163d-4a0c-8c31-adeb1211cd80",
+   "group": "m4e-env2-g96",
+   "archived": false,
+   "agents": [
+    "m4e-ops-maint",
+    "m4e-board"
+   ],
+   "users": [
+    "user"
+   ],
+   "links": [
+    "-> m4e-board-g96 (reports to, member)",
+    "-> m4e-dev-g96 (direct line, member)"
+   ],
+   "mattermost": {
+    "channel": "m4e-maintenance-g96",
+    "display_name": "m4e-maintenance-g96",
+    "type": "O",
+    "members": [
+     "admin",
+     "m4e-board",
+     "m4e-ops-maint",
+     "user"
+    ]
+   }
+  },
+  {
+   "env_room": "marketing",
+   "switch_room": "m4e-marketing-g96",
+   "room_id": "73710876-507a-49cb-bb41-59f7b0f249d6",
+   "group": "m4e-env2-g96",
+   "archived": false,
+   "agents": [
+    "m4e-marketing",
+    "m4e-board"
+   ],
+   "users": [
+    "user"
+   ],
+   "links": [
+    "-> m4e-board-g96 (reports to, member)"
+   ],
+   "mattermost": {
+    "channel": "m4e-marketing-g96",
+    "display_name": "m4e-marketing-g96",
+    "type": "O",
+    "members": [
+     "admin",
+     "m4e-board",
+     "m4e-marketing",
+     "user"
+    ]
+   }
+  }
+ ],
+ "documents": [
+  {
+   "name": "Handbook",
+   "id": "a5ed8fbf-0405-42fe-9b3b-91b8d66e3d42"
+  },
+  {
+   "name": "Ledger",
+   "id": "05c9002f-3504-4f89-93f4-4a1145e271e6"
+  }
+ ]
+}

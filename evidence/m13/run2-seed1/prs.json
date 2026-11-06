@@ -1,0 +1,122 @@
+[
+ {
+  "author": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "baseRefName": "m13-s1-gen-3",
+  "createdAt": "2026-11-06T09:53:37Z",
+  "headRefName": "m13-s1-gen-3-fix-2",
+  "headRefOid": "499e22aca22cd3577b9fcad25ade92bf66e61266",
+  "mergeCommit": {
+   "oid": "aa01da290010eb1996cfaace0bde45c09ef86945"
+  },
+  "mergedAt": "2026-11-06T09:53:52Z",
+  "number": 21,
+  "state": "MERGED",
+  "title": "Fix #2: Tax applied twice on orders with discount coupon \u2014 customers overcharged",
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/21"
+ },
+ {
+  "author": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "baseRefName": "m13-s1-gen-3",
+  "createdAt": "2026-11-06T09:48:28Z",
+  "headRefName": "m13-s1-gen-3-fix-1",
+  "headRefOid": "02d3d6d19efc78eef346410ea0968332e2c123d7",
+  "mergeCommit": {
+   "oid": "739f3d2de949518b30d0ee34c70c262a6cbe6c6d"
+  },
+  "mergedAt": "2026-11-06T09:48:38Z",
+  "number": 20,
+  "state": "MERGED",
+  "title": "Fix #1: Applying empty coupon code crashes checkout with unhandled exception",
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/20"
+ },
+ {
+  "author": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "baseRefName": "m13-s1-gen-2",
+  "createdAt": "2026-11-06T09:45:51Z",
+  "headRefName": "m13-s1-gen-2-fix-2",
+  "headRefOid": "8d47124ea2ce7d93b5c1f6f345edda6f80547d9d",
+  "mergeCommit": {
+   "oid": "6cb5cd4f38a54733d63c6baa54d72b45a876d3a3"
+  },
+  "mergedAt": "2026-11-06T09:46:01Z",
+  "number": 19,
+  "state": "MERGED",
+  "title": "Fix #2: Tax applied twice on orders with discount coupon \u2014 customers overcharged",
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/19"
+ },
+ {
+  "author": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "baseRefName": "m13-s1-gen-2",
+  "createdAt": "2026-11-06T09:38:42Z",
+  "headRefName": "m13-s1-gen-2-fix-1",
+  "headRefOid": "8b22532012cb38b874cad47a2d1ae00ca4808a31",
+  "mergeCommit": {
+   "oid": "c54abd539ec779c7c630e08a5ceb748e3b492487"
+  },
+  "mergedAt": "2026-11-06T09:38:56Z",
+  "number": 18,
+  "state": "MERGED",
+  "title": "Fix #1: Applying empty coupon code crashes checkout with unhandled exception",
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/18"
+ },
+ {
+  "author": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "baseRefName": "m13-s1-gen-1",
+  "createdAt": "2026-11-06T09:35:25Z",
+  "headRefName": "m13-s1-gen-1-fix-2",
+  "headRefOid": "936e7f527eaae8a9b101389f410905c0c1bfba80",
+  "mergeCommit": {
+   "oid": "d1af2c34b2ce84a36981e4ff115fb743977d51f6"
+  },
+  "mergedAt": "2026-11-06T09:35:39Z",
+  "number": 17,
+  "state": "MERGED",
+  "title": "Fix #2: Tax applied twice on orders with discount coupon \u2014 customers overcharged",
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/17"
+ },
+ {
+  "author": {
+   "id": "MDQ6VXNlcjU3MDQ1Mjk0",
+   "is_bot": false,
+   "login": "HaseebKhalid1507",
+   "name": "Haseeb Khalid"
+  },
+  "baseRefName": "m13-s1-gen-1",
+  "createdAt": "2026-11-06T09:31:31Z",
+  "headRefName": "m13-s1-gen-1-fix-1",
+  "headRefOid": "296f08358776fe6e65444047edb342655ea34225",
+  "mergeCommit": {
+   "oid": "604808450f6fb1087c6c3f0d4b6a5f71b3fd21e4"
+  },
+  "mergedAt": "2026-11-06T09:31:46Z",
+  "number": 16,
+  "state": "MERGED",
+  "title": "Fix #1: Applying empty coupon code crashes checkout with unhandled exception",
+  "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/16"
+ }
+]

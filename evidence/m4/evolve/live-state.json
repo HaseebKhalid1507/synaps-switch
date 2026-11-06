@@ -1,0 +1,28 @@
+{
+ "room_id": "439b26cd-99dc-4a99-900a-97add43b2244",
+ "channel": "m4v-board",
+ "members": [
+  "admin",
+  "m4v-board",
+  "m4v-peer",
+  "user"
+ ],
+ "t0_ms": 1793950181967,
+ "gate_thread": "sw_eb7141ab1e8444fc893e8cf0f9e55746",
+ "gate_payload": {
+  "gen": 1,
+  "parent": "env1",
+  "candidate": "env2",
+  "change": "link #maintenance \u2194 #dev"
+ },
+ "phase1_llm_usd": 0.0102,
+ "mm_gate_root": "qxdkfgf56igetpf7j1de8efbha",
+ "mm_gate_posts": 1,
+ "mm_human_post": "7qs7j3pztfbfix78bzgmprerua",
+ "phase2_llm_usd": 0.0,
+ "result": {
+  "best": "env2",
+  "best_fitness": 15.6799,
+  "stop_reason": "1 generations done"
+ }
+}

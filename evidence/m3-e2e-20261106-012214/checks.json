@@ -1,0 +1,62 @@
+[
+ {
+  "check": "1 reply to the mention, threaded under it",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "check": "1 room session created",
+  "ok": true,
+  "detail": "20261106-062220-1b00"
+ },
+ {
+  "check": "1 room session is live and pinned in the private daemon",
+  "ok": true,
+  "detail": "20261106-062220-1b00  Live  idle 3s  pinned  clients=0  active=-  model=claude-sonnet-4-6  cwd=~/.synaps-switch-dev/synaps-switch/rooms/synaps-e2e-01"
+ },
+ {
+  "check": "2 reply threaded under the second message",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "check": "2 remembers the first message",
+  "ok": true,
+  "detail": "tangerine"
+ },
+ {
+  "check": "2 same session",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "check": "3 message sent while down is answered after restart",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "check": "3 remembers across the restart",
+  "ok": true,
+  "detail": "tangerine"
+ },
+ {
+  "check": "3 same session after restart",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "check": "3 cursor resumed forward",
+  "ok": true,
+  "detail": "4294967305 -> 4294967306"
+ },
+ {
+  "check": "no duplicate replies (exactly one per message)",
+  "ok": true,
+  "detail": "{\"5u5z8wxmjfde7grpw5zs3ws4to\": 1, \"1bmzgq65kidxmgd9xat4ix8x4r\": 1, \"fpsrqa95nbnu7mz9tj7ozqddmr\": 1}"
+ },
+ {
+  "check": "each message delivered to the session once",
+  "ok": true,
+  "detail": "3 deliveries"
+ }
+]

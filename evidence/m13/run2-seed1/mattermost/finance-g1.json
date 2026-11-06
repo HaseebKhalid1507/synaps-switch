@@ -1,0 +1,58 @@
+[
+ {
+  "id": "ykm6uuc7gtf9ffwgyxpoxmarye",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793957324644,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "pi1y6oqc6j8w8xje3r7hjzbdgw",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793957324669,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "3zw7drjuztdf5e5c7wd71cp9jo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-finance added to the channel by admin.",
+  "create_at": 1793957324718,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "5k9bbor1rbruzdg36cpenis6uw",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-s1-board added to the channel by admin.",
+  "create_at": 1793957324741,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "9x3tdygo878wbdspdwtbk5agwe",
+  "root_id": null,
+  "user": "m13-s1-finance",
+  "message": "Hey! Ping @m13-s1-finance and I'll jump in.",
+  "create_at": 1793957324849,
+  "type": null
+ },
+ {
+  "id": "ayyftcw66fg3ddkx8hypsrrnoh",
+  "root_id": null,
+  "user": "m13-s1-board",
+  "message": "Hi! Mention @m13-s1-board to get my attention.",
+  "create_at": 1793957324874,
+  "type": null
+ },
+ {
+  "id": "qe7ydkeowpd48e34rnr375t9fw",
+  "root_id": null,
+  "user": "m13-s1-finance",
+  "message": "Infrastructure invoice $5,000 received and logged. Amount is at our veto threshold but qualifies as fixed cost—booking automatically. No unusual flags.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793957516065,
+  "type": null
+ }
+]

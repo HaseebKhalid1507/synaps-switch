@@ -1,0 +1,28 @@
+01:54:55 market: 4 incidents + 4 features from adityapat958/acme-shop; week 1: [('incident', 1), ('incident', 2), ('incident', 3), ('incident', 4)]
+01:54:56 local origin file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git: gen-1 at 05e9e6bd2e (= baseline)
+01:54:57 dispatch: '@synaps-dev fix acme-shop#1 (base gen-1) (Applying empty coupon code crashes checkout with unhandled exception). Branch off gen-1, push your branch, open the PR into gen-1, and reply here with the RESULT block.'
+01:55:51 m12-board <- synaps-dev (agent=True) in m12-dev thread=sw_bf293a3a37734f1b89917ef43dd682f1: 'The `apply_coupon` function did a bare dict lookup (`COUPONS[code]`) with no guard, so an empty or u'
+01:55:51 RESULT via synaps-dev after 53.8s: {"status": "proposed", "summary": "Empty/unknown coupon code now raises ValueError instead of crashing with KeyError", "evidence": ["tests/test_issue_1.py: 5 tests fail before fix, all 6 pass after", "pytest -q: 36 passed", "commit 5c60a27 on gen-1-fix-1"], "pr": "file://~/.synaps-switch-dev/m12/remote/acme-shop-origin.git?head=gen-1-fix-1&base=gen-1"}
+01:55:52 harness pytest on gen-1-fix-1 (5c60a2746e): green: 36 passed, 13 warnings in 0.04s
+01:55:54 review: PASS (PR fixes the root cause (missing input validation in apply_coupon) by raising ValueError for empty/unknown codes instead of allowing KeyError propagation. Comprehensive regression tests added covering the reported scenario and related edge cases; full pytest suite passes.) concerns=[] $0.0120
+01:55:54 m12-board asked #m12-board (thread sw_06ce220709984ecfab3b24b6f96b5164)
+Traceback (most recent call last):
+  File "~/Projects/.worktrees/ss-m4-12/evidence/m4/real-work/live_real_work.py", line 229, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "~/Projects/.worktrees/ss-m4-12/evidence/m4/real-work/live_real_work.py", line 172, in main
+    t.post(REVIEWER, BOARD_ROOM, f"@{BOARD} approve", thread=tid)                       # an agent: ignored
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "~/Projects/.worktrees/ss-m4-12/company/transport.py", line 448, in post
+    mid = link.post(rid, text, thread)
+  File "~/Projects/.worktrees/ss-m4-12/company/transport.py", line 391, in post
+    out = self.op("post_message", {"body": body, "thread_id": thread_id}, room_id)
+  File "~/Projects/.worktrees/ss-m4-12/company/transport.py", line 369, in op
+    self.connect(room_id)
+    ~~~~~~~~~~~~^^^^^^^^^
+  File "~/Projects/.worktrees/ss-m4-12/company/transport.py", line 380, in connect
+    ctx = self.bridge.op("connect_to_room", {"room_id": room_id, "include_general_instructions": False},
+                         self.conn.connection_id)
+  File "~/Projects/.worktrees/ss-m4-12/switch_client.py", line 194, in op
+    raise SwitchError(status, out, f"op {name}")
+switch_client.SwitchError: op connect_to_room -> HTTP 400: {"detail": "Agent is not a member of this room"}

@@ -1,0 +1,44 @@
+01:58:10 switch ops: all 22 ops apply/teardown use are present (53 in the registry)
+01:58:10 $ python -m company.switch_env apply company/envs/env1.yaml --gen 95 --stand-in-synaps --agent-prefix m4e- --room-prefix m4e-
+01:58:15   -> 15 Switch calls: create_room_from_yaml x1, get_room_detail x6, list_linked_rooms x5, connect_to_room x1, create_room_document x2
+01:58:15   rooms: {"board": "db64d6d2-a03f-4610-a17b-e4982175938b", "dev": "a1c19a49-3bf1-44da-9dde-eef7d5111862", "maintenance": "719e20f8-0e71-4f9a-9193-5b0a4a0e80bb", "growth": "7b4c2b0b-4e83-40c9-98c6-c31c321081c7", "marketing": "ea3e0c13-d41f-4ca1-a4c5-3f9b18b9fd48", "finance": "4407fb84-ace9-42bf-956b-a413c1ee8dfd"}
+01:58:15 $ python -m company.switch_env apply company/envs/env1.yaml --gen 95 --stand-in-synaps --agent-prefix m4e- --room-prefix m4e-
+01:58:16   -> 13 Switch calls: get_room_detail x6, list_linked_rooms x5, connect_to_room x1, update_room_document x1
+01:58:16 connect_to_room db64d6d2-a03f-4610-a17b-e4982175938b: You evicted another session of this agent from room db64d6d2-a03f-4610-a17b-e4982175938b (connection a522d356-462a-4be7-aed3-a2e146627d63). Only one session of an agent may act in a room, so that session has been disconnected from it and will stop receiving its events. If that session was doing work here, it no longer is.
+01:58:18 
+| env room | Switch room | agents | users | links | Mattermost channel members |
+|---|---|---|---|---|---|
+| board | m4e-board-g95 | m4e-board | user | - | admin, m4e-board, user |
+| dev | m4e-dev-g95 | m4e-synaps-dev, m4e-reviewer, m4e-board | user | -> m4e-board-g95 (reports to, member) | admin, m4e-board, m4e-reviewer, m4e-synaps-dev, user |
+| finance | m4e-finance-g95 | m4e-finance, m4e-board | user | -> m4e-board-g95 (reports to, member) | admin, m4e-board, m4e-finance, user |
+| growth | m4e-growth-g95 | m4e-growth, m4e-board | user | -> m4e-board-g95 (reports to, member) | admin, m4e-board, m4e-growth, user |
+| maintenance | m4e-maintenance-g95 | m4e-ops-maint, m4e-board | user | -> m4e-board-g95 (reports to, member) | admin, m4e-board, m4e-ops-maint, user |
+| marketing | m4e-marketing-g95 | m4e-marketing, m4e-board | user | -> m4e-board-g95 (reports to, member) | admin, m4e-board, m4e-marketing, user |
+01:58:19 ledger after update_ledger:
+# Ledger: env1, generation 95
+
+Budgets: marketing $10,000, maintenance $4,000, growth $3,000.
+Policies: finance_veto_usd=5000, sev1_fix_weeks=2.
+
+| quarter | seed | revenue | costs | profit | customers | churn_rate | growth | open_incident_severity | mean_fix_weeks | llm_cost_usd | fitness |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| smoke (no actions) | 7 | 30,412.28 | 5,000.00 | 25,412.28 | 1202 | 0.035 | -0.2024 | 8.00 | 4.00 | 0 | 9.31 |
+
+01:58:19 $ python -m company.switch_env teardown company/envs/env1.yaml --gen 95 --agent-prefix m4e- --room-prefix m4e-
+01:58:19   -> 6 Switch calls: archive_room x6
+01:58:19 archived: {"m4e-board-g95": true, "m4e-maintenance-g95": true, "m4e-dev-g95": true, "m4e-growth-g95": true, "m4e-finance-g95": true, "m4e-marketing-g95": true}
+01:58:19 $ python -m company.switch_env apply evidence/m4/apply-env/env2-link.yaml --gen 96 --mode rooms --stand-in-synaps --agent-prefix m4e- --room-prefix m4e-
+01:58:23   -> 30 Switch calls: list_room_groups x1, create_room_group x1, list_bridges x1, create_room x6, get_room_detail x6, list_linked_rooms x5, link_rooms x7, connect_to_room x1, create_room_document x2
+01:58:23   rooms: {"board": "46a335ad-9b2d-4591-b1ae-f6c9b9ee9905", "dev": "1a571a9d-2104-48a3-9d38-d2ea6dc13a44", "maintenance": "93450a2f-163d-4a0c-8c31-adeb1211cd80", "growth": "b06da0c0-8c0e-4c6d-bb98-6807e2473a11", "marketing": "73710876-507a-49cb-bb41-59f7b0f249d6", "finance": "bf182f0c-7a6a-4f74-9502-1d8283db2e6a"}
+01:58:23 connect_to_room 46a335ad-9b2d-4591-b1ae-f6c9b9ee9905: You evicted another session of this agent from room 46a335ad-9b2d-4591-b1ae-f6c9b9ee9905 (connection 06001039-be13-4b7b-8790-5142557c46c8). Only one session of an agent may act in a room, so that session has been disconnected from it and will stop receiving its events. If that session was doing work here, it no longer is.
+01:58:24 
+| env room | Switch room | agents | users | links | Mattermost channel members |
+|---|---|---|---|---|---|
+| board | m4e-board-g96 | m4e-board | user | - | admin, m4e-board, user |
+| dev | m4e-dev-g96 | m4e-synaps-dev, m4e-reviewer, m4e-board | user | -> m4e-board-g96 (reports to, member)<br>-> m4e-maintenance-g96 (direct line, member) | admin, m4e-board, m4e-reviewer, m4e-synaps-dev, user |
+| finance | m4e-finance-g96 | m4e-finance, m4e-board | user | -> m4e-board-g96 (reports to, member) | admin, m4e-board, m4e-finance, user |
+| growth | m4e-growth-g96 | m4e-growth, m4e-board | user | -> m4e-board-g96 (reports to, member) | admin, m4e-board, m4e-growth, user |
+| maintenance | m4e-maintenance-g96 | m4e-ops-maint, m4e-board | user | -> m4e-board-g96 (reports to, member)<br>-> m4e-dev-g96 (direct line, member) | admin, m4e-board, m4e-ops-maint, user |
+| marketing | m4e-marketing-g96 | m4e-marketing, m4e-board | user | -> m4e-board-g96 (reports to, member) | admin, m4e-board, m4e-marketing, user |
+01:58:24 $ python -m company.switch_env teardown evidence/m4/apply-env/env2-link.yaml --gen 96 --agent-prefix m4e- --room-prefix m4e-
+01:58:24   -> 6 Switch calls: archive_room x6

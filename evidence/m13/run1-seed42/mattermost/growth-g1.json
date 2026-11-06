@@ -1,0 +1,106 @@
+[
+ {
+  "id": "773w1eobw3yp8r944xi19s5uac",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793955916668,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "zi6iffrbxbgcfboipoxixcwtoy",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793955916683,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "qhsmfr9azpfpz85miqi7qd9ajr",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-growth added to the channel by admin.",
+  "create_at": 1793955916750,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "is86np46cjgubgztzeje5jbrbo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793955916758,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "zubckmr18pndf8wqg59u5fmy5h",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793955916766,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "unwefr6z3pg57njrebsrz7x1sc",
+  "root_id": null,
+  "user": "m13-growth",
+  "message": "Hey there! Tag @m13-growth if you need me.",
+  "create_at": 1793955916863,
+  "type": null
+ },
+ {
+  "id": "1hfy5wkzrtfs8ki56sz1wjeouc",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hello! Tag @m13-board to loop me in.",
+  "create_at": 1793955916883,
+  "type": null
+ },
+ {
+  "id": "qe1toof1ffrt3ykeq6qup3xfph",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hey there! Tag @m13-market if you need me.",
+  "create_at": 1793955916899,
+  "type": null
+ },
+ {
+  "id": "b1kynokbmtgsfnb1d9pfq1sjne",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: free shipping on orders over 0' (issue #5, demand score 0.9) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793955944273,
+  "type": null
+ },
+ {
+  "id": "fjurjnpbmig18gk6pjnsitxhha",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: 3-for-2 bundle discount (buy 3, pay for 2)' (issue #6, demand score 0.6) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793955944357,
+  "type": null
+ },
+ {
+  "id": "jxtetpi8r3goijjdgowawrpksa",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: save cart for later and restore it' (issue #7, demand score 0.6) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793955944405,
+  "type": null
+ },
+ {
+  "id": "eiywkt55mfbbunm7bhchczgp8o",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "@m13-growth Customer demand for 'Feature: order history endpoint (GET /orders/<session>)' (issue #8, demand score 0.6) Decide now whether we build it this quarter; if so, route it to whoever builds it.",
+  "create_at": 1793955944459,
+  "type": null
+ },
+ {
+  "id": "iyfatdsux38pmdr31e3munx7he",
+  "root_id": "jxtetpi8r3goijjdgowawrpksa",
+  "user": "m13-growth",
+  "message": "Not this quarter—sev1 checkout crash and sev2 double-tax overcharge are blocking revenue. Feature #7 (demand 0.6) ranks below incident fixes and #5 free shipping (demand 0.9). Route to Q2.\n\n```json\n{\"type\": \"none\"}\n```",
+  "create_at": 1793955966379,
+  "type": null
+ }
+]

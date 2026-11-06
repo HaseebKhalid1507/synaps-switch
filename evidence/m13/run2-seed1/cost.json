@@ -1,0 +1,128 @@
+{
+ "wall_seconds": 1547,
+ "start": "2026-11-06 04:28:34 EST",
+ "end": "2026-11-06 04:54:21 EST",
+ "quarters": [
+  {
+   "thread": "env1:1",
+   "env": "env1",
+   "generation": 1,
+   "total_usd": 1.178512,
+   "synaps_dev_usd": 1.098412,
+   "reviews_usd": 0.0257,
+   "dept_agents_and_judge_usd": 0.0544,
+   "synaps_dev_sessions": [
+    {
+     "name": "sw-synaps-dev-m13-s1-dev-g1-fdcb",
+     "cost": 1.0984116000000004,
+     "messages": 116
+    }
+   ]
+  },
+  {
+   "thread": "env2:1",
+   "env": "env2",
+   "generation": 2,
+   "total_usd": 1.977985,
+   "synaps_dev_usd": 1.893485,
+   "reviews_usd": 0.0254,
+   "dept_agents_and_judge_usd": 0.0591,
+   "synaps_dev_sessions": [
+    {
+     "name": "sw-synaps-dev-m13-s1-dev-g2-2592",
+     "cost": 1.8934854,
+     "messages": 166
+    }
+   ]
+  },
+  {
+   "thread": "env3:1",
+   "env": "env3",
+   "generation": 3,
+   "total_usd": 1.051723,
+   "synaps_dev_usd": 0.980223,
+   "reviews_usd": 0.0228,
+   "dept_agents_and_judge_usd": 0.0487,
+   "synaps_dev_sessions": [
+    {
+     "name": "sw-synaps-dev-m13-s1-dev-g3-327a",
+     "cost": 0.9802229999999997,
+     "messages": 88
+    }
+   ]
+  }
+ ],
+ "proposals_usd": 0.0243,
+ "quarters_usd": 4.20822,
+ "total_usd": 4.23252,
+ "mattermost_posts": {
+  "board-g1": 53,
+  "dev-g1": 12,
+  "finance-g1": 7,
+  "growth-g1": 6,
+  "maintenance-g1": 6,
+  "marketing-g1": 6,
+  "board-g2": 40,
+  "dev-g2": 14,
+  "finance-g2": 7,
+  "growth-g2": 7,
+  "maintenance-g2": 13,
+  "marketing-g2": 6,
+  "board-g3": 35,
+  "dev-g3": 14,
+  "finance-g3": 7,
+  "growth-g3": 6,
+  "maintenance-g3": 15,
+  "marketing-g3": 6
+ },
+ "prs": [
+  {
+   "number": 21,
+   "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/21",
+   "state": "MERGED",
+   "headRefName": "m13-s1-gen-3-fix-2",
+   "baseRefName": "m13-s1-gen-3",
+   "mergedAt": "2026-11-06T09:53:52Z"
+  },
+  {
+   "number": 20,
+   "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/20",
+   "state": "MERGED",
+   "headRefName": "m13-s1-gen-3-fix-1",
+   "baseRefName": "m13-s1-gen-3",
+   "mergedAt": "2026-11-06T09:48:38Z"
+  },
+  {
+   "number": 19,
+   "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/19",
+   "state": "MERGED",
+   "headRefName": "m13-s1-gen-2-fix-2",
+   "baseRefName": "m13-s1-gen-2",
+   "mergedAt": "2026-11-06T09:46:01Z"
+  },
+  {
+   "number": 18,
+   "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/18",
+   "state": "MERGED",
+   "headRefName": "m13-s1-gen-2-fix-1",
+   "baseRefName": "m13-s1-gen-2",
+   "mergedAt": "2026-11-06T09:38:56Z"
+  },
+  {
+   "number": 17,
+   "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/17",
+   "state": "MERGED",
+   "headRefName": "m13-s1-gen-1-fix-2",
+   "baseRefName": "m13-s1-gen-1",
+   "mergedAt": "2026-11-06T09:35:39Z"
+  },
+  {
+   "number": 16,
+   "url": "https://github.com/HaseebKhalid1507/acme-shop/pull/16",
+   "state": "MERGED",
+   "headRefName": "m13-s1-gen-1-fix-1",
+   "baseRefName": "m13-s1-gen-1",
+   "mergedAt": "2026-11-06T09:31:46Z"
+  }
+ ]
+}

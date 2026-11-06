@@ -1,0 +1,98 @@
+[
+ {
+  "id": "4ai3dm514jdd3mfc5866gyjqne",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793950622758,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "1k9iia3173rqzdbjez11wquyze",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793950622780,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "qpztun7kk7ygxnbdswbkh7zw4c",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-ops-maint added to the channel by admin.",
+  "create_at": 1793950622814,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "7hkkf6yps3dwxdffs5a8qih98a",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-board added to the channel by admin.",
+  "create_at": 1793950622826,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "c9qi3bxy3jbytb7dfdszbzfumc",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-market added to the channel by admin.",
+  "create_at": 1793950622841,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "rimwj5sn1frtzrz518r3ep9mya",
+  "root_id": null,
+  "user": "m10-ops-maint",
+  "message": "Hello! I'm ready — just tag @m10-ops-maint when you need me.",
+  "create_at": 1793950622939,
+  "type": null
+ },
+ {
+  "id": "w1c5e3szx3b6uek9nbkppts45r",
+  "root_id": null,
+  "user": "m10-board",
+  "message": "Hey! I'm on standby — @m10-board to get started.",
+  "create_at": 1793950622979,
+  "type": null
+ },
+ {
+  "id": "rebgm9dk3tbw9gha7gj7szpsgr",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "Hi! I'm here to help — mention @m10-market anytime.",
+  "create_at": 1793950622998,
+  "type": null
+ },
+ {
+  "id": "8aegsfjw4i8dzjac43kendkgoy",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "@m10-ops-maint 30 customers report: Applying empty coupon code crashes checkout with unhandled exception (sev1, issue #1) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793950626672,
+  "type": null
+ },
+ {
+  "id": "h4izhr1stiy8xxaup9896zw6fr",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "@m10-ops-maint 60 customers report: Tax applied twice on orders with discount coupon — customers overcharged (sev2, issue #2) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793950626855,
+  "type": null
+ },
+ {
+  "id": "8488h1aqgidf8b5xzsbza1tb9o",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "@m10-ops-maint 60 customers report: Inventory not released when payment fails — stock drifts negative (sev2, issue #3) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793950627036,
+  "type": null
+ },
+ {
+  "id": "tskyqtw6wby69gx3upqwx1kjde",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "@m10-ops-maint 90 customers report: Product sort-by-price uses string ordering instead of numeric — wrong results (sev3, issue #4) Triage it now and route it to whoever fixes it.",
+  "create_at": 1793950627109,
+  "type": null
+ }
+]

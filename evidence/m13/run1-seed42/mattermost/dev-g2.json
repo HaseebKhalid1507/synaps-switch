@@ -1,0 +1,162 @@
+[
+ {
+  "id": "g8agz4ii8jdh3pdtdnyemhk5oy",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793956378939,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "7bprwcmw4fbpfn1xgfhx31f5cc",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793956378963,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "sjr1e7rup7r98fzd6pfyteibta",
+  "root_id": null,
+  "user": "admin",
+  "message": "synaps-dev added to the channel by admin.",
+  "create_at": 1793956379003,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "q5jfkt977j8gbgqhkkarcgcxzc",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-reviewer added to the channel by admin.",
+  "create_at": 1793956379017,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "t5y4igj87ir6xy3joix4rg8qqe",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-board added to the channel by admin.",
+  "create_at": 1793956379028,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "kgm1j7mzc3g9xnchpydy88s63c",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-ops-maint added to the channel by admin.",
+  "create_at": 1793956379041,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "m8kwusmbx38zjgwgrkofidsduc",
+  "root_id": null,
+  "user": "admin",
+  "message": "m13-market added to the channel by admin.",
+  "create_at": 1793956379050,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "hnqb58drxigstb6i3gkmmwmjpr",
+  "root_id": null,
+  "user": "synaps-dev",
+  "message": "Hello! I'm ready — just tag @synaps-dev when you need me.",
+  "create_at": 1793956379205,
+  "type": null
+ },
+ {
+  "id": "69a8p7d39prpppr9hn3f77s37o",
+  "root_id": null,
+  "user": "m13-reviewer",
+  "message": "Hi! I'm here to help — mention @m13-reviewer anytime.",
+  "create_at": 1793956379248,
+  "type": null
+ },
+ {
+  "id": "twau36y74fg4p8kr9jtb5ciz5a",
+  "root_id": null,
+  "user": "m13-board",
+  "message": "Hi! I'm here to help — mention @m13-board anytime.",
+  "create_at": 1793956379267,
+  "type": null
+ },
+ {
+  "id": "x5ewjr5k5byd3quarin9qr16wr",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "Hello! I'm ready — just tag @m13-ops-maint when you need me.",
+  "create_at": 1793956379291,
+  "type": null
+ },
+ {
+  "id": "7pqk3nuuoiysbj14jgjpn4ztua",
+  "root_id": null,
+  "user": "m13-market",
+  "message": "Hey there! Tag @m13-market if you need me.",
+  "create_at": 1793956379337,
+  "type": null
+ },
+ {
+  "id": "u3rs8femt38wirc3g3g6ikfxpe",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "@synaps-dev fix acme-shop#1 (base m13-gen-2) (Applying empty coupon code crashes checkout with unhandled exception). Branch off m13-gen-2, push m13-gen-2-fix-1, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793956406833,
+  "type": null
+ },
+ {
+  "id": "ifrxuhmyjpbgfrcs8dqxmq58to",
+  "root_id": "u3rs8femt38wirc3g3g6ikfxpe",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#1.",
+  "create_at": 1793956410776,
+  "type": null
+ },
+ {
+  "id": "4ihtcmfaatbajf6j1shaj6x33e",
+  "root_id": "u3rs8femt38wirc3g3g6ikfxpe",
+  "user": "synaps-dev",
+  "message": "Empty and unknown coupon codes crashed `apply_coupon` with an unhandled `KeyError`; added an explicit guard that raises `ValueError` for blank or unrecognised codes before the dict lookup. Added `tests/test_issue_1.py` covering both `pricing.apply_coupon` and `cart.total()` paths; full suite green (37 passed).\n@m13-ops-maint\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Empty coupon code no longer crashes checkout\", \"evidence\": [\"tests/test_issue_1.py fails before the fix (KeyError), passes after (ValueError)\", \"pytest -q: 37 passed\", \"commit 9b3838f on m13-gen-2-fix-1\"], \"pr\": \"m13-gen-2-fix-1\"}\n```",
+  "create_at": 1793956516077,
+  "type": null
+ },
+ {
+  "id": "cj3dbsw98tn77fgdj5pom6pwxr",
+  "root_id": "u3rs8femt38wirc3g3g6ikfxpe",
+  "user": "m13-reviewer",
+  "message": "Review (testing-reality-checker): PASS. PR fixes the root cause by adding explicit empty/whitespace/unknown coupon validation with ValueError instead of allowing KeyError crashes. Comprehensive regression test suite added that exercises the reported scenario and validates the fix across both apply_coupon() and Cart.total() code paths.\nHarness pytest on the PR head: green (37 passed, 13 warnings in 0.07s). Files: shop/pricing.py, tests/test_issue_1.py.\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/12",
+  "create_at": 1793956528666,
+  "type": null
+ },
+ {
+  "id": "qbkw1pc5e3dq8mgo15aiatgzzh",
+  "root_id": null,
+  "user": "m13-ops-maint",
+  "message": "@synaps-dev fix acme-shop#2 (base m13-gen-2) (Tax applied twice on orders with discount coupon — customers overcharged). Branch off m13-gen-2, push m13-gen-2-fix-2, and reply here with the RESULT block (pr = the branch you pushed; the PR is opened for you).",
+  "create_at": 1793956585448,
+  "type": null
+ },
+ {
+  "id": "xtt46etp3pgh9jorihyndxs5pr",
+  "root_id": "qbkw1pc5e3dq8mgo15aiatgzzh",
+  "user": "synaps-dev",
+  "message": "On it: acme-shop#2.",
+  "create_at": 1793956587933,
+  "type": null
+ },
+ {
+  "id": "g7ymezyyap81fdqaztrw4xwato",
+  "root_id": "qbkw1pc5e3dq8mgo15aiatgzzh",
+  "user": "synaps-dev",
+  "message": "`price_after_discount_and_tax()` was calling `apply_tax()` internally, so any caller that also applied tax (cart total, checkout receipt) would charge it twice — customers on coupon orders were overcharged. Removed the `apply_tax()` call from the helper so it returns the post-discount subtotal only; callers own the tax step. Added `tests/test_issue_2.py`; full suite green (43 passed).\n@m13-ops-maint\nRESULT\n```json\n{\"status\": \"proposed\", \"summary\": \"Tax applied twice on coupon orders fixed — price_after_discount_and_tax now returns post-discount subtotal only\", \"evidence\": [\"tests/test_issue_2.py fails before fix (97.2 != 90.0), passes after\", \"pytest -q: 43 passed\", \"commit 44015cf on m13-gen-2-fix-2\"], \"pr\": \"m13-gen-2-fix-2\"}\n```",
+  "create_at": 1793956708571,
+  "type": null
+ },
+ {
+  "id": "s65ssteybb81jm3wzisc5m41ua",
+  "root_id": "qbkw1pc5e3dq8mgo15aiatgzzh",
+  "user": "m13-reviewer",
+  "message": "Review (testing-reality-checker): PASS. The PR fixes the root cause of double-tax charging by removing the embedded apply_tax() call from price_after_discount_and_tax(), making it return only the post-discount subtotal. Comprehensive regression tests verify the fix works end-to-end and all 43 tests pass.\nHarness pytest on the PR head: green (43 passed, 13 warnings in 0.03s). Files: shop/pricing.py, tests/test_issue_2.py.\nPR: https://github.com/HaseebKhalid1507/acme-shop/pull/13",
+  "create_at": 1793956716695,
+  "type": null
+ }
+]
