@@ -6,30 +6,31 @@ Model (simple and explainable)
 Customers
 ---------
 - Start: N_0 = 1500 + (seed % 300). Represents acme-shop's existing SaaS user base.
-  Calibrated so that a neutral quarter yields ~$43k revenue (matches the design's ~$41k).
-- Each week a fraction convert from leads, and a fraction churn.
+- Each week a fraction churn, then campaign leads convert, then the week's sales are booked.
 
-Churn
------
-- Base weekly churn rate: 1.5% of active customers.
-- Each open incident of severity s adds s × 0.5% weekly churn until fixed.
-- Faster incident resolution → less churn → more customers → more revenue.
+Incidents (why fix speed matters)
+---------------------------------
+- Base weekly churn: 1.2% of active customers (~5% a month).
+- Severity follows the on-call convention: sev1 is the worst. An open incident weighs
+  4 − s severity points (sev1 = 3, sev2 = 2, sev3 = 1).
+- Each open severity point adds 0.5% weekly churn until the week the incident is fixed.
+- Each open severity point also loses 3% of that week's sales (a broken checkout doesn't sell),
+  at most 50%. env1's four incidents (sev 1+2+2+3 = 8) cost ~4% churn and ~24% of sales per week open.
+- A fix in week w closes the incident from week w on: one week sooner is one week less of both.
 
 Leads / acquisition
 -------------------
-- Each campaign that week: leads += spend × base_rate × (0.5 + quality) × multiplier
-  where multiplier = 1.5 if cites_feature else 1.0, base_rate = 0.02 (leads per dollar).
-- Conversion from leads to customers: 5% base, +2% per shipped feature (demand-weighted),
-  capped at 15% bonus.
-- Campaigns citing a shipped feature get a 50% lead multiplier (concrete beats generic).
+- Each campaign that week: leads = spend × 0.10 × (0.5 + quality) × (1.5 if cites_feature else 1).
+- Conversion from leads to customers: 10% base, +5% per feature shipped by that week
+  (demand-weighted), at most +15%.
+- A good week-1 campaign (quality 0.9, cites a shipped feature) pays for itself within the quarter;
+  a generic low-quality one does not.
 
 Revenue
 -------
-- Weekly revenue = active_customers × price × weekly_purchase_rate (25%).
-  The 25% rate models a subscription SaaS where ~1-in-4 customers are "active" buyers
-  each week: 1500 × $29 × 0.25 × 4 weeks ≈ $43k/quarter baseline.
-- Competitor price cut (from a MarketEvent) reduces weekly_purchase_rate by 20% for
-  the rest of the quarter.
+- Weekly revenue = active_customers × price × 25% × (1 − outage share). 25% models a monthly
+  subscription billed over a 4-week quarter: 1500 × $29 × 0.25 × 4 ≈ $43k/quarter.
+- Competitor price cut (from a MarketEvent) reduces the purchase rate by 20% for the quarter.
 
 Costs
 -----
@@ -46,12 +47,13 @@ Determinism
 - random.Random(seed) is used for all stochastic draws.
 - Same (seed, company, actions) → same Metrics every time.
 
-Calibration (design example, seed=42)
---------------------------------------
-Good quarter (all sev1s fixed wk1, feature campaigns, $8k marketing):
-  ~$55k revenue, ~$8k profit, fitness ≈ +12
-Bad quarter (slow fixes, generic campaign, $1k marketing):
-  ~$30k revenue, ~-$3k profit, fitness ≈ -11
+Calibration (seed 42, tests/test_market.py GOOD / OK / BAD)
+-----------------------------------------------------------
+GOOD (all incidents fixed wk1, 4 features by wk2, four $2k feature-citing campaigns):
+  growth ≈ +17%, profit ≈ $26k
+OK   (fixes wk2-3, one feature wk3, two $2k generic campaigns): growth ≈ −7%, profit ≈ $22k
+BAD  (sev1 fixed wk4, the rest open, nothing shipped, one $1k weak campaign): growth ≈ −18%, profit ≈ $19k
+GOOD > OK > BAD on profit, growth and fitness, on every seed (test_market).
 """
 from __future__ import annotations
 
@@ -118,7 +120,7 @@ def default_issues() -> dict:
     """
     return {
         "incidents": [
-            {"issue": 3,  "title": "Checkout 500s on empty coupon code",    "severity": 1},
+            {"issue": 3,  "title": "Checkout 500s on empty coupon code",    "severity": 1},   # sev1 = worst
             {"issue": 7,  "title": "Order confirmation email not sent",      "severity": 2},
             {"issue": 11, "title": "Search returns stale results after edit","severity": 2},
             {"issue": 15, "title": "Profile image upload fails > 2MB",       "severity": 3},
@@ -143,13 +145,21 @@ class Market:
     BASE_CUSTOMERS = 1500
     BASE_CUSTOMERS_SPREAD = 300
     BASE_WEEKLY_PURCHASE_RATE = 0.25  # 25% of active customers generate revenue each week
-    BASE_CHURN_RATE = 0.015           # 1.5% weekly base churn
-    INCIDENT_CHURN_PER_SEV = 0.005   # +0.5% weekly churn per open severity point
-    LEAD_BASE_RATE = 0.02             # leads per dollar of campaign spend
-    CONVERSION_BASE = 0.05            # 5% of leads convert to customers
-    CONVERSION_PER_FEATURE = 0.02    # +2% conversion per shipped feature (demand-weighted)
+    BASE_CHURN_RATE = 0.012           # 1.2% weekly base churn (~5% a month)
+    INCIDENT_CHURN_PER_SEV = 0.005    # +0.5% weekly churn per open severity point (sev1 = 3 points)
+    LEAD_BASE_RATE = 0.10             # leads per dollar of campaign spend ($10 a lead)
+    CONVERSION_BASE = 0.10            # 10% of leads convert to customers
+    CONVERSION_PER_FEATURE = 0.05     # +5% conversion per shipped feature (demand-weighted), from its week on
+    CONVERSION_BONUS_CAP = 0.15       # at most +15% from features
+    OUTAGE_REVENUE_HIT_PER_SEV = 0.03 # 3% of a week's sales lost per open severity point
+    OUTAGE_REVENUE_CAP = 0.5          # at most half a week's sales
     FIXED_COSTS_QUARTER = 5_000.0    # hosting + tooling
     COMPETITOR_DEMAND_HIT = 0.20     # competitor price cut reduces purchase rate by 20%
+
+    @staticmethod
+    def severity_points(severity) -> int:
+        """sev1 (the worst) = 3 points, sev2 = 2, sev3 and below = 1."""
+        return max(1, 4 - int(severity))
 
     def __init__(self, seed: int, company: dict, issues: dict | None = None):
         self._seed = seed
@@ -175,7 +185,7 @@ class Market:
                     room="maintenance",
                     kind="incident",
                     text=(
-                        f"{30 * inc['severity']} customers report: {inc['title']} "
+                        f"{30 * self.severity_points(inc['severity'])} customers report: {inc['title']} "
                         f"(sev{inc['severity']}, issue #{inc['issue']})"
                     ),
                     payload={"issue": inc["issue"], "severity": inc["severity"]},
@@ -245,7 +255,7 @@ class Market:
 
         # Severity map for incidents
         sev_map: dict[int, int] = {
-            inc["issue"]: inc["severity"] for inc in self._issues["incidents"]
+            inc["issue"]: self.severity_points(inc["severity"]) for inc in self._issues["incidents"]
         }
 
         # Did a competitor price cut happen? (deterministic from seed+week)
@@ -260,13 +270,11 @@ class Market:
         if competitor_hit:
             purchase_rate *= (1.0 - self.COMPETITOR_DEMAND_HIT)
 
-        # Conversion bonus from shipped features (computed once; features ship early)
-        conversion_bonus = sum(
-            self.CONVERSION_PER_FEATURE * feat["demand"]
-            for feat in self._issues["features"]
-            if feat["issue"] in shipped_map
-        )
-        conversion = self.CONVERSION_BASE + min(conversion_bonus, 0.15)
+        def conversion_in(week: int) -> float:
+            """Base conversion + the demand-weighted bonus of every feature shipped by `week` (capped)."""
+            bonus = sum(self.CONVERSION_PER_FEATURE * feat["demand"] for feat in self._issues["features"]
+                        if feat["issue"] in shipped_map and shipped_map[feat["issue"]] <= week)
+            return self.CONVERSION_BASE + min(bonus, self.CONVERSION_BONUS_CAP)
 
         for week in range(1, self._weeks + 1):
             # Open incidents this week
@@ -288,10 +296,13 @@ class Market:
                     multiplier = 1.5 if camp.get("cites_feature", False) else 1.0
                     leads += camp["spend"] * self.LEAD_BASE_RATE * (0.5 + quality) * multiplier
 
-            customers += leads * conversion
+            customers += leads * conversion_in(week)
+
+            # Sales lost to open incidents this week (a broken checkout doesn't sell)
+            outage = min(self.OUTAGE_REVENUE_CAP, open_sev * self.OUTAGE_REVENUE_HIT_PER_SEV)
 
             # Revenue this week
-            total_revenue += customers * price * purchase_rate
+            total_revenue += customers * price * purchase_rate * (1.0 - outage)
 
         # Final customer count
         customers_end = int(max(0, round(customers)))

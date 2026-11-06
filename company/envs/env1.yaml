@@ -121,5 +121,7 @@ x-company:
   token_budget:
     per_agent: 30000
     per_quarter: 150000
+  dev_capacity:
+    per_week: 3
   weeks_per_quarter: 4
   price: 29.0

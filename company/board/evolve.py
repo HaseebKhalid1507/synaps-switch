@@ -60,6 +60,7 @@ import yaml
 from company.core.env import Env, apply_mutation, env_diff, load_env, save_env
 from company.core.fitness import fitness
 from company.core.lineage import append_lineage, read_lineage
+from company.board.mechanics import why_moved
 from company.realwork import approvers_from_env, parse_decision
 
 DEFAULT_SEEDS = (1, 2)
@@ -177,7 +178,11 @@ def summarize(env: Env, ev: dict, rooms: dict | None = None) -> dict:
                 regressed += 1
             if "veto" in what or "escalat" in what:
                 escalated += 1
-            highlights.append(f"seed {p['seed']} wk{d.get('week')} {d.get('who')}: {what}")
+            line = f"seed {p['seed']} wk{d.get('week')} {d.get('who')}: {what}"
+            if d.get("type") in ("org", "mechanics"):          # the quarter's mechanics: read these first
+                highlights.insert(sum(1 for h in highlights if h.startswith("! ")), "! " + line)
+            elif what:
+                highlights.append(line)
         for s in lg["spend"]:
             key = s.get("dept", "?")
             if s.get("approved", True):
@@ -197,7 +202,7 @@ def summarize(env: Env, ev: dict, rooms: dict | None = None) -> dict:
                    "campaigns_citing_shipped": sum(1 for c in p0.get("campaigns", []) if c.get("cites_feature")),
                    "regressions": regressed, "veto_escalations": escalated, "denied_spend": denied},
         "spend_per_quarter": spend,
-        "highlights": highlights[:30],
+        "highlights": [h.removeprefix("! ") for h in highlights][:40],
         "org": {"agents": org, "rooms": _rooms(env), "links": _links(env),
                 "budgets": env.company.get("budgets") or {}, "policies": env.company.get("policies") or {},
                 "price": env.company.get("price"), "weeks_per_quarter": env.company.get("weeks_per_quarter")},
@@ -386,6 +391,13 @@ Find where value leaked and propose exactly ONE change to the org design (the en
 The humans in #board approve or reject it; an approved change is trialed on the same market seeds and kept
 only if fitness improves. fitness = {w_profit}*profit + {w_growth}*growth - {w_inc}*open_incident_severity
 - {w_llm}*llm_cost_usd.
+
+How the org shapes a quarter (the highlights' "org:" and "quarter mechanics:" lines count it): a department's
+sev1/sev2 incident reaches synaps-dev the same week only over a direct link between its room and #dev; otherwise
+the board relays it at its next weekly sync, a week later. synaps-dev takes at most dev_capacity items a week.
+Every testing/* agent in #dev reviews each PR: more reviewers catch more regressions before the merge (an uncaught
+one reopens the incident), but each extra reviewer is another review round that costs tokens and may slip the
+merge a week. Open incidents cost churn and sales every week they stay open.
 
 Allowed mutations (exactly one, as JSON):
 {{"op":"link","rooms":["<room>","<room>"]}}            direct line between two rooms (else they talk via #board)
@@ -818,7 +830,7 @@ def build_graph(*, run_quarter, propose, gate, weights, approvers, lineage_path,
         if outcome in ("kept", "reverted"):
             cmp = ">" if outcome == "kept" else "<="
             reason = (f"fitness {ev['fitness']:.3f} {cmp} parent {pf:.3f} on seeds {s['seeds']} "
-                      f"(Δ {ev['fitness'] - pf:+.3f})")
+                      f"(Δ {ev['fitness'] - pf:+.3f}): {why_moved(parent_eval, ev)}")
         elif outcome == "invalid":
             reason = f"no valid mutation after {len(p.get('attempts') or [])} attempts: {p.get('error')}"
         elif outcome == "timeout":

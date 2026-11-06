@@ -98,11 +98,10 @@ def apply_mutation(env: Env, m: dict) -> Env:
             persona_id = m["persona"]
             agent_name = m["name"]
             role_note = m.get("role_note", "")
-            # Try to load roster; fall back to stub if /tmp/agency-agents not present
+            # The roster (company/fetch_roster.sh); without it the role note alone
             try:
-                from company.core.roster import load_roster, instructions_for
-                roster = load_roster("/tmp/agency-agents")
-                persona = roster[persona_id]
+                from company.core.roster import get_roster, instructions_for
+                persona = get_roster()[persona_id]
                 instructions = instructions_for(persona, role_note)
                 description = persona["description"]
             except Exception:
@@ -143,9 +142,8 @@ def apply_mutation(env: Env, m: dict) -> Env:
             if a["name"] == agent_name:
                 a["persona"] = new_persona_id
                 try:
-                    from company.core.roster import load_roster, instructions_for
-                    roster = load_roster("/tmp/agency-agents")
-                    persona = roster[new_persona_id]
+                    from company.core.roster import get_roster, instructions_for
+                    persona = get_roster()[new_persona_id]
                     # Preserve any existing role_note (first paragraph before ---)
                     old_instructions = a.get("instructions", "")
                     role_note = old_instructions.split("---")[0].strip() if "---" in old_instructions else old_instructions
@@ -226,8 +224,8 @@ def to_switch_template(env: Env) -> str:
             # Try resolving; fall back gracefully
             try:
                 if roster_cache is None:
-                    from company.core.roster import load_roster
-                    roster_cache = load_roster("/tmp/agency-agents")
+                    from company.core.roster import get_roster
+                    roster_cache = get_roster()
                 from company.core.roster import instructions_for
                 persona = roster_cache[persona_id]
                 # Extract the role_note (everything before --- separator)

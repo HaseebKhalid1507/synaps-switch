@@ -281,6 +281,27 @@ resumes the node it died in; a finished thread returns its result; a changed env
 `wait_quiet`; `company_rooms`, `extra_members`), `stubs.py`, `live.py` (approver, synaps-dev cost, local-only merge,
 evidence export + scrub).
 
+### mechanics.py (#25): how the env changes a quarter
+
+Pure rules, shared by FakeTransport and Switch; each random draw is keyed by (seed, item), so env_k and env_k+1
+face the same luck on a seed. Every effect is a `QuarterLog.decisions` entry with a readable `what`
+(types `org`, `route_direct`, `route_relay`, `dispatch`, `regression`, `regression_caught`, `review_slip`,
+`route_not_dispatched`, `mechanics` {stats}, `market_inputs`); evolve's kept/reverted reason quotes
+`mechanics.why_moved(parent_eval, trial_eval)`.
+- links: a sev1/sev2 incident routed by a dept whose room is linked to #dev (`x-company.links`) is dispatched the
+  same week by that dept agent in #dev (it must be a #dev member: `company_rooms` / `extra_members` put it there);
+  synaps-dev answers it. Otherwise (no link, sev3, features) the board relays it a week later (`RELAY_WEEKS`).
+- capacity: `QuarterConfig.dev_per_week/dev_per_quarter`, else `x-company.dev_capacity {per_week, per_quarter}`
+  (env1: 3/week), else unlimited. Waits and never-dispatched routes are logged.
+- testers: agents in #dev with a `testing/*` persona. An incident fix has a latent regression with p 0.25; one
+  tester catches it with p 0.45, two or more 0.9; uncaught, the incident reopens and its re-fix lands 2 weeks later.
+  Each tester beyond the first is another (paid) review round; with p 0.5 the merge slips a week.
+- policies/budgets: enforced by Departments; approved campaigns + spend reach `Market.settle` unchanged.
+Market (#16): sev1 = 3 severity points (4 − s); each open point costs 0.5% weekly churn and 3% of that week's sales;
+features raise conversion from their ship week; GOOD > OK > BAD on profit and growth (`test_market`).
+Roster (#16): `company/fetch_roster.sh` clones agency-agents at the pinned commit into `$COMPANY_ROSTER_DIR`
+(default `company/vendor/agency-agents`, gitignored); `core.roster.get_roster()` loads it once.
+
 ### company/run.py
 
 `python -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake` prints the Metrics and fitness
