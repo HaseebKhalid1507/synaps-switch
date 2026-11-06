@@ -1,0 +1,229 @@
+{
+ "quarterlog": {
+  "fixes": [],
+  "features": [
+   {
+    "issue": 20,
+    "week_shipped": 1,
+    "pr_url": null,
+    "tests_passed": true
+   }
+  ],
+  "campaigns": [
+   {
+    "week": 3,
+    "text": "Reorder your favorites in one click. New One-click reorder feature ships this week\u2014zero friction, instant checkout. Start saving time today.",
+    "spend": 1500.0,
+    "cites_feature": true,
+    "quality": 0.7,
+    "by": "marketing"
+   }
+  ],
+  "price_changes": [
+   {
+    "week": 2,
+    "price": 29.0
+   }
+  ],
+  "spend": [
+   {
+    "week": 3,
+    "dept": "marketing",
+    "usd": 1500.0,
+    "approved": true
+   },
+   {
+    "week": 3,
+    "dept": "marketing",
+    "usd": 7000.0,
+    "approved": false
+   }
+  ],
+  "llm_cost_usd": 0.0504,
+  "decisions": [
+   {
+    "week": 2,
+    "type": "verdict",
+    "item": "fake-2",
+    "kind": "price",
+    "status": "approved",
+    "by": "finance",
+    "why": "$29.00 -> $29.00 puts about $0 of revenue at stake over 3 week(s), within the $5,000 veto limit"
+   },
+   {
+    "week": 3,
+    "type": "verdict",
+    "item": "fake-5",
+    "kind": "campaign",
+    "status": "approved",
+    "by": "policy",
+    "why": "within the veto limit and budget",
+    "quality": 0.7,
+    "scores": {
+     "clarity": 2,
+     "specificity": 2,
+     "benefit": 2,
+     "cta": 1,
+     "honesty": 0
+    }
+   },
+   {
+    "week": 3,
+    "type": "ignored_action",
+    "by": "finance",
+    "msg": "fake-6",
+    "action": {
+     "type": "spend_request",
+     "dept": "marketing",
+     "usd": 1500.0
+    },
+    "why": "finance reviews price and spend requests, it does not raise them"
+   },
+   {
+    "week": 3,
+    "type": "verdict",
+    "item": "fake-8",
+    "kind": "campaign",
+    "status": "escalated",
+    "by": "finance",
+    "why": "$7,000 is over the $5,000 veto limit"
+   },
+   {
+    "week": 3,
+    "type": "verdict",
+    "item": "fake-8",
+    "kind": "campaign",
+    "status": "rejected",
+    "by": "Aditya",
+    "why": "Aditya replied 'reject' in #board"
+   },
+   {
+    "week": 3,
+    "type": "budget_refusal",
+    "agent": "ops-maint",
+    "msg": "fake-12",
+    "why": "ops-maint has 200 of its 200 tokens left this quarter; a reply needs about 2,028"
+   },
+   {
+    "week": 3,
+    "type": "route",
+    "issue": 3,
+    "to": "synaps-dev",
+    "by": "growth",
+    "msg": "fake-15"
+   },
+   {
+    "week": 3,
+    "type": "route",
+    "issue": 23,
+    "to": "synaps-dev",
+    "by": "growth",
+    "msg": "fake-17"
+   },
+   {
+    "week": 3,
+    "type": "loop_guard",
+    "agent": "growth",
+    "msg": "fake-20",
+    "from": "synaps-dev",
+    "conv": "fake-14",
+    "hops": 3
+   }
+  ]
+ },
+ "metrics": {
+  "revenue": 31160.03,
+  "costs": 6500.05,
+  "profit": 24659.98,
+  "customers": 1233,
+  "churn_rate": 0.035,
+  "growth": -0.2004,
+  "open_incident_severity": 8.0,
+  "mean_fix_weeks": 4.0,
+  "llm_cost_usd": 0.0504
+ },
+ "usage": {
+  "tokens": {
+   "growth": 7369,
+   "finance": 6413,
+   "marketing": 3116,
+   "judge": 224
+  },
+  "usd": {
+   "growth": 0.0234,
+   "finance": 0.0117,
+   "marketing": 0.0136,
+   "judge": 0.0017
+  },
+  "total_tokens": 17122,
+  "llm_cost_usd": 0.0504
+ },
+ "routes": [
+  {
+   "week": 3,
+   "issue": 3,
+   "to": "synaps-dev",
+   "by": "growth",
+   "msg": "fake-15"
+  },
+  {
+   "week": 3,
+   "issue": 23,
+   "to": "synaps-dev",
+   "by": "growth",
+   "msg": "fake-17"
+  }
+ ],
+ "pending": {
+  "fake-2": {
+   "id": "fake-2",
+   "kind": "price",
+   "action": {
+    "type": "price",
+    "value": 29.0
+   },
+   "by": "growth",
+   "dept": "growth",
+   "week": 2,
+   "status": "approved",
+   "conv": "fake-1",
+   "room": "board"
+  },
+  "fake-5": {
+   "id": "fake-5",
+   "kind": "campaign",
+   "action": {
+    "type": "campaign",
+    "text": "Reorder your favorites in one click. New One-click reorder feature ships this week\u2014zero friction, instant checkout. Start saving time today.",
+    "spend": 1500.0,
+    "cites_feature": true
+   },
+   "by": "marketing",
+   "dept": "marketing",
+   "week": 3,
+   "status": "approved",
+   "conv": "fake-4",
+   "room": "board"
+  },
+  "fake-8": {
+   "id": "fake-8",
+   "kind": "campaign",
+   "action": {
+    "type": "campaign",
+    "text": "Order again in one click. Our new One-click reorder feature cuts checkout time by 70%\u2014reorder your favorites instantly, no cart rebuild needed. Try it free.",
+    "spend": 7000.0,
+    "cites_feature": true
+   },
+   "by": "marketing",
+   "dept": "marketing",
+   "week": 3,
+   "status": "rejected",
+   "conv": "fake-7",
+   "room": "board",
+   "escalation": "fake-9"
+  }
+ },
+ "transport_errors": [],
+ "mode": "live",
+ "wall_s": 33.3
+}
