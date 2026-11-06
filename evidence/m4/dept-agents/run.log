@@ -1,0 +1,11 @@
+[   8.4s] market -> #growth: '@growth Competitor cut price by 18%. Consider response. Decide our pri'  (llm $0.0122)
+[  14.5s] Haseeb -> #marketing: '@marketing write a $1,500 campaign for One-click reorder (shipped in w'  (llm $0.0242)
+[  20.5s] Aditya -> #marketing: '@marketing we want a big launch push for One-click reorder this week: '  (llm $0.0353)
+[  20.5s] Aditya -> #board: '@finance reject'  (llm $0.0353)
+[  20.5s] market -> #maintenance: '@ops-maint 30 customers report: Checkout 500s on empty coupon code (se'  (llm $0.0353)
+[  25.6s] synaps-dev -> #board: '@growth ping 1: which feature should I build next, and why?'  (llm $0.0432)
+[  31.2s] synaps-dev -> #board: '@growth ping 2: still need an answer, which feature next?'  (llm $0.0468)
+[  33.3s] synaps-dev -> #board: '@growth ping 3: still need an answer, which feature next?'  (llm $0.0504)
+[  33.3s] synaps-dev -> #board: '@growth ping 4: still need an answer, which feature next?'  (llm $0.0504)
+[  33.3s] synaps-dev -> #board: 'growth: FYI the checkout fix is deployed'  (llm $0.0504)
+wrote evidence/m4/dept-agents/summary.md; llm $0.0504; decisions ['verdict', 'verdict', 'ignored_action', 'verdict', 'verdict', 'budget_refusal', 'route', 'route', 'loop_guard']; errors 0

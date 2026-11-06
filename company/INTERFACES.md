@@ -203,6 +203,34 @@ room. Links: every room → #board ("reports to"), each `x-company.links` pair b
 #board: Handbook + Ledger, owned by the operator. State: `<state_dir>/switch_env/<group>.json`.
 CLI: `python -m company.switch_env apply|teardown ENV.yaml [--gen K] [--agent-prefix P] [--room-prefix P]`, `ops`.
 
+## company/depts/agent.py  (owner: C, #9)
+
+```python
+def transport_rooms(env, humans=("Aditya","Haseeb"), hub="board") -> dict[str, list[str]]
+    # membership the agents assume: room agents + humans, board agent in every room, every agent in #board,
+    # x-company.links pairs share agents. Build FakeTransport(rooms=...) with it. On Switch, apply_env puts only
+    # the env's agents + the operator in each room: invite the dept agents into #board too, or pass rooms= with
+    # the real membership (then cross-room @-mentions without a shared room are not delivered).
+class Departments:
+    def __init__(self, env, transport, log: QuarterLog, *, llm=complete_json, judge=None, roster=None, rooms=None,
+                 humans=("Aditya","Haseeb"), approvers=None, issues=None, week=1, max_hops=3, skip=("board",))
+        # registers one DeptAgent handler per env agent except synaps-dev (and board unless skip=())
+    week: int                                  # set by the quarter loop before posting that week's events
+    def event_message(self, ev: MarketEvent) -> tuple[str, str]   # (room, "@<dept agents> <text> <ask>")
+    routes: list[dict]                         # {week, issue, to, by, msg}: work to dispatch (#12)
+    pending: dict[str, dict]                   # every price/spend/campaign item by requesting msg id, with status
+    def usage(self) -> dict                    # est. tokens + usd per agent, llm_cost_usd
+class CampaignJudge(llm=None, cache_path=None).score(text, facts) -> ({quality, scores, note, cached}, cost)
+def parse_action(text) -> dict | None; def validate_action(a, agents=None) -> dict; def render(say, action) -> str
+```
+
+Every agent reply ends with a fenced JSON ACTION block (`campaign | spend_request | price | route | none`,
+finance verdicts add `decision`), parsed from the posted text into the QuarterLog. Finance policy
+(`policies.finance_veto_usd`, dept budgets) is code; over the veto goes to the #board humans, who answer
+`@finance approve|reject` in the thread. Budgets: `x-company.token_budget: {per_agent, per_quarter}`.
+Loop guard: only messages that @-address the agent, at most 3 agent<->agent hops per conversation.
+Demo/evidence: `python -m company.depts.demo --out evidence/m4/dept-agents [--stub]`.
+
 ## company/board/  (owner: C)
 
 The board's LangGraph graphs (inner quarter loop, outer evolution loop with interrupt() approval gates), the router

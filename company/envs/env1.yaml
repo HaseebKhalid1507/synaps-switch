@@ -118,5 +118,8 @@ x-company:
   policies:
     finance_veto_usd: 5000
     sev1_fix_weeks: 2
+  token_budget:
+    per_agent: 30000
+    per_quarter: 150000
   weeks_per_quarter: 4
   price: 29.0
