@@ -161,17 +161,16 @@ git clone -b feat/company https://github.com/HaseebKhalid1507/synaps-switch && c
 python3 -m venv ~/.local/share/synaps-switch/company-venv     # synaps-dev's room session uses its pytest too
 export PY=~/.local/share/synaps-switch/company-venv/bin/python
 $PY -m pip install langgraph==1.2.20 langgraph-checkpoint-sqlite==3.1.3 pyyaml==6.0.3 pytest==9.2.0
-git clone -q https://github.com/msitarzewski/agency-agents /tmp/agency-agents && \
-  git -C /tmp/agency-agents checkout -q b859c515d813efcfc4755d3471dd9e7686c7706d   # the staff
+bash company/fetch_roster.sh                                    # the staff: agency-agents at a pinned commit -> company/vendor/
 ```
-<!-- drop `-b feat/company` once feat/company is merged into main. #16 moves the roster to company/vendor/agency-agents (fetch_roster.sh): update the last line when it lands -->
+<!-- drop `-b feat/company` once feat/company is merged into main -->
 
 **Dry run: no accounts, no Docker, $0, under two minutes:**
 
 ```bash
-$PY -m pytest company/tests -q                                                 # 274 passed, 1 skipped
+$PY -m pytest company/tests -q                                                 # 305 passed, 1 skipped
 python3 -m unittest discover -s tests                                          # 36 tests OK (the extension)
-$PY -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake    # fitness: 26.2357
+$PY -m company.run --env company/envs/env1.yaml --quarters 1 --transport fake    # fitness: 20.6363
 $PY -m company.board.evolve --offline --generations 3 --out /tmp/evolve-offline  # kept / reverted / rejected
 ```
 
@@ -241,7 +240,8 @@ the M3 checks: threaded replies, session memory, a daemon restart in between (ab
 | One live quarter (env1, 3 weeks) | #1 fixed and merged in week 1; KPI table in #board and the Ledger; fitness 10.15; LLM cost **$1.08** (synaps-dev $1.01) | `evidence/m4/quarter/` |
 | Human gate for org changes | The board (Haiku) proposed `link #maintenance ↔ #dev`; an agent's approve was ignored; the process was killed and resumed at the gate; a person approved; kept, 15.68 > 11.68 (stub quarter) | `evidence/m4/evolve/` |
 | Offline evolution (stub quarter, seeds 1, 2) | gen 1 kept (+4.00), gen 2 *hire QA* reverted on fitness (−0.35), gen 3 rejected by a person | `evidence/m4/evolve/offline/` |
-| Tests | `company/`: 274 passed, 1 skipped; `tests/`: 36 OK | `company/tests/`, `tests/` |
+| Offline evolution on the **real** quarter runner (stub LLM and synaps-dev, seeds 1, 2) | gen 1 *link #maintenance ↔ #dev* **kept, +3.59** (fix time 2.50 → 1.50 wk: 6 incidents went straight to synaps-dev instead of waiting for the board's relay); gen 2 *hire QA* reverted (−0.70: caught a regression but 6 merges slipped a week); gen 3 *finance veto $5k → $2k* rejected by a person | PR #28, `company/board/mechanics.py` |
+| Tests | `company/`: 305 passed, 1 skipped; `tests/`: 36 OK | `company/tests/`, `tests/` |
 
 ## Security model
 
