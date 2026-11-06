@@ -15,6 +15,7 @@
 import argparse
 import json
 import os
+import re
 import secrets
 import sys
 import time
@@ -208,6 +209,39 @@ def mm(e, method, path, body=None, who="user"):
 def channel_id(e, name, who="user"):
     team = mm(e, "GET", f"/teams/name/{e['MATTERMOST_TEAM_NAME']}", who=who)
     return mm(e, "GET", f"/teams/{team['id']}/channels/name/{name}", who=who)["id"]
+
+
+DEV_BASE = Path(os.environ.get("SYNAPS_SWITCH_DEV_BASE", Path.home() / ".synaps-switch-dev"))
+
+
+def scrub(text):
+    """Evidence scrubber: every credential value we know of (devstack/.env secrets, minted tokens,
+    agent API keys, the broker machine token) becomes [REDACTED]; bearer headers too; $HOME becomes ~."""
+    vals = set()
+    envf = HERE / ".env"
+    if envf.exists():
+        for line in envf.read_text().splitlines():
+            k, _, v = line.partition("=")
+            if re.search(r"PASS|SECRET|TOKEN|KEY", k):
+                vals.add(v.strip().strip("'\""))
+    files = list((HERE / "state").glob("*")) + list((DEV_BASE / "synaps-switch" / "agents").glob("*/credentials.json")) \
+        + list((DEV_BASE / "broker").glob("*token*"))
+    for f in files:
+        try:
+            s = f.read_text().strip()
+        except OSError:
+            continue
+        try:
+            d = json.loads(s)
+        except ValueError:
+            vals.add(s)
+            continue
+        if isinstance(d, dict):
+            vals.update(str(v) for k, v in d.items() if "key" in k or "token" in k or "secret" in k)
+    for v in sorted((v for v in vals if len(v) >= 6), key=len, reverse=True):
+        text = text.replace(v, "[REDACTED]")
+    text = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]{8,}", r"\1[REDACTED]", text)
+    return text.replace(str(Path.home()), "~")
 
 
 def mm_post(a):
