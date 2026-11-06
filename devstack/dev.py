@@ -11,6 +11,11 @@
   dev.py mm-thread CHANNEL [--since MS]
                                dump a channel's posts (JSON: id, root_id, user, message, create_at)
   dev.py mm-join CHANNEL       add the seeded Mattermost user to a channel (admin)
+  dev.py bridges               list Switch's messaging-app connections (type, name, status, default)
+  dev.py connect-discord [--name NAME] [--default]
+                               connect a Discord server: reads DISCORD_BOT_TOKEN and
+                               DISCORD_GUILD_ID from devstack/.env; --default makes new
+                               rooms land on Discord instead of Mattermost
 """
 import argparse
 import json
@@ -275,6 +280,39 @@ def mm_join(a):
     print(f"{e['MATTERMOST_USER']} is in ~{a.channel}")
 
 
+def bridges(a):
+    e = env()
+    code, body, _ = http("GET", api_url(e) + "/gateway/collaborations", None, {"Cookie": gateway_cookie(e)})
+    if code != 200:
+        die(f"list bridges -> {code} {body.get('detail', '') if isinstance(body, dict) else ''}")
+    for b in body:
+        flag = " (default)" if b.get("is_default") else ""
+        print(f"{b.get('bridge_type'):<11} {b.get('display_name')!r:<24} {b.get('status')}{flag}  id={b.get('bridge_id')}")
+
+
+def connect_discord(a):
+    e = env()
+    token, guild = e.get("DISCORD_BOT_TOKEN", ""), e.get("DISCORD_GUILD_ID", "")
+    if not token or not guild:
+        die("set DISCORD_BOT_TOKEN and DISCORD_GUILD_ID in devstack/.env first (the file is 0600 and gitignored)")
+    if not re.fullmatch(r"\d{15,22}", guild):
+        die("DISCORD_GUILD_ID should be the numeric server id (Developer Mode -> right-click the server -> Copy Server ID)")
+    cookie = gateway_cookie(e)
+    code, body, _ = http("GET", api_url(e) + "/gateway/collaborations", None, {"Cookie": cookie})
+    if code == 200 and any(b.get("bridge_type") == "discord" for b in body):
+        print("a Discord connection already exists: kept (see `dev.py bridges`)")
+        return
+    req = {"bridge_type": "discord", "display_name": a.name, "set_as_default": a.default,
+           "connection_config": {"bot_token": token, "guild_id": guild}}
+    code, body, _ = http("POST", api_url(e) + "/gateway/collaborations", req, {"Cookie": cookie}, timeout=90)
+    if code not in (200, 201):
+        detail = body.get("detail", "") if isinstance(body, dict) else ""
+        die(f"connect Discord -> {code} {str(detail)[:300]}")
+    print(f"connected Discord server {guild} as {body.get('display_name')!r}: status {body.get('status')}"
+          f"{', default for new rooms' if body.get('is_default') else ''} (id {body.get('bridge_id')})")
+    print("next: post any message in a Discord channel to turn it into a room, then invite the agent there")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -297,6 +335,11 @@ def main():
     s = sub.add_parser("mm-join")
     s.add_argument("channel")
     s.set_defaults(fn=mm_join)
+    sub.add_parser("bridges").set_defaults(fn=bridges)
+    s = sub.add_parser("connect-discord")
+    s.add_argument("--name", default="Discord")
+    s.add_argument("--default", action="store_true", help="new rooms land on Discord")
+    s.set_defaults(fn=connect_discord)
     a = p.parse_args()
     a.fn(a)
 
