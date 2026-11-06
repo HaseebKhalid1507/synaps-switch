@@ -1,0 +1,14 @@
+{
+ "total_usd": 1.076613,
+ "synaps_dev_usd": 1.013913,
+ "reviews_usd": 0.0114,
+ "dept_agents_and_judge_usd": 0.0513,
+ "synaps_dev_sessions": [
+  {
+   "name": "sw-synaps-dev-m10-dev-g1-6eb5",
+   "cost": 1.0139127000000001,
+   "messages": 96
+  }
+ ],
+ "wall_seconds": 1112
+}

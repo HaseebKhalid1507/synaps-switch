@@ -11,7 +11,13 @@ Prints the quarter's Metrics and fitness (and the KPI table with --report). Chec
 --db (company/state/board.db), thread "<env>:<seed>": a killed run, started again with the same
 arguments, resumes where it stopped; a finished one prints its stored result (--fresh reruns it).
 With --quarters N the quarters use seeds seed..seed+N-1 under the same env and generation, and the
-Ledger keeps one row per quarter. --generations (the outer evolution loop) is #11.
+Ledger keeps one row per quarter.
+
+    python -m company.run --env company/envs/env1.yaml --generations 2 --transport fake [--seeds 1,2] [--out DIR]
+        the outer loop (#11, company.board.evolve) with this quarter as the trial runner: StubProposer and a
+        scripted approver offline; on Switch LLMProposer (Haiku) and a TransportGate on the board's prefixed
+        identity (opened only for the gate, released before every trial quarter). Prints the lineage table
+        (company.lineage_report.render); lineage.jsonl, lineage.md and kept envs go to --out (default company/).
 """
 from __future__ import annotations
 
@@ -53,7 +59,13 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m company.run", description=__doc__.split("\n\n")[0])
     ap.add_argument("--env", required=True)
     ap.add_argument("--quarters", type=int, default=1)
-    ap.add_argument("--generations", type=int, default=None, help="outer evolution loop (#11, not here)")
+    ap.add_argument("--generations", type=int, default=None, help="run the outer evolution loop (#11) instead")
+    ap.add_argument("--seeds", default="1,2", help="--generations: the trial seeds (same seeds for every env)")
+    ap.add_argument("--budget-usd", type=float, default=None, help="--generations: stop when spent reaches this")
+    ap.add_argument("--gate-timeout", type=float, default=None, help="--generations: seconds; none = auto-reject")
+    ap.add_argument("--gate-room", default=None, help="--generations on Switch: gate room (default <room-prefix>board)")
+    ap.add_argument("--script", default=None, help='--generations offline: scripted approver, "approve|reject: why|..."')
+    ap.add_argument("--evolve-db", default="company/state/evolve.sqlite")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--generation", type=int, default=1)
     ap.add_argument("--transport", choices=("fake", "switch"), default="fake")
@@ -63,7 +75,7 @@ def main(argv=None) -> int:
     ap.add_argument("--thread-id", default=None)
     ap.add_argument("--fresh", action="store_true", help="drop this thread's checkpoints and start over")
     ap.add_argument("--state-dir", default="company/state")
-    ap.add_argument("--out", default=None, help="dir for run.log + transcript.jsonl")
+    ap.add_argument("--out", default=None, help="dir for run.log + transcript.jsonl (--generations: lineage, envs/)")
     ap.add_argument("--issues", default=None, help="default | acme (real acme-shop issues, cached) | PATH.json")
     ap.add_argument("--approver", default=None, choices=("stub", "mattermost", "none"),
                     help="who answers merge requests in #board (default: stub on fake, none on switch)")
@@ -87,9 +99,6 @@ def main(argv=None) -> int:
     ap.add_argument("-v", "--verbose", action="store_true", help="run log on stderr")
     a = ap.parse_args(argv)
 
-    if a.generations:
-        print("--generations is the outer evolution loop (#11: company.board.evolve), not built here", file=sys.stderr)
-        return 2
     env = load_env(a.env)
     live = a.transport == "switch"
     llm_kind = a.llm or ("haiku" if live else "stub")
@@ -101,23 +110,25 @@ def main(argv=None) -> int:
         from company.board.stubs import stub_llm
         llm = stub_llm
     split = (lambda s: tuple(x.strip() for x in s.split(",") if x.strip()) if s else None)
+    qopts = dict(   # QuarterConfig fields shared by every quarter of this command
+        transport=a.transport, llm=llm, llm_label=llm_kind, weeks=a.weeks, db=a.db, state_dir=a.state_dir,
+        issues=issues_from(a.issues, a.state_dir), approver=a.approver or ("stub" if not live else None),
+        approvers=split(a.approvers), dev_per_week=a.dev_per_week, dev_per_quarter=a.dev_per_quarter,
+        dev_timeout=a.dev_timeout, approve_timeout=a.approve_timeout, week_wall_s=a.week_wall, quiet_s=a.quiet,
+        agent_prefix=a.agent_prefix, room_prefix=a.room_prefix, acme_remote=a.acme_remote, acme_prefix=a.acme_prefix,
+        switch_url=a.switch_url, token_file=a.token_file, devstack=a.devstack,
+        hook=kill_hook(os.environ.get("COMPANY_QUARTER_KILL_AT")),
+        log=(lambda line: print(line, file=sys.stderr, flush=True)) if a.verbose else None)
+    if split(a.humans):
+        qopts["humans"] = split(a.humans)
+    if a.generations:
+        return generations(a, env, qopts, llm_kind, split)
     rows = []
-    hook = kill_hook(os.environ.get("COMPANY_QUARTER_KILL_AT"))
     for q in range(a.quarters):
         seed = a.seed + q
-        cfg = QuarterConfig(
-            transport=a.transport, llm=llm, llm_label=llm_kind, weeks=a.weeks, db=a.db,
-            thread_id=(f"{a.thread_id}:{q + 1}" if a.thread_id and a.quarters > 1 else a.thread_id),
-            fresh=a.fresh, state_dir=a.state_dir, out_dir=a.out, issues=issues_from(a.issues, a.state_dir),
-            approver=a.approver or ("stub" if not live else None), approvers=split(a.approvers),
-            dev_per_week=a.dev_per_week, dev_per_quarter=a.dev_per_quarter, dev_timeout=a.dev_timeout,
-            approve_timeout=a.approve_timeout, week_wall_s=a.week_wall, quiet_s=a.quiet,
-            agent_prefix=a.agent_prefix, room_prefix=a.room_prefix, acme_remote=a.acme_remote,
-            acme_prefix=a.acme_prefix, switch_url=a.switch_url, token_file=a.token_file, devstack=a.devstack,
-            ledger_rows=list(rows), quarter_label=q + 1, hook=hook,
-            log=(lambda line: print(line, file=sys.stderr, flush=True)) if a.verbose else None)
-        if split(a.humans):
-            cfg.humans = split(a.humans)
+        cfg = QuarterConfig(**qopts, thread_id=(f"{a.thread_id}:{q + 1}" if a.thread_id and a.quarters > 1
+                                                else a.thread_id),
+                            fresh=a.fresh, out_dir=a.out, ledger_rows=list(rows), quarter_label=q + 1)
         r = run_quarter_full(env, seed=seed, generation=a.generation, config=cfg)
         rows.append(ledger_row(q + 1, seed, r.metrics, r.fitness))
         if a.json:
@@ -130,6 +141,52 @@ def main(argv=None) -> int:
         print(f"fitness: {r.fitness:.4f}")
         if a.report:
             print(r.report)
+    return 0
+
+
+def generations(a, env, qopts, llm_kind, split) -> int:
+    """The outer loop (company.board.evolve) with this quarter as its trial runner. Each trial quarter keeps
+    its own "<env>:<seed>" thread (no thread_id / fresh here); --fresh restarts the evolution thread."""
+    from company.board.evolve import (DEFAULT_SCRIPT, LLMProposer, ScriptedGate, StubProposer, TransportGate,
+                                      _parse_script, env_index, evolve, load_quarter_runner, switch_room_reader)
+    from company.depts.agent import load_personas
+    from company.lineage_report import render
+
+    say = (lambda *x: print(" ".join(map(str, x)), file=sys.stderr, flush=True)) if a.verbose else None
+    run_q = load_quarter_runner("quarter", **qopts)
+    roster = load_personas()
+    approvers = split(a.approvers)
+    read_rooms = None
+    if a.transport == "switch":
+        from company.switch_env import load_state
+        from company.transport import SwitchTransport
+        board = a.agent_prefix + "board"
+        gate = TransportGate(       # opened for the gate only; evolve releases it before every trial quarter,
+            factory=lambda: SwitchTransport(a.switch_url, agents=[board], state_dir=a.state_dir,   # which opens
+                                            registration_token_file=a.token_file),                 # the same board
+            board=board, room=a.gate_room or a.room_prefix + "board", approvers=approvers, log=say or (lambda *x: None))
+
+        def read_rooms(e):          # the trial's own rooms: <room-prefix><room>-g<k>, k = the env's index
+            st = load_state(a.state_dir, f"{a.room_prefix}{e.name}-g{env_index(e.name)}") or {}
+            ids = {n: r["id"] for n, r in (st.get("rooms") or {}).items()} or None
+            return switch_room_reader(lambda: gate.t, board, ids, room_prefix=a.room_prefix)(e)
+    else:
+        gate = ScriptedGate(_parse_script(a.script) if a.script else DEFAULT_SCRIPT)
+        approvers = approvers or ("haseeb",)
+    out = Path(a.out) if a.out else None
+    kw = {} if a.budget_usd is None else {"budget_usd": a.budget_usd}
+    res = evolve(env, generations=a.generations, seeds=[int(s) for s in a.seeds.split(",")], run_quarter=run_q,
+                 propose=LLMProposer(roster=roster) if llm_kind == "haiku" else StubProposer(roster),
+                 gate=gate, read_rooms=read_rooms, roster=roster, approvers=approvers,
+                 lineage_path=out / "lineage.jsonl" if out else "company/lineage.jsonl",
+                 envs_dir=out / "envs" if out else "company/envs", gate_timeout_s=a.gate_timeout,
+                 checkpoint=a.evolve_db, fresh=a.fresh, log=say, **kw)
+    md = render(res["records"])
+    if out:
+        (out / "lineage.md").write_text(md, encoding="utf-8")
+    print(md)
+    print(f"best: {res['best']} (fitness {res['best_fitness']}); stop: {res['stop_reason']}; "
+          f"spent ${float(res['spent_usd'] or 0):.4f}; generations {res['generations']}")
     return 0
 
 

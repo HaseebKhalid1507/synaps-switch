@@ -416,6 +416,8 @@ class Runtime:
         res = rw.dispatch(self.t, task, self.waiter, timeout=self.cfg.dev_timeout if self.live else 5.0,
                           fallback=fallback)
         self.book_dev_cost()
+        if res.get("via") == "devworker" and getattr(fallback, "__name__", "") == "no_fallback":
+            res["via"] = "timeout"             # nobody did the work: realwork labels its fallback path "devworker"
         if res.get("via") == "devworker":
             self.book(DEV, res.get("cost_usd", 0.0), "dev_usd")
         rec = {"issue": n, "kind": kind, "week": week, "by": q["by"], "status": res["status"], "via": res.get("via"),

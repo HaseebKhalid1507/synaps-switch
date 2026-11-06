@@ -107,9 +107,26 @@ def test_cli_prints_metrics_and_fitness_deterministically(tmp_path):
     assert lines[1].startswith("Metrics(revenue=$") and lines[2].startswith("fitness: ")
 
 
-def test_cli_quarters_and_generations(tmp_path):
+def test_cli_generations_runs_the_outer_loop_on_this_quarter(tmp_path):
+    r = subprocess.run([sys.executable, "-m", "company.run", "--env", ENV1, "--generations", "2", "--transport", "fake",
+                        "--out", str(tmp_path / "out"), "--db", str(tmp_path / "board.db"),
+                        "--state-dir", str(tmp_path / "st"), "--evolve-db", str(tmp_path / "evolve.sqlite")],
+                       cwd=ROOT, capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, r.stderr
+    assert "| gen | env | parent |" in r.stdout and "| 0 | env1 |" in r.stdout and "| 2 | env3 |" in r.stdout
+    assert "quarters by `company.board.quarter.run_quarter`" in r.stdout
+    recs = [json.loads(line) for line in (tmp_path / "out/lineage.jsonl").read_text().splitlines()]
+    assert [x["gen"] for x in recs] == [0, 1, 2] and recs[0]["outcome"] == "seed"
+    assert all(x["runner"] == "company.board.quarter.run_quarter" for x in recs)
+    assert (tmp_path / "out/lineage.md").exists()
+    # every trial quarter is its own "<env>:<seed>" thread in the quarter db
+    import sqlite3
+    threads = {t for (t,) in sqlite3.connect(tmp_path / "board.db").execute("select distinct thread_id from checkpoints")}
+    assert {"env1:1", "env1:2", "env2:1", "env2:2", "env3:1", "env3:2"} <= threads
+
+
+def test_cli_quarters(tmp_path):
     from company.run import main
-    assert main(["--env", ENV1, "--generations", "3"]) == 2          # #11's outer loop is not here
     assert main(["--env", ENV1, "--quarters", "2", "--json", "--db", str(tmp_path / "q.db"),
                  "--state-dir", str(tmp_path / "st")]) == 0
     ledger = (tmp_path / "st/ledger/env1-g1.md").read_text()

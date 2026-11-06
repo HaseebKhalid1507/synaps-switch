@@ -1,0 +1,66 @@
+[
+ {
+  "id": "pc773z7qtffgujjm1qcg5ris7w",
+  "root_id": null,
+  "user": "admin",
+  "message": "admin joined the channel.",
+  "create_at": 1793950623507,
+  "type": "system_join_channel"
+ },
+ {
+  "id": "z1pmsgw5378m9f4su6dtpnynfw",
+  "root_id": null,
+  "user": "admin",
+  "message": "user added to the channel by admin.",
+  "create_at": 1793950623685,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "g78yfjpfui89xq9tw3pbfmdmfo",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-marketing added to the channel by admin.",
+  "create_at": 1793950623737,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "i1b5cwdeq3d38c9oppdy3hhyac",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-board added to the channel by admin.",
+  "create_at": 1793950623762,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "kc45wbj9878jxdxx5rq15egr1e",
+  "root_id": null,
+  "user": "admin",
+  "message": "m10-market added to the channel by admin.",
+  "create_at": 1793950623787,
+  "type": "system_add_to_channel"
+ },
+ {
+  "id": "7f9r6kj35bywukajj4iijger1w",
+  "root_id": null,
+  "user": "m10-marketing",
+  "message": "Hello! I'm ready — just tag @m10-marketing when you need me.",
+  "create_at": 1793950624103,
+  "type": null
+ },
+ {
+  "id": "uio7n6cngpf8pr93ydxztptezh",
+  "root_id": null,
+  "user": "m10-board",
+  "message": "Hi! Mention @m10-board to get my attention.",
+  "create_at": 1793950624167,
+  "type": null
+ },
+ {
+  "id": "1dbftr7kipgtzfu8axikfxiy6h",
+  "root_id": null,
+  "user": "m10-market",
+  "message": "Hi! Mention @m10-market to get my attention.",
+  "create_at": 1793950624213,
+  "type": null
+ }
+]
