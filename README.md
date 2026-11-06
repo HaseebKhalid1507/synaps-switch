@@ -32,6 +32,14 @@ Mattermost / Slack / Discord ─▶ Switch ─▶ agent bridge
 - Room sessions are ordinary Synaps sessions: you can `/sessions` into one and
   watch it work, steer it, or take it over.
 
+## Specialists
+
+Room sessions can hand work to any of 283 specialist subagents from
+[agency-agents](https://github.com/msitarzewski/agency-agents) (code reviewers,
+FP&A analysts, growth hackers, security engineers…), packaged as a Synaps plugin
+by [`agency/build_plugin.py`](agency/README.md):
+`subagent_start(agent="agency:<slug>", task=...)`.
+
 ## License
 
 MIT
