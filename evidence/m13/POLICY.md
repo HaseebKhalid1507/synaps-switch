@@ -19,3 +19,18 @@ no revert is staged.
 
 Settings: env1, seed 42, 3 weeks per quarter, synaps-dev capacity 1/week and 2/quarter, 3 generations,
 prefix `m13-` (agents, rooms, acme-shop branches `m13-gen-<k>` on HaseebKhalid1507/acme-shop), budget stop $9.
+
+## Run 2 (seed 1), written before it started
+
+Written 2026-11-06 ~04:35 EST, after run 1 (seed 42) finished with gen 1 kept, gen 2 kept, gen 3 rejected, so
+**no fitness revert**. The issue allows a second short run on seed 1. Same command, same policy, same settings;
+only the seed (`--seeds 1`) and the prefix (`m13-s1-`: agents, rooms, acme-shop branches `m13-s1-gen-<k>`) change.
+
+| Gate | Policy (fixed, unchanged from run 1) |
+|---|---|
+| Merge requests | approve iff review PASS and harness pytest green, else reject (`MattermostApprover`) |
+| Org change, generation 1 | approve |
+| Org change, generation 2 | approve |
+| Org change, generation 3 | reject: "change freeze: no more org changes before the demo; propose it next quarter" |
+
+If run 2 has no revert either, that is reported as is. Budget stop for run 2: $6 (run 1 spent $2.97; total cap $10).

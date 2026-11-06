@@ -123,6 +123,8 @@ def test_cli_generations_runs_the_outer_loop_on_this_quarter(tmp_path):
     assert [x["gen"] for x in recs] == [0, 1, 2] and recs[0]["outcome"] == "seed"
     assert all(x["runner"] == "company.board.quarter.run_quarter" for x in recs)
     assert (tmp_path / "out/lineage.md").exists()
+    assert "open_quarter: env3 g3" in (tmp_path / "out/run.log").read_text()   # the trial quarters' log
+    assert (tmp_path / "out/transcript.jsonl").stat().st_size > 0
     # every trial quarter is its own "<env>:<seed>" thread in the quarter db
     import sqlite3
     threads = {t for (t,) in sqlite3.connect(tmp_path / "board.db").execute("select distinct thread_id from checkpoints")}
