@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+*.env
+!*.env.example
+devstack/.env
+devstack/state/
+state/
+*.token
+*.key
+secrets/
+.pytest_cache/
