@@ -237,28 +237,11 @@ def _llm_error():
     return LLMError
 
 
-_ROSTERS: dict[str, dict] = {}
-
-
 def load_personas(root=None) -> dict:
-    """The Agency roster, loaded once per dir: $COMPANY_ROSTER_DIR, company/vendor/agency-agents,
-    /tmp/agency-agents (first that exists). Empty dict when none does."""
-    if root is None:
-        here = Path(__file__).resolve().parent.parent / "vendor" / "agency-agents"
-        for c in (os.environ.get("COMPANY_ROSTER_DIR"), str(here), "/tmp/agency-agents"):
-            if c and Path(c).is_dir():
-                root = c
-                break
-        else:
-            return {}
-    root = str(root)
-    if root not in _ROSTERS:
-        from company.core.roster import load_roster
-        try:
-            _ROSTERS[root] = load_roster(root)
-        except OSError:
-            _ROSTERS[root] = {}
-    return _ROSTERS[root]
+    """The Agency roster, loaded once per dir (company.core.roster.get_roster): $COMPANY_ROSTER_DIR, else
+    company/vendor/agency-agents (company/fetch_roster.sh). Empty dict when it is missing."""
+    from company.core.roster import get_roster
+    return get_roster(root)
 
 
 def instructions_of(spec: dict, roster: dict) -> str:

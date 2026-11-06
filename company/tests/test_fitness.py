@@ -7,13 +7,14 @@ import yaml
 
 from company.core.fitness import fitness
 from company.core.lineage import append_lineage, read_lineage
-from company.core.roster import load_roster, search, instructions_for
+from company.core.roster import get_roster, load_roster, roster_dir, search, instructions_for
 from company.core.env import load_env, apply_mutation, to_switch_template
 from company.market.sim import Market, QuarterLog, Metrics, default_issues
 
 
 WEIGHTS_PATH = "company/fitness.yaml"
-ROSTER_ROOT = "/tmp/agency-agents"
+ROSTER_ROOT = roster_dir()          # $COMPANY_ROSTER_DIR or company/vendor/agency-agents
+needs_roster = pytest.mark.skipif(not ROSTER_ROOT.is_dir(), reason="no Agency roster: run company/fetch_roster.sh")
 COMPANY = {"weeks_per_quarter": 4, "price": 29.0}
 ISSUES = default_issues()
 
@@ -126,11 +127,13 @@ def test_lineage_creates_parent_dirs():
 # roster.py
 # ------------------------------------------------------------------
 
+@needs_roster
 def test_roster_loads_over_200():
     roster = load_roster(ROSTER_ROOT)
     assert len(roster) > 200, f"only loaded {len(roster)} personas"
 
 
+@needs_roster
 def test_roster_persona_structure():
     roster = load_roster(ROSTER_ROOT)
     for pid, p in list(roster.items())[:5]:
@@ -142,6 +145,7 @@ def test_roster_persona_structure():
         assert isinstance(p["body"], str)
 
 
+@needs_roster
 def test_roster_no_excluded_divisions():
     roster = load_roster(ROSTER_ROOT)
     for pid in roster:
@@ -150,6 +154,7 @@ def test_roster_no_excluded_divisions():
             f"excluded division leaked: {pid}"
 
 
+@needs_roster
 def test_roster_search_by_division():
     roster = load_roster(ROSTER_ROOT)
     results = search(roster, division="finance")
@@ -158,18 +163,21 @@ def test_roster_search_by_division():
         assert r["division"] == "finance"
 
 
+@needs_roster
 def test_roster_search_by_text():
     roster = load_roster(ROSTER_ROOT)
     results = search(roster, text="incident")
     assert len(results) > 0
 
 
+@needs_roster
 def test_roster_search_combined():
     roster = load_roster(ROSTER_ROOT)
     results = search(roster, division="support", text="infrastructure")
     assert any("infrastructure" in r["id"] for r in results)
 
 
+@needs_roster
 def test_instructions_for_combines_role_and_body():
     roster = load_roster(ROSTER_ROOT)
     persona = roster["support/support-infrastructure-maintainer"]
@@ -180,6 +188,7 @@ def test_instructions_for_combines_role_and_body():
     assert len(out) <= 4100  # ~4000 char limit with some slack
 
 
+@needs_roster
 def test_instructions_for_trims_long_body():
     roster = load_roster(ROSTER_ROOT)
     # Find a persona with a long body
@@ -187,6 +196,18 @@ def test_instructions_for_trims_long_body():
     role_note = "Short note."
     out = instructions_for(long_persona, role_note)
     assert len(out) <= 4100
+
+
+def test_get_roster_cached_and_env_override(tmp_path, monkeypatch):
+    d = tmp_path / "agency"
+    (d / "testing").mkdir(parents=True)
+    (d / "testing" / "testing-x.md").write_text("---\nname: X\ndescription: d\n---\nbody\n")
+    monkeypatch.setenv("COMPANY_ROSTER_DIR", str(d))
+    assert roster_dir() == d
+    r = get_roster()
+    assert list(r) == ["testing/testing-x"]
+    assert get_roster() is r                       # loaded once
+    assert get_roster(tmp_path / "missing") == {}
 
 
 # ------------------------------------------------------------------
@@ -239,6 +260,7 @@ def test_fire_removes_agent():
 # env1.yaml personas all resolve
 # ------------------------------------------------------------------
 
+@needs_roster
 def test_env1_personas_all_resolve():
     roster = load_roster(ROSTER_ROOT)
     env = load_env("company/envs/env1.yaml")
