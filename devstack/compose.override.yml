@@ -1,0 +1,16 @@
+# synaps-switch devstack: memory caps on top of Switch's standalone compose
+# (pinned 0.31.0, fetched by up.sh). Nothing privileged, nothing host-wide:
+# ports stay on SWITCH_BIND_ADDR (127.0.0.1, set in .env).
+services:
+  postgres:
+    mem_limit: 512m
+  init-db:
+    mem_limit: 128m
+  mattermost:
+    mem_limit: 1536m
+  switch:
+    mem_limit: 1536m
+  gateway:
+    mem_limit: 256m
+  setup:
+    mem_limit: 256m
